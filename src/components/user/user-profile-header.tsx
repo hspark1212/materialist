@@ -27,9 +27,9 @@ export function UserProfileHeader({ user, postCount, isOwnProfile }: UserProfile
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-baseline gap-2">
             <h1 className="text-2xl font-bold tracking-tight">{user.displayName}</h1>
-            {user.orcidId ? (
+            {user.orcidId && !user.isAnonymous ? (
               <OrcidBadge orcidId={user.orcidId} />
-            ) : isOwnProfile ? (
+            ) : isOwnProfile && !user.isAnonymous ? (
               <Button variant="outline" size="sm" asChild>
                 <a href={buildOrcidAuthUrl()}>
                   <OrcidIcon className="size-3.5" />
@@ -38,7 +38,7 @@ export function UserProfileHeader({ user, postCount, isOwnProfile }: UserProfile
               </Button>
             ) : null}
           </div>
-          <p className="text-muted-foreground text-sm">u/{user.username}</p>
+          <p className="text-muted-foreground text-sm">{user.isAnonymous ? "Anonymous profile" : `u/${user.username}`}</p>
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
             {user.position ? <span className="text-muted-foreground">{user.position}</span> : null}

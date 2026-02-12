@@ -8,14 +8,16 @@ export type UserCommentActivity = {
   createdAt: string
   postId: string
   postTitle: string
+  isAnonymous: boolean
 }
 
 type UseUserCommentsOptions = {
   authorId?: string
+  filterAnonymous?: boolean
   enabled?: boolean
 }
 
-export function useUserComments({ authorId, enabled = true }: UseUserCommentsOptions) {
+export function useUserComments({ authorId, filterAnonymous, enabled = true }: UseUserCommentsOptions) {
   const [comments, setComments] = useState<UserCommentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -58,6 +60,11 @@ export function useUserComments({ authorId, enabled = true }: UseUserCommentsOpt
     }
   }, [authorId, queryString])
 
+  const filteredComments = useMemo(() => {
+    if (filterAnonymous === undefined) return comments
+    return comments.filter((comment) => comment.isAnonymous === filterAnonymous)
+  }, [comments, filterAnonymous])
+
   useEffect(() => {
     if (!enabled) {
       setLoading(false)
@@ -74,7 +81,7 @@ export function useUserComments({ authorId, enabled = true }: UseUserCommentsOpt
   }, [authorId, enabled, load])
 
   return {
-    comments,
+    comments: filteredComments,
     loading,
     error,
     refresh: () => load(),

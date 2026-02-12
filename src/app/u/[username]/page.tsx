@@ -11,6 +11,7 @@ import type { Profile } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/client"
 import { usePostsFeed } from "@/features/posts/presentation/use-posts-feed"
 import { useUserComments } from "@/features/posts/presentation/use-user-comments"
+import { resolveAuthorIdentity } from "@/features/posts/domain/mappers"
 import { PostCardCompact } from "@/components/post/post-card-compact"
 import { UserProfileHeader } from "@/components/user/user-profile-header"
 import { ProfileEditForm } from "@/components/user/profile-edit-form"
@@ -19,6 +20,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+
+type ProfileViewMode = "verified" | "anonymous"
 
 export default function UserPage() {
   return (
@@ -42,8 +46,15 @@ function UserPageContent() {
   const [pageUser, setPageUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [editOpen, setEditOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<ProfileViewMode>("verified")
 
   const isOwnProfile = myProfile?.username === params.username
+  const hasVerifiedProfile = Boolean(pageUser?.orcidId)
+  const canToggleProfileMode = isOwnProfile && hasVerifiedProfile
+  const activeViewMode: ProfileViewMode = hasVerifiedProfile ? viewMode : "anonymous"
+  const profileAnonymousFilter = isOwnProfile
+    ? activeViewMode === "anonymous"
+    : false
   const defaultTab = searchParams.get("tab") === "about" ? "about" : "posts"
   const orcidSuccess = searchParams.get("orcid_success") === "true"
   const orcidError = searchParams.get("orcid_error")
@@ -94,6 +105,7 @@ function UserPageContent() {
 
   const {
     posts: userPosts,
+    totalPosts,
     loading: postsLoading,
     loadingMore: postsLoadingMore,
     error: postsError,
@@ -101,6 +113,7 @@ function UserPageContent() {
     loadMore: loadMorePosts,
   } = usePostsFeed({
     authorId: pageUser?.id,
+    filterAnonymous: profileAnonymousFilter,
     sortBy: "new",
     limit: 20,
     enabled: Boolean(pageUser),
@@ -108,6 +121,7 @@ function UserPageContent() {
 
   const { comments: userComments, loading: commentsLoading, error: commentsError } = useUserComments({
     authorId: pageUser?.id,
+    filterAnonymous: profileAnonymousFilter,
     enabled: Boolean(pageUser),
   })
 
@@ -130,9 +144,36 @@ function UserPageContent() {
     )
   }
 
+  const profileHeaderUser = isOwnProfile
+    ? resolveAuthorIdentity(pageUser, profileAnonymousFilter)
+    : pageUser
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4">
-      <UserProfileHeader user={pageUser} postCount={userPosts.length} isOwnProfile={isOwnProfile} />
+      <UserProfileHeader user={profileHeaderUser} postCount={totalPosts} isOwnProfile={isOwnProfile} />
+
+      {isOwnProfile ? (
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-card/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium">Profile mode</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm">Verified</span>
+            <Switch
+              id="profile-mode-toggle"
+              checked={activeViewMode === "anonymous"}
+              disabled={!canToggleProfileMode}
+              onCheckedChange={(checked) => setViewMode(checked ? "anonymous" : "verified")}
+            />
+            <span className="text-xs sm:text-sm">Anonymous</span>
+          </div>
+          {!hasVerifiedProfile && (
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              Link ORCID to unlock verified profile mode.
+            </p>
+          )}
+        </div>
+      ) : null}
 
       {isOwnProfile ? (
         <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
@@ -162,7 +203,9 @@ function UserPageContent() {
               ) : null}
             </>
           ) : !postsLoading ? (
-            <p className="text-muted-foreground text-sm">No posts yet.</p>
+            <p className="text-muted-foreground text-sm">
+              {profileAnonymousFilter ? "No anonymous posts yet." : "No verified posts yet."}
+            </p>
           ) : null}
         </TabsContent>
 
@@ -185,7 +228,9 @@ function UserPageContent() {
               </Card>
             ))
           ) : !commentsLoading ? (
-            <p className="text-muted-foreground text-sm">No comments yet.</p>
+            <p className="text-muted-foreground text-sm">
+              {profileAnonymousFilter ? "No anonymous comments yet." : "No verified comments yet."}
+            </p>
           ) : null}
         </TabsContent>
 

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("comments")
-      .select("id,content,created_at,post_id,posts(title)")
+      .select("id,content,created_at,is_anonymous,post_id,posts(title)")
       .eq("author_id", authorId)
       .order("created_at", { ascending: false })
       .limit(50)
@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
         id: string
         content: string
         created_at: string
+        is_anonymous: boolean
         post_id: string
         posts?: { title?: string | null } | null
       }
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
         id: record.id,
         content: record.content,
         createdAt: record.created_at,
+        isAnonymous: record.is_anonymous,
         postId: record.post_id,
         postTitle: record.posts?.title ?? "(deleted post)",
       }
