@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import type { ForumFlair, JobType, Section, ShowcaseType } from "@/lib"
 import { useAuth } from "@/lib/auth"
+import { useIdentity } from "@/lib/identity"
 import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseTypeLabels } from "@/lib/sections"
 import { UserAvatar } from "@/components/user/user-avatar"
-import { resolveAuthorIdentity } from "@/features/posts/domain/mappers"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -29,7 +28,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 export function PostComposer() {
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const { status, user } = useAuth()
+  const { status } = useAuth()
+  const { activeUser, isAnonymousMode } = useIdentity()
   const [section, setSection] = useState<Section>("forum")
   const [flair, setFlair] = useState<ForumFlair>("discussion")
   const [title, setTitle] = useState("")
@@ -43,8 +43,6 @@ export function PostComposer() {
   const [jobType, setJobType] = useState<JobType>("full-time")
   const [applicationUrl, setApplicationUrl] = useState("")
   const [tags, setTags] = useState("")
-  const isOrcidLinked = Boolean(user?.orcidId)
-  const [isAnonymous, setIsAnonymous] = useState(!isOrcidLinked)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -86,7 +84,7 @@ export function PostComposer() {
           content,
           section,
           tags: parsedTags,
-          isAnonymous,
+          isAnonymous: isAnonymousMode,
           flair: section === "forum" ? flair : undefined,
           url,
           projectUrl,
@@ -113,8 +111,7 @@ export function PostComposer() {
     }
   }
 
-  const displayUser = user ? resolveAuthorIdentity(user, isAnonymous) : null
-  const displayName = displayUser?.displayName ?? "Anonymous"
+  const displayName = activeUser?.displayName ?? "Anonymous"
 
   return (
     <Card className="bg-card/80 py-4 shadow-sm">
@@ -355,29 +352,14 @@ export function PostComposer() {
             ) : null}
           </div>
 
-          <div className="space-y-2 rounded-md border border-border p-3">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={isAnonymous}
-                onCheckedChange={setIsAnonymous}
-                id="post-anonymous"
-                disabled={!isOrcidLinked}
-              />
-              <label htmlFor="post-anonymous" className="text-sm font-medium">
-                Post anonymously
-              </label>
-            </div>
-            <div className="flex items-center gap-2">
-              {displayUser ? (
-                <UserAvatar user={displayUser} size="md" />
-              ) : null}
-              <p className="text-muted-foreground text-sm">
-                {displayName}
-                {!isOrcidLinked ? (
-                  <span className="text-muted-foreground/60 text-xs"> — Link your ORCID to post under your real name</span>
-                ) : null}
-              </p>
-            </div>
+          <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 p-3">
+            {activeUser ? (
+              <UserAvatar user={activeUser} size="md" />
+            ) : null}
+            <p className="text-sm text-muted-foreground">
+              Posting as <span className="font-medium text-foreground">{displayName}</span>
+              {isAnonymousMode ? " · anonymous mode" : null}
+            </p>
           </div>
 
           {error ? <p className="text-destructive text-sm">{error}</p> : null}

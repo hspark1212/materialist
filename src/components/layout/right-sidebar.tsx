@@ -56,7 +56,6 @@ type TopMaterialist = {
   displayName: string
   avatar: string
   profileUrl: string
-  postCount: number
   commentCount: number
   score: number
 }
@@ -71,7 +70,6 @@ type TopMaterialistRow = {
   username: string | null
   display_name: string | null
   avatar_url: string | null
-  post_count: number | string | null
   comment_count: number | string | null
   score: number | string | null
 }
@@ -301,7 +299,6 @@ async function fetchTopMaterialists(
       displayName,
       avatar: row.avatar_url ?? "",
       profileUrl: `/u/${username}`,
-      postCount: Number(row.post_count ?? 0),
       commentCount: Number(row.comment_count ?? 0),
       score: Number(row.score ?? 0),
     } satisfies TopMaterialist

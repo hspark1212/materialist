@@ -8,6 +8,7 @@ import type { PostSort } from "../domain/types"
 type UsePostsFeedOptions = {
   section?: Section
   authorId?: string
+  filterAnonymous?: boolean
   tag?: string
   query?: string
   sortBy: PostSort
@@ -24,6 +25,7 @@ type FetchResult = {
 export function usePostsFeed({
   section,
   authorId,
+  filterAnonymous,
   tag,
   query,
   sortBy,
@@ -153,8 +155,13 @@ export function usePostsFeed({
     return () => controller.abort()
   }, [enabled, load])
 
+  const filteredPosts = useMemo(() => {
+    if (filterAnonymous === undefined) return posts
+    return posts.filter((post) => post.isAnonymous === filterAnonymous)
+  }, [posts, filterAnonymous])
+
   return {
-    posts,
+    posts: filteredPosts,
     loading,
     loadingMore,
     error,

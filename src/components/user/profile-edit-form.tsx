@@ -24,7 +24,6 @@ type ProfileEditFormProps = {
 }
 
 export function ProfileEditForm({ profile, open, onOpenChange, onSaved }: ProfileEditFormProps) {
-  const [displayName, setDisplayName] = useState(profile.display_name)
   const [bio, setBio] = useState(profile.bio ?? "")
   const [institution, setInstitution] = useState(profile.institution ?? "")
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url)
@@ -78,7 +77,7 @@ export function ProfileEditForm({ profile, open, onOpenChange, onSaved }: Profil
             <label htmlFor="edit-displayname" className="text-sm font-medium">Display Name</label>
             <Input
               id="edit-displayname"
-              value={displayName}
+              value={profile.display_name}
               disabled
               placeholder="Your display name"
             />
@@ -168,9 +167,7 @@ export function ProfileEditForm({ profile, open, onOpenChange, onSaved }: Profil
               onChange={(e) => setResearchInterests(e.target.value)}
               placeholder="e.g., DFT, MOFs, machine learning (comma-separated)"
             />
-          </div>
-
-
+           </div>
         </div>
 
         <DialogFooter>

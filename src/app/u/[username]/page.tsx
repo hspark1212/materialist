@@ -8,16 +8,15 @@ import { useParams, useSearchParams } from "next/navigation"
 import type { User } from "@/lib"
 import { useAuth, profileToUser } from "@/lib/auth"
 import type { Profile } from "@/lib/auth"
+import { useIdentity } from "@/lib/identity"
 import { createClient } from "@/lib/supabase/client"
 import { usePostsFeed } from "@/features/posts/presentation/use-posts-feed"
 import { useUserComments } from "@/features/posts/presentation/use-user-comments"
 import { PostCardCompact } from "@/components/post/post-card-compact"
 import { UserProfileHeader } from "@/components/user/user-profile-header"
 import { ProfileEditForm } from "@/components/user/profile-edit-form"
-import { OrcidBadge } from "@/components/user/orcid-badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 export default function UserPage() {
@@ -39,19 +38,21 @@ function UserPageContent() {
   const params = useParams<{ username: string }>()
   const searchParams = useSearchParams()
   const { profile: myProfile, refreshProfile } = useAuth()
+  const { isAnonymousMode, activeUser } = useIdentity()
   const [pageUser, setPageUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [editOpen, setEditOpen] = useState(false)
 
   const isOwnProfile = myProfile?.username === params.username
-  const defaultTab = searchParams.get("tab") === "about" ? "about" : "posts"
+  const profileAnonymousFilter = isOwnProfile ? isAnonymousMode : false
+  const defaultTab = searchParams.get("tab") === "comments" ? "comments" : "posts"
   const orcidSuccess = searchParams.get("orcid_success") === "true"
   const orcidError = searchParams.get("orcid_error")
 
   // Clean URL params after ORCID callback and refresh auth context
   useEffect(() => {
     if (orcidSuccess || orcidError) {
-      window.history.replaceState({}, "", `/u/${params.username}?tab=about`)
+      window.history.replaceState({}, "", `/u/${params.username}`)
     }
     if (orcidSuccess) {
       refreshProfile()
@@ -101,6 +102,7 @@ function UserPageContent() {
     loadMore: loadMorePosts,
   } = usePostsFeed({
     authorId: pageUser?.id,
+    filterAnonymous: profileAnonymousFilter,
     sortBy: "new",
     limit: 20,
     enabled: Boolean(pageUser),
@@ -108,6 +110,7 @@ function UserPageContent() {
 
   const { comments: userComments, loading: commentsLoading, error: commentsError } = useUserComments({
     authorId: pageUser?.id,
+    filterAnonymous: profileAnonymousFilter,
     enabled: Boolean(pageUser),
   })
 
@@ -130,9 +133,22 @@ function UserPageContent() {
     )
   }
 
+  const profileHeaderUser = (isOwnProfile && activeUser) ? activeUser : pageUser
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4">
-      <UserProfileHeader user={pageUser} postCount={userPosts.length} isOwnProfile={isOwnProfile} />
+      {orcidSuccess ? (
+        <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+          ORCID verification successful!
+        </div>
+      ) : null}
+      {orcidError ? (
+        <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {orcidError}
+        </div>
+      ) : null}
+
+      <UserProfileHeader user={profileHeaderUser} isOwnProfile={isOwnProfile} />
 
       {isOwnProfile ? (
         <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
@@ -144,7 +160,6 @@ function UserPageContent() {
         <TabsList>
           <TabsTrigger value="posts">Posts</TabsTrigger>
           <TabsTrigger value="comments">Comments</TabsTrigger>
-          <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts" className="mt-3 space-y-2">
@@ -162,7 +177,11 @@ function UserPageContent() {
               ) : null}
             </>
           ) : !postsLoading ? (
-            <p className="text-muted-foreground text-sm">No posts yet.</p>
+            <p className="text-muted-foreground text-sm">
+              {profileAnonymousFilter
+                ? "No anonymous posts yet. Switch to verified mode to see verified posts."
+                : "No verified posts yet. Switch to anonymous mode to see anonymous posts."}
+            </p>
           ) : null}
         </TabsContent>
 
@@ -185,92 +204,14 @@ function UserPageContent() {
               </Card>
             ))
           ) : !commentsLoading ? (
-            <p className="text-muted-foreground text-sm">No comments yet.</p>
+            <p className="text-muted-foreground text-sm">
+              {profileAnonymousFilter
+                ? "No anonymous comments yet. Switch to verified mode to see verified comments."
+                : "No verified comments yet. Switch to anonymous mode to see anonymous comments."}
+            </p>
           ) : null}
         </TabsContent>
 
-        <TabsContent value="about" className="mt-3 space-y-4">
-          {orcidSuccess ? (
-            <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
-              ORCID verification successful!
-            </div>
-          ) : null}
-          {orcidError ? (
-            <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-              {orcidError}
-            </div>
-          ) : null}
-
-          {/* ORCID (read-only) */}
-          <Card>
-            <CardContent className="space-y-3 p-4">
-              <h3 className="text-sm font-semibold">ORCID</h3>
-              {pageUser.orcidId ? (
-                <div className="space-y-1">
-                  <OrcidBadge orcidId={pageUser.orcidId} />
-                  {pageUser.orcidName ? (
-                    <p className="text-muted-foreground text-sm">{pageUser.orcidName}</p>
-                  ) : null}
-                  {pageUser.orcidVerifiedAt ? (
-                    <p className="text-muted-foreground text-xs">
-                      Verified {formatDistanceToNow(new Date(pageUser.orcidVerifiedAt), { addSuffix: true })}
-                    </p>
-                  ) : null}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">Not verified</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Affiliation */}
-          {(pageUser.position || pageUser.institution || pageUser.department || pageUser.country) ? (
-            <Card>
-              <CardContent className="space-y-2 p-4">
-                <h3 className="text-sm font-semibold">Affiliation</h3>
-                <div className="text-sm space-y-1">
-                  {pageUser.position ? <p>{pageUser.position}</p> : null}
-                  {pageUser.department ? <p className="text-muted-foreground">{pageUser.department}</p> : null}
-                  {pageUser.institution ? <p className="text-muted-foreground">{pageUser.institution}</p> : null}
-                  {pageUser.country ? <p className="text-muted-foreground">{pageUser.country}</p> : null}
-                </div>
-              </CardContent>
-            </Card>
-          ) : null}
-
-          {/* Website */}
-          {pageUser.websiteUrl ? (
-            <Card>
-              <CardContent className="space-y-2 p-4">
-                <h3 className="text-sm font-semibold">Website</h3>
-                <a
-                  href={pageUser.websiteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline"
-                >
-                  {pageUser.websiteUrl}
-                </a>
-              </CardContent>
-            </Card>
-          ) : null}
-
-          {/* Research Interests */}
-          {pageUser.researchInterests && pageUser.researchInterests.length > 0 ? (
-            <Card>
-              <CardContent className="space-y-2 p-4">
-                <h3 className="text-sm font-semibold">Research Interests</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {pageUser.researchInterests.map((interest) => (
-                    <Badge key={interest} variant="secondary">
-                      {interest}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : null}
-        </TabsContent>
       </Tabs>
 
       {isOwnProfile && myProfile ? (
