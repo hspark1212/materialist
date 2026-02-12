@@ -14,20 +14,29 @@ const sizeMap = {
   lg: 40,
 }
 
-const badgeClasses = {
-  sm: "size-2 [&>svg]:hidden",
-  md: "size-2.5 [&>svg]:size-2",
-  lg: "size-3 [&>svg]:size-2",
+const badgeContainerClasses = {
+  sm: "size-2.5",
+  md: "size-3",
+  lg: "size-3",
 }
 
+const badgeIconClasses = {
+  sm: "size-1.5",
+  md: "size-2",
+  lg: "size-2",
+}
+
+const RING_PAD = 2
+
 export function UserAvatar({ user, size = "md" }: UserAvatarProps) {
-  const px = sizeMap[size]
+  const basePx = sizeMap[size]
   const username = user.username || "anonymous"
   const isOrcidVerified = !user.isAnonymous && !!user.orcidVerifiedAt
-  const avatarPx = isOrcidVerified ? Math.max(px - 4, 16) : px
-  const avatarSeed = isOrcidVerified
-    ? (user.orcidName || user.displayName)
-    : (user.generatedDisplayName || username)
+  const outerPx = isOrcidVerified ? basePx + RING_PAD * 2 : basePx
+  const avatarPx = basePx
+  const avatarSeed = user.isAnonymous
+    ? (user.generatedDisplayName || username)
+    : (user.displayName || user.generatedDisplayName || username)
 
   const avatarContent = (
     <div className="overflow-hidden rounded-full">
@@ -36,7 +45,7 @@ export function UserAvatar({ user, size = "md" }: UserAvatarProps) {
   )
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: px, height: px }}>
+    <div className="relative inline-flex shrink-0 items-center justify-center" style={{ width: outerPx, height: outerPx }}>
       {isOrcidVerified ? (
         <div className="avatar-verified-ring">{avatarContent}</div>
       ) : (
@@ -45,10 +54,10 @@ export function UserAvatar({ user, size = "md" }: UserAvatarProps) {
       {isOrcidVerified && (
         <span
           role="img"
-          className={`absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-blue-600 ring-2 ring-background ${badgeClasses[size]}`}
+          className={`absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-blue-600 ring-2 ring-background ${badgeContainerClasses[size]}`}
           aria-label="ORCID verified"
         >
-          <Check className="text-white" />
+          <Check className={`text-white ${badgeIconClasses[size]}`} />
         </span>
       )}
     </div>

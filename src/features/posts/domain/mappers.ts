@@ -7,8 +7,7 @@ import type {
 } from "./types"
 
 export function resolveAuthorIdentity(user: User, contentIsAnonymous: boolean): User {
-  const shouldBeAnonymous = contentIsAnonymous || user.isAnonymous
-  if (!shouldBeAnonymous) return user
+  if (!contentIsAnonymous) return user
   return {
     ...user,
     displayName: user.generatedDisplayName ?? "Anonymous",

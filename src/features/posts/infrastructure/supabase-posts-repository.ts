@@ -19,6 +19,9 @@ const PROFILE_COLUMNS_MINIMAL = [
   "karma",
   "is_anonymous",
   "created_at",
+  "orcid_id",
+  "orcid_name",
+  "orcid_verified_at",
 ].join(",")
 
 const PROFILE_COLUMNS_FULL = [

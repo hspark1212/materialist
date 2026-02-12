@@ -162,7 +162,6 @@ export function usePostsFeed({
 
   return {
     posts: filteredPosts,
-    totalPosts: posts.length,
     loading,
     loadingMore,
     error,

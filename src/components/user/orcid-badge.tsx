@@ -36,7 +36,7 @@ export function OrcidBadge({ orcidId }: OrcidBadgeProps) {
         className="inline-flex items-center gap-1"
       >
         <OrcidIcon className="size-3.5" />
-        <span>{orcidId}</span>
+        <span>Verified</span>
       </a>
     </Badge>
   )

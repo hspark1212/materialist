@@ -1,15 +1,14 @@
 "use client"
 
-import { useId, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
-import { resolveAuthorIdentity } from "@/features/posts/domain/mappers"
+import { useIdentity } from "@/lib/identity"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -21,17 +20,14 @@ type CommentComposerProps = {
 }
 
 export function CommentComposer({ postId, parentCommentId = null, onSubmitted, autoFocus = false }: CommentComposerProps) {
-  const anonToggleId = useId()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const { status, user } = useAuth()
+  const { status } = useAuth()
+  const { activeUser, isAnonymousMode } = useIdentity()
   const [content, setContent] = useState("")
-  const isOrcidLinked = Boolean(user?.orcidId)
-  const [isAnonymous, setIsAnonymous] = useState(!isOrcidLinked)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const displayUser = user ? resolveAuthorIdentity(user, isAnonymous) : null
-  const displayName = displayUser?.displayName ?? "Anonymous"
+  const displayName = activeUser?.displayName ?? "Anonymous"
 
   const handleSubmit = async () => {
     if (!content.trim()) return
@@ -53,7 +49,7 @@ export function CommentComposer({ postId, parentCommentId = null, onSubmitted, a
         body: JSON.stringify({
           content,
           parentCommentId,
-          isAnonymous,
+          isAnonymous: isAnonymousMode,
         }),
       })
 
@@ -116,19 +112,11 @@ export function CommentComposer({ postId, parentCommentId = null, onSubmitted, a
           </TabsContent>
         </Tabs>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={isAnonymous}
-              onCheckedChange={setIsAnonymous}
-              size="sm"
-              id={anonToggleId}
-              disabled={!isOrcidLinked}
-            />
-            <label htmlFor={anonToggleId} className="text-muted-foreground text-xs sm:text-sm">
-              Post anonymously
-            </label>
-          </div>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            Posting as <span className="font-medium text-foreground">{displayName}</span>
+            {isAnonymousMode ? " · anonymous mode" : null}
+          </p>
 
           <Button size="sm" disabled={!content.trim() || isSubmitting} onClick={handleSubmit}>
             {isSubmitting ? "Commenting..." : "Comment"}
@@ -136,13 +124,6 @@ export function CommentComposer({ postId, parentCommentId = null, onSubmitted, a
         </div>
 
         {error ? <p className="text-destructive text-xs">{error}</p> : null}
-
-        <p className="text-muted-foreground text-xs">
-          Posting as {displayName}
-          {!isOrcidLinked ? (
-            <span className="text-muted-foreground/60"> — Link your ORCID to post under your real name</span>
-          ) : null}
-        </p>
       </CardContent>
     </Card>
   )

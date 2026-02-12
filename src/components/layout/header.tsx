@@ -6,26 +6,23 @@ import {
   type ErrorInfo,
   type FormEvent,
   type ReactNode,
-  useSyncExternalStore,
 } from "react"
 import { usePathname } from "next/navigation"
 import {
   LogIn,
   Menu,
-  Moon,
   Plus,
   Search,
   Settings,
   ShieldCheck,
   User,
   LogOut,
-  Sun,
   X,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 
 import { cn } from "@/lib"
 import { useAuth } from "@/lib/auth"
+import { useIdentity } from "@/lib/identity"
 import { sections } from "@/lib/sections"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -42,6 +39,8 @@ import { MobileSearch } from "@/components/layout/mobile-search"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { CrystalLogo } from "@/components/brand/crystal-logo"
 import { LogoText } from "@/components/brand/logo-text"
+import { IdentitySwitch } from "@/components/layout/identity-switch"
+import { useIsHydrated } from "@/hooks/use-is-hydrated"
 import { useSearchFilter } from "@/features/posts/presentation/use-search-filter"
 
 // Error boundary to prevent avatar crashes from hiding the entire profile menu
@@ -62,17 +61,11 @@ class AvatarErrorBoundary extends Component<
   }
 }
 
-const subscribe = () => () => {}
-
-function useIsHydrated() {
-  return useSyncExternalStore(subscribe, () => true, () => false)
-}
-
 export function Header() {
-  const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
   const { status, user, signOut } = useAuth()
   const { activeQuery, submitSearch } = useSearchFilter()
+  const { isAnonymousMode, canUseVerifiedMode, activeUser, switchMode } = useIdentity()
   const isHydrated = useIsHydrated()
 
   const avatarFallback = <User className="size-5 text-muted-foreground" />
@@ -89,7 +82,7 @@ export function Header() {
 
   return (
     <header className="bg-card fixed inset-x-0 top-0 z-50 h-[var(--header-height)] border-b border-border">
-      <div className="mx-auto flex h-full max-w-[1600px] items-center gap-2 px-3 md:px-4">
+      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-3 md:px-4">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon-sm" className="min-h-11 min-w-11 md:hidden" aria-label="Open menu">
@@ -122,6 +115,14 @@ export function Header() {
           <CrystalLogo size="sm" className="text-primary" />
           <LogoText size="sm" />
         </Link>
+
+        <div className="hidden md:contents">
+          <IdentitySwitch
+            isAnonymousMode={isAnonymousMode}
+            canUseVerifiedMode={canUseVerifiedMode}
+            onSwitch={switchMode}
+          />
+        </div>
 
         <nav className="hidden items-center gap-1 md:flex">
           {sections.map((section) => {
@@ -169,25 +170,14 @@ export function Header() {
             </Link>
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="hidden md:inline-flex"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-          >
-            <Moon className="size-4 dark:hidden" />
-            <Sun className="size-4 hidden dark:block" />
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="size-9 rounded-full p-0" aria-label="User menu">
                 {isLoading ? (
                   <div className="size-8 animate-pulse rounded-full bg-muted" />
-                ) : user ? (
+                ) : (activeUser || user) ? (
                   <AvatarErrorBoundary fallback={avatarFallback}>
-                    <UserAvatar user={user} size="md" />
+                    <UserAvatar user={(activeUser || user)!} size="md" />
                   </AvatarErrorBoundary>
                 ) : (
                   avatarFallback
@@ -197,6 +187,12 @@ export function Header() {
             <DropdownMenuContent align="end" className="w-48">
               {showSignedInMenu ? (
                 <>
+                  <div className="px-2 py-1.5">
+                    <p className="text-xs text-muted-foreground">
+                      {isAnonymousMode ? "Anonymous mode" : "Verified mode"}
+                    </p>
+                  </div>
+                  <DropdownMenuSeparator />
                   {user ? (
                     <DropdownMenuItem asChild>
                       <Link href={`/u/${user.username}`} className="cursor-pointer">
@@ -238,6 +234,7 @@ export function Header() {
           </DropdownMenu>
         </div>
       </div>
+
     </header>
   )
 }

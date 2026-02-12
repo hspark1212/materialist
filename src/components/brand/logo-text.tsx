@@ -26,7 +26,7 @@ export function LogoText({ size = "md", className }: LogoTextProps) {
   return (
     <span
       className={cn(
-        "logo-text font-mono font-bold text-primary",
+        "logo-text whitespace-nowrap font-mono font-bold text-primary",
         sizeClasses[size],
         className
       )}
