@@ -4,12 +4,13 @@ import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
-import { cn, type Post } from "@/lib"
+import type { Post } from "@/lib"
 import { AuthorName } from "@/components/user/author-name"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, sectionByKey } from "@/lib/sections"
+import { getPaperMetaLinks, getPostPreviewText, getPostPrimaryLink } from "@/components/post/post-feed-utils"
 import { VoteButton } from "@/components/voting/vote-button"
 import { ShareButton } from "@/components/post/share-button"
 
@@ -21,34 +22,10 @@ export function PostCard({ post }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const compactTimeAgo = timeAgo.replace(/^about\s+/i, "")
   const sectionColor = sectionByKey[post.section]?.color
-  const metaChips: Array<{ label: string; href: string; showIcon?: boolean }> = []
-  const mobileTagLimit = 2
-  const mobileHiddenTagCount = Math.max(0, post.tags.length - mobileTagLimit)
-  const techStack = post.type === "showcase" ? post.techStack ?? [] : []
-  const mobileTechLimit = 3
-  const mobileHiddenTechCount = Math.max(0, techStack.length - mobileTechLimit)
-
-  if (post.arxivId) {
-    metaChips.push({
-      label: `arXiv: ${post.arxivId}`,
-      href: `https://arxiv.org/abs/${post.arxivId}`,
-    })
-  }
-
-  if (post.doi) {
-    metaChips.push({
-      label: `DOI: ${post.doi}`,
-      href: `https://doi.org/${post.doi}`,
-    })
-  }
-
-  if (!post.arxivId && !post.doi && post.url) {
-    metaChips.push({
-      label: "Source",
-      href: post.url,
-      showIcon: true,
-    })
-  }
+  const previewText = getPostPreviewText(post.content, 360)
+  const primaryLink = getPostPrimaryLink(post)
+  const paperLinks = getPaperMetaLinks(post)
+  const externalActionLabel = post.section === "papers" || post.type === "paper" ? "Paper" : "Link"
 
   return (
     <Card className="gap-0 bg-card/80 py-0 shadow-sm transition-shadow hover:border-primary/30 hover:shadow-md">
@@ -91,31 +68,25 @@ export function PostCard({ post }: PostCardProps) {
             {post.title}
           </Link>
 
-          <div className="flex flex-wrap gap-1.5">
-            {post.tags.map((tag, index) => (
-              <Badge
-                key={tag}
-                variant="outline"
-                className={cn("text-[11px] font-medium", index >= mobileTagLimit ? "hidden sm:inline-flex" : "")}
-              >
-                #{tag}
-              </Badge>
-            ))}
-            {mobileHiddenTagCount > 0 ? (
-              <Badge variant="outline" className="text-[11px] font-medium sm:hidden">
-                +{mobileHiddenTagCount}
-              </Badge>
-            ) : null}
-          </div>
-          {metaChips.length ? (
-            <div className="flex flex-wrap gap-1.5">
-              {metaChips.map((chip) => (
-                <Badge key={chip.href} asChild variant="secondary" className="gap-1 text-[11px]">
-                  <a href={chip.href} target="_blank" rel="noreferrer">
-                    {chip.showIcon ? <ExternalLink className="size-3" /> : null}
-                    {chip.label}
-                  </a>
-                </Badge>
+          {previewText ? (
+            <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed sm:line-clamp-5">
+              {previewText}
+            </p>
+          ) : null}
+
+          {paperLinks.length > 0 ? (
+            <div className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs">
+              {paperLinks.map((link) => (
+                <a
+                  key={link.key}
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2 py-0.5 transition-colors hover:text-primary"
+                >
+                  {link.label}
+                  <ExternalLink className="size-3" />
+                </a>
               ))}
             </div>
           ) : null}
@@ -126,24 +97,6 @@ export function PostCard({ post }: PostCardProps) {
               {post.location ? <span>· {post.location}</span> : null}
               {post.jobType ? (
                 <Badge variant="outline" className="text-[11px]">{jobTypeLabels[post.jobType]}</Badge>
-              ) : null}
-            </div>
-          ) : null}
-          {techStack.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
-              {techStack.map((tech, index) => (
-                <Badge
-                  key={tech}
-                  variant="secondary"
-                  className={cn("text-[11px]", index >= mobileTechLimit ? "hidden sm:inline-flex" : "")}
-                >
-                  {tech}
-                </Badge>
-              ))}
-              {mobileHiddenTechCount > 0 ? (
-                <Badge variant="secondary" className="text-[11px] sm:hidden">
-                  +{mobileHiddenTechCount}
-                </Badge>
               ) : null}
             </div>
           ) : null}
@@ -161,6 +114,14 @@ export function PostCard({ post }: PostCardProps) {
               className="h-7 min-h-11 px-2 md:min-h-0"
               iconClassName="size-3.5"
             />
+            {primaryLink ? (
+              <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
+                <a href={primaryLink} target="_blank" rel="noreferrer">
+                  <ExternalLink className="size-3.5" />
+                  <span className="hidden sm:inline">{externalActionLabel}</span>
+                </a>
+              </Button>
+            ) : null}
           </div>
         </div>
       </CardContent>

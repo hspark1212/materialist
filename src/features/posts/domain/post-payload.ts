@@ -46,8 +46,8 @@ export function buildCreatePostInsert(authorId: string, input: CreatePostInput):
     type: resolvePostType(input.section, url),
     tags: cleanArray(input.tags),
     is_anonymous: input.isAnonymous,
-    doi: cleanOptional(input.doi),
-    arxiv_id: cleanOptional(input.arxivId),
+    doi: null,
+    arxiv_id: null,
     url,
     flair: input.section === "forum" ? input.flair ?? null : null,
     project_url: input.section === "showcase" ? cleanOptional(input.projectUrl) : null,
@@ -89,8 +89,6 @@ export function buildUpdatePostPatch(
   if (input.tags !== undefined) patch.tags = cleanArray(input.tags)
   if (input.isAnonymous !== undefined) patch.is_anonymous = input.isAnonymous
 
-  if (input.doi !== undefined) patch.doi = cleanOptional(input.doi)
-  if (input.arxivId !== undefined) patch.arxiv_id = cleanOptional(input.arxivId)
   if (input.url !== undefined) patch.url = nextUrl
 
   if (input.flair !== undefined) {

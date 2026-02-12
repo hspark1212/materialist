@@ -71,10 +71,11 @@ const POST_COLUMNS_FULL = [
   "updated_at",
 ].join(",")
 
-// Minimal columns for list view (excludes content for bandwidth optimization)
+// Columns for feed cards (include content for inline preview rendering)
 const POST_COLUMNS_LIST = [
   "id",
   "title",
+  "content",
   "author_id",
   "section",
   "type",

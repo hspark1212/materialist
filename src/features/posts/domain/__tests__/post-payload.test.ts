@@ -35,6 +35,7 @@ describe("buildCreatePostInsert", () => {
       section: "papers",
       isAnonymous: false,
       tags: [],
+      url: "https://arxiv.org/abs/2602.04219",
     })
 
     const showcase = buildCreatePostInsert("user-1", {
@@ -54,6 +55,8 @@ describe("buildCreatePostInsert", () => {
     })
 
     expect(paper.type).toBe("paper")
+    expect(paper.doi).toBeNull()
+    expect(paper.arxiv_id).toBeNull()
     expect(showcase.type).toBe("showcase")
     expect(job.type).toBe("job")
   })

@@ -26,6 +26,24 @@ function unwrapProfile(raw: ProfileRow | ProfileRow[] | null): ProfileRow | null
   return raw
 }
 
+function trimToNull(value: string | null | undefined): string | null {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : null
+}
+
+function resolvePostUrl(row: PostWithAuthorRow): string | undefined {
+  const directUrl = trimToNull(row.url)
+  if (directUrl) return directUrl
+
+  const arxivId = trimToNull(row.arxiv_id)?.replace(/^arxiv:/i, "")
+  if (arxivId) return `https://arxiv.org/abs/${arxivId}`
+
+  const doi = trimToNull(row.doi)?.replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, "")
+  if (doi) return `https://doi.org/${doi}`
+
+  return undefined
+}
+
 export function mapProfileRowToUser(profile: ProfileRow | null): User {
   return {
     id: profile?.id ?? "unknown",
@@ -63,9 +81,7 @@ export function mapPostRowToPost(row: PostWithAuthorRow): Post {
     tags: row.tags ?? [],
     isAnonymous: row.is_anonymous,
     type: row.type,
-    doi: row.doi ?? undefined,
-    arxivId: row.arxiv_id ?? undefined,
-    url: row.url ?? undefined,
+    url: resolvePostUrl(row),
     flair: row.flair ?? undefined,
     projectUrl: row.project_url ?? undefined,
     techStack: row.tech_stack ?? [],

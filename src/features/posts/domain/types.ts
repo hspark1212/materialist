@@ -98,8 +98,6 @@ export type CreatePostInput = {
   section: Section
   isAnonymous: boolean
   tags: string[]
-  doi?: string
-  arxivId?: string
   url?: string
   flair?: ForumFlair
   projectUrl?: string

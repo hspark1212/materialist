@@ -25,7 +25,7 @@ export const sections: SectionMeta[] = [
     icon: FileText,
     color: "var(--section-papers)",
     description:
-      "Paper discussions, DOI/arXiv references, AI summaries, and citations",
+      "Paper discussions, source links, AI summaries, and citations",
   },
   {
     key: "forum",
