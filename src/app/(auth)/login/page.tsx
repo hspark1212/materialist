@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Github } from "lucide-react"
 
-import { useAuth } from "@/lib/auth"
+import { useAuth, isValidReturnTo } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,7 +23,17 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get("returnTo")
   const { status, user, signInWithEmail, signInWithOAuth, isNavigating } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -33,13 +43,15 @@ export default function LoginPage() {
   useEffect(() => {
     if (isNavigating) return
     if (status === "authenticated" || status === "verified") {
-      if (user?.username) {
+      if (returnTo && isValidReturnTo(returnTo)) {
+        router.replace(returnTo)
+      } else if (user?.username) {
         router.replace(`/u/${user.username}`)
-        return
+      } else {
+        router.replace("/")
       }
-      router.replace("/")
     }
-  }, [status, user?.username, isNavigating, router])
+  }, [status, user?.username, isNavigating, router, returnTo])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,7 +77,7 @@ export default function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => signInWithOAuth("google")}
+              onClick={() => signInWithOAuth("google", returnTo ?? undefined)}
               type="button"
             >
               <GoogleIcon className="size-4" />
@@ -74,7 +86,7 @@ export default function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => signInWithOAuth("github")}
+              onClick={() => signInWithOAuth("github", returnTo ?? undefined)}
               type="button"
             >
               <Github className="size-4" />

@@ -3,6 +3,22 @@ import type { Session } from "@supabase/supabase-js"
 import type { User } from "@/lib/types"
 import type { AuthStatus, Profile } from "./types"
 
+const AUTH_ROUTES = ["/login", "/signup", "/auth"]
+
+/** Validates returnTo is a safe internal path (prevents open redirect). */
+export function isValidReturnTo(path: string): boolean {
+  if (!path || !path.startsWith("/")) return false
+  if (path.startsWith("//")) return false
+  if (AUTH_ROUTES.some((r) => path === r || path.startsWith(r + "/")))
+    return false
+  try {
+    decodeURIComponent(path)
+  } catch {
+    return false
+  }
+  return true
+}
+
 export function profileToUser(profile: Profile): User {
   return {
     id: profile.id,
