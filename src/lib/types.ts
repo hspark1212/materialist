@@ -42,9 +42,8 @@ export interface Post {
   tags: string[]
   isAnonymous: boolean
   type: PostType
-  // Paper fields
-  doi?: string
-  arxivId?: string
+  userVote?: -1 | 0 | 1
+  // Shared external source
   url?: string
   // Forum fields
   flair?: ForumFlair

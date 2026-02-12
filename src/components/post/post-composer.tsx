@@ -35,8 +35,6 @@ export function PostComposer() {
   const [title, setTitle] = useState("")
   const [url, setUrl] = useState("")
   const [content, setContent] = useState("")
-  const [doi, setDoi] = useState("")
-  const [arxivId, setArxivId] = useState("")
   const [projectUrl, setProjectUrl] = useState("")
   const [techStack, setTechStack] = useState("")
   const [showcaseType, setShowcaseType] = useState<ShowcaseType>("tool")
@@ -91,8 +89,6 @@ export function PostComposer() {
           isAnonymous,
           flair: section === "forum" ? flair : undefined,
           url,
-          doi,
-          arxivId,
           projectUrl,
           techStack: parsedTechStack,
           showcaseType,
@@ -329,39 +325,6 @@ export function PostComposer() {
                 onChange={(event) => setUrl(event.target.value)}
                 placeholder={section === "papers" ? "https://arxiv.org/abs/2602.04219" : "https://example.com"}
               />
-            </div>
-          ) : null}
-
-          {section === "papers" ? (
-            <div className="grid gap-3 rounded-md border border-border/60 bg-muted/20 p-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">DOI</p>
-                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
-                    Optional
-                  </span>
-                </div>
-                <Input
-                  className={inputClassName}
-                  value={doi}
-                  onChange={(event) => setDoi(event.target.value)}
-                  placeholder="10.1038/s41524-026-01001-5"
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">arXiv ID</p>
-                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
-                    Optional
-                  </span>
-                </div>
-                <Input
-                  className={inputClassName}
-                  value={arxivId}
-                  onChange={(event) => setArxivId(event.target.value)}
-                  placeholder="2408.12345"
-                />
-              </div>
             </div>
           ) : null}
 

@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth"
 import type { Post } from "@/lib"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, showcaseTypeLabels, sectionByKey } from "@/lib/sections"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
+import { getPaperMetaLinks, getPostPrimaryLink } from "@/components/post/post-feed-utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -29,6 +30,8 @@ export function PostDetail({ post }: PostDetailProps) {
   const { user } = useAuth()
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const sectionColor = sectionByKey[post.section]?.color
+  const primaryLink = getPostPrimaryLink(post)
+  const paperMeta = getPaperMetaLinks(post)[0] ?? null
 
   const isOwnPost = Boolean(user && post.author && user.id === post.author.id)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -52,10 +55,8 @@ export function PostDetail({ post }: PostDetailProps) {
 
   return (
     <Card className="gap-0 bg-card/80 py-0 shadow-sm">
-      <CardContent className="flex gap-4 px-4 py-5 sm:px-6 sm:py-6">
-        <VoteButton targetType="post" targetId={post.id} initialCount={post.voteCount} orientation="vertical" size="default" />
-
-        <div className="min-w-0 flex-1 space-y-4">
+      <CardContent className="px-4 py-5 sm:px-6 sm:py-6">
+        <div className="min-w-0 space-y-4">
           <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
             <Badge
               asChild
@@ -115,19 +116,18 @@ export function PostDetail({ post }: PostDetailProps) {
             </Card>
           ) : null}
 
-          {post.type === "paper" && (post.doi || post.arxivId || post.url) ? (
+          {post.type === "paper" && paperMeta ? (
             <Card className="bg-accent/30 border-primary/20 py-3">
               <CardContent className="flex flex-wrap items-center justify-between gap-2 px-4">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Paper Reference</p>
-                  {post.doi ? <p className="text-muted-foreground text-xs">DOI: {post.doi}</p> : null}
-                  {post.arxivId ? <p className="text-muted-foreground text-xs">arXiv: {post.arxivId}</p> : null}
+                  <p className="text-sm font-medium">Paper URL</p>
+                  <p className="text-muted-foreground text-xs break-all">{paperMeta.label}</p>
                 </div>
-                {post.url ? (
+                {primaryLink ? (
                   <Button asChild variant="outline" size="sm">
-                    <a href={post.url} target="_blank" rel="noreferrer">
+                    <a href={primaryLink} target="_blank" rel="noreferrer">
                       <ExternalLink className="size-4" />
-                      Open source
+                      Open paper
                     </a>
                   </Button>
                 ) : null}
@@ -188,6 +188,19 @@ export function PostDetail({ post }: PostDetailProps) {
           ) : null}
 
           <div className="text-muted-foreground flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 text-sm">
+            <VoteButton
+              targetType="post"
+              targetId={post.id}
+              initialCount={post.voteCount}
+              initialUserVote={post.userVote ?? 0}
+              orientation="horizontal"
+              size="sm"
+              compact
+              hideDownvote
+              countMode="nonNegative"
+              countLabel="Likes"
+              className="h-8 min-h-11 px-2.5 md:min-h-0"
+            />
             <Button variant="ghost" size="sm" className="h-8 min-h-11 px-2.5 md:min-h-0">
               <MessageSquare className="size-4" />
               <span className="sm:hidden">{post.commentCount}</span>

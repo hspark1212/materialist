@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import type { Post } from "@/lib"
 import {
   createPostUseCase,
   listPostsUseCase,
@@ -14,6 +15,63 @@ import {
 } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
 import { createClient } from "@/lib/supabase/server"
+
+type VoteDirectionRow = {
+  target_id: string
+  vote_direction: -1 | 1
+}
+
+type PostsWithVoteState = {
+  posts: Post[]
+  authenticated: boolean
+}
+
+async function attachPostVoteState(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  posts: Post[],
+): Promise<PostsWithVoteState> {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return { posts, authenticated: false }
+  }
+
+  if (posts.length === 0) {
+    return { posts, authenticated: true }
+  }
+
+  const postIds = posts.map((post) => post.id)
+  const { data, error } = await supabase
+    .from("votes")
+    .select("target_id,vote_direction")
+    .eq("user_id", user.id)
+    .eq("target_type", "post")
+    .in("target_id", postIds)
+
+  if (error) {
+    console.warn("[posts/api] Failed to load post vote state:", error.message)
+    return {
+      posts: posts.map((post) => ({ ...post, userVote: 0 })),
+      authenticated: true,
+    }
+  }
+
+  const voteByPostId = new Map<string, -1 | 0 | 1>()
+  for (const row of (data ?? []) as VoteDirectionRow[]) {
+    voteByPostId.set(row.target_id, row.vote_direction)
+  }
+
+  return {
+    posts: posts.map((post) => ({
+      ...post,
+      userVote: voteByPostId.get(post.id) ?? 0,
+    })),
+    authenticated: true,
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,16 +90,19 @@ export async function GET(request: NextRequest) {
 
     const hasMore = posts.length > limit
     const items = hasMore ? posts.slice(0, limit) : posts
+    const { posts: postsWithVoteState, authenticated } = await attachPostVoteState(supabase, items)
 
     return NextResponse.json(
       {
-        posts: items,
+        posts: postsWithVoteState,
         hasMore,
         nextOffset: hasMore ? offset + limit : null,
       },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+          "Cache-Control": authenticated
+            ? "private, no-store"
+            : "public, s-maxage=30, stale-while-revalidate=60",
         },
       },
     )

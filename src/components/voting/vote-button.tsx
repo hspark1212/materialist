@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowBigDown, ArrowBigUp } from "lucide-react"
+import { ArrowBigDown, ArrowBigUp, ThumbsUp } from "lucide-react"
 
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
@@ -15,6 +15,10 @@ type VoteButtonProps = {
   orientation?: "vertical" | "horizontal"
   size?: "default" | "sm"
   compact?: boolean
+  hideDownvote?: boolean
+  countMode?: "net" | "nonNegative"
+  countLabel?: string
+  className?: string
 }
 
 type VoteStyleParams = {
@@ -41,15 +45,15 @@ function getButtonSizeClass({ compact, orientation }: VoteStyleParams) {
 }
 
 function getContainerClass({ compact, orientation }: VoteStyleParams) {
-  if (orientation === "vertical") {
+  if (orientation === "horizontal") {
     return compact
-      ? "w-9 flex-col gap-0.5 py-0.5 md:w-12 md:gap-1.5 md:py-1"
-      : "w-12 flex-col py-1"
+      ? "flex-row gap-0.5 px-0 py-0 md:gap-1 md:px-1 md:py-0.5"
+      : "flex-row px-1 py-0.5"
   }
 
   return compact
-    ? "flex-row gap-0.5 px-0 py-0 md:gap-1 md:px-1 md:py-0.5"
-    : "flex-row px-1 py-0.5"
+    ? "w-9 flex-col gap-0.5 py-0.5 md:w-12 md:gap-1.5 md:py-1"
+    : "w-12 flex-col py-1"
 }
 
 export function VoteButton({
@@ -60,6 +64,10 @@ export function VoteButton({
   orientation = "vertical",
   size = "default",
   compact = false,
+  hideDownvote = false,
+  countMode = "net",
+  countLabel,
+  className,
 }: VoteButtonProps) {
   const { status } = useAuth()
   const [userVote, setUserVote] = useState<-1 | 0 | 1>(initialUserVote)
@@ -110,12 +118,41 @@ export function VoteButton({
   const countSize = getCountSize(styleParams)
   const buttonSizeClass = getButtonSizeClass(styleParams)
   const isCompactHorizontal = compact && orientation === "horizontal"
+  const displayCount = countMode === "nonNegative" ? Math.max(0, voteCount) : voteCount
+  const upvoteLabel = hideDownvote ? "Like" : "Upvote"
+
+  if (hideDownvote) {
+    return (
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={() => handleVote(1)}
+        className={cn(
+          "inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-upvote disabled:opacity-60 touch-manipulation",
+          className,
+        )}
+        aria-label={upvoteLabel}
+      >
+        <ThumbsUp className={cn("size-3.5", userVote === 1 && "text-upvote")} />
+        <span
+          className={cn(
+            "font-medium tabular-nums text-sm",
+            userVote === 1 ? "text-upvote" : "text-muted-foreground",
+          )}
+        >
+          <span className={countLabel ? "sm:hidden" : ""}>{displayCount}</span>
+          {countLabel ? <span className="hidden sm:inline">{displayCount} {countLabel}</span> : null}
+        </span>
+      </button>
+    )
+  }
 
   return (
     <div
       className={cn(
         "flex items-center gap-1.5 rounded-md",
         getContainerClass(styleParams),
+        className,
       )}
     >
       <button
@@ -126,7 +163,7 @@ export function VoteButton({
           "flex items-center justify-center text-muted-foreground transition-transform hover:text-upvote active:scale-95 disabled:opacity-60 touch-manipulation",
           buttonSizeClass,
         )}
-        aria-label="Upvote"
+        aria-label={upvoteLabel}
       >
         <ArrowBigUp className={cn(iconSize, userVote === 1 && "text-upvote")} />
       </button>
@@ -140,7 +177,7 @@ export function VoteButton({
           userVote === 0 && "text-muted-foreground"
         )}
       >
-        {voteCount}
+        {displayCount}
       </span>
       <button
         type="button"
