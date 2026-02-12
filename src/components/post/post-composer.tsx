@@ -1,0 +1,433 @@
+"use client"
+
+import { useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react"
+import { useRouter } from "next/navigation"
+
+import { toast } from "sonner"
+import type { ForumFlair, JobType, Section, ShowcaseType } from "@/lib"
+import { useAuth } from "@/lib/auth"
+import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseTypeLabels } from "@/lib/sections"
+import { UserAvatar } from "@/components/user/user-avatar"
+import { resolveAuthorIdentity } from "@/features/posts/domain/mappers"
+import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
+import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+
+export function PostComposer() {
+  const router = useRouter()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { status, user } = useAuth()
+  const [section, setSection] = useState<Section>("forum")
+  const [flair, setFlair] = useState<ForumFlair>("discussion")
+  const [title, setTitle] = useState("")
+  const [url, setUrl] = useState("")
+  const [content, setContent] = useState("")
+  const [doi, setDoi] = useState("")
+  const [arxivId, setArxivId] = useState("")
+  const [projectUrl, setProjectUrl] = useState("")
+  const [techStack, setTechStack] = useState("")
+  const [showcaseType, setShowcaseType] = useState<ShowcaseType>("tool")
+  const [company, setCompany] = useState("")
+  const [location, setLocation] = useState("")
+  const [jobType, setJobType] = useState<JobType>("full-time")
+  const [applicationUrl, setApplicationUrl] = useState("")
+  const [tags, setTags] = useState("")
+  const isOrcidLinked = Boolean(user?.orcidId)
+  const [isAnonymous, setIsAnonymous] = useState(!isOrcidLinked)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const parsedTags = useMemo(() => {
+    return tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+  }, [tags])
+
+  const parsedTechStack = useMemo(() => {
+    return techStack
+      .split(",")
+      .map((tech) => tech.trim())
+      .filter(Boolean)
+  }, [techStack])
+
+  const inputClassName = "bg-background/80 border-border/80 shadow-sm transition-[border-color,box-shadow,background-color] hover:bg-background focus-visible:border-ring focus-visible:bg-background dark:bg-background/50"
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (status === "anonymous") {
+      toast.info("Sign in to create a post.")
+      return
+    }
+
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          section,
+          tags: parsedTags,
+          isAnonymous,
+          flair: section === "forum" ? flair : undefined,
+          url,
+          doi,
+          arxivId,
+          projectUrl,
+          techStack: parsedTechStack,
+          showcaseType,
+          company,
+          location,
+          jobType,
+          applicationUrl,
+        }),
+      })
+
+      const payload = await response.json()
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to create post")
+      }
+
+      router.push(`/post/${payload.post.id}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create post")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const displayUser = user ? resolveAuthorIdentity(user, isAnonymous) : null
+  const displayName = displayUser?.displayName ?? "Anonymous"
+
+  return (
+    <Card className="bg-card/80 py-4 shadow-sm">
+      <CardHeader className="px-4 pb-2 sm:px-6">
+        <CardTitle>Compose your research post</CardTitle>
+      </CardHeader>
+      <CardContent className="px-4 sm:px-6">
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+            <p className="text-sm font-medium">Section</p>
+            <ToggleGroup
+              type="single"
+              value={section}
+              onValueChange={(value) => {
+                if (value) {
+                  setSection(value as Section)
+                }
+              }}
+              variant="outline"
+              size="sm"
+              spacing={1}
+            >
+              {sections.map((entry) => (
+                <ToggleGroupItem
+                  key={entry.key}
+                  value={entry.key}
+                  className="gap-2 transition-colors hover:border-[var(--section-color)] hover:bg-[color-mix(in_srgb,var(--section-color)_10%,transparent)] hover:text-[var(--section-color)] data-[state=on]:border-[var(--section-color)] data-[state=on]:bg-[color-mix(in_srgb,var(--section-color)_12%,transparent)] data-[state=on]:text-[var(--section-color)]"
+                  style={{ "--section-color": entry.color } as CSSProperties}
+                >
+                  <entry.icon className="size-4" />
+                  <span className="hidden sm:inline">{entry.label}</span>
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+
+          {section === "forum" ? (
+            <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+              <p className="text-sm font-medium">Flair</p>
+              <Select value={flair} onValueChange={(value) => setFlair(value as ForumFlair)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose flair" />
+                </SelectTrigger>
+                <SelectContent>
+                  {forumFlairs.map((entry) => (
+                    <SelectItem key={entry.key} value={entry.key}>
+                      {entry.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
+
+          {section === "showcase" ? (
+            <div className="grid gap-3 rounded-md border border-border/60 bg-muted/20 p-3 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <p className="text-sm font-medium">Project URL</p>
+                <Input
+                  className={inputClassName}
+                  value={projectUrl}
+                  onChange={(event) => setProjectUrl(event.target.value)}
+                  placeholder="https://github.com/org/project"
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <p className="text-sm font-medium">Tech Stack</p>
+                <Input
+                  className={inputClassName}
+                  value={techStack}
+                  onChange={(event) => setTechStack(event.target.value)}
+                  placeholder="PyTorch, ASE, pymatgen"
+                />
+                {parsedTechStack.length ? (
+                  <p className="text-muted-foreground text-xs">Stack: {parsedTechStack.join(" ")}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Showcase Type</p>
+                <Select value={showcaseType} onValueChange={(value) => setShowcaseType(value as ShowcaseType)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose showcase type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {showcaseTypeFilters.map((entry) => (
+                      <SelectItem key={entry} value={entry}>
+                        {showcaseTypeLabels[entry]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ) : null}
+
+          {section === "jobs" ? (
+            <div className="grid gap-3 rounded-md border border-border/60 bg-muted/20 p-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Company</p>
+                <Input
+                  className={inputClassName}
+                  value={company}
+                  onChange={(event) => setCompany(event.target.value)}
+                  placeholder="Company or lab"
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Location</p>
+                <Input
+                  className={inputClassName}
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
+                  placeholder="Remote, city, country"
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Job Type</p>
+                <Select value={jobType} onValueChange={(value) => setJobType(value as JobType)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose job type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(jobTypeLabels).map((entry) => (
+                      <SelectItem key={entry} value={entry}>
+                        {jobTypeLabels[entry as JobType]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">Application URL</p>
+                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                    Optional
+                  </span>
+                </div>
+                <Input
+                  className={inputClassName}
+                  value={applicationUrl}
+                  onChange={(event) => setApplicationUrl(event.target.value)}
+                  placeholder="https://company.com/jobs/role"
+                />
+              </div>
+            </div>
+          ) : null}
+
+          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+            <p className="text-sm font-medium">Title</p>
+            <Input
+              className={inputClassName}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Write a concise, specific title"
+            />
+          </div>
+
+          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+            <p className="text-sm font-medium">Content</p>
+            <Tabs defaultValue="write" className="w-full">
+            <TabsList className="bg-muted/40 p-1">
+              <TabsTrigger
+                value="write"
+                className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+              >
+                Write
+              </TabsTrigger>
+              <TabsTrigger
+                value="preview"
+                className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+              >
+                Preview
+              </TabsTrigger>
+            </TabsList>
+              <TabsContent value="write" className="mt-2 space-y-2">
+                <Textarea
+                  ref={textareaRef}
+                  value={content}
+                  onChange={(event) => setContent(event.target.value)}
+                  className="min-h-[220px] resize-y rounded-lg border border-border/80 bg-background/70 font-mono shadow-sm transition-[border-color,box-shadow,background-color] hover:bg-background focus-visible:border-ring focus-visible:bg-background"
+                  placeholder="Share context, methods, and what feedback you need"
+                />
+                <MarkdownToolbar textareaRef={textareaRef} value={content} onValueChange={setContent} variant="full" />
+              </TabsContent>
+              <TabsContent value="preview" className="mt-2 space-y-2">
+                <div className="min-h-[220px] rounded-md border border-border/80 bg-background/70 px-3 py-2 text-sm shadow-sm dark:bg-background/50">
+                  {content.trim() ? (
+                    <MarkdownRenderer content={content} />
+                  ) : (
+                    <p className="text-muted-foreground">Start writing to preview markdown output.</p>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {section !== "showcase" && section !== "jobs" ? (
+            <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium">{section === "papers" ? "Paper URL" : "Link URL"}</p>
+                <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                  Optional
+                </span>
+              </div>
+              <Input
+                className={inputClassName}
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                placeholder={section === "papers" ? "https://arxiv.org/abs/2602.04219" : "https://example.com"}
+              />
+            </div>
+          ) : null}
+
+          {section === "papers" ? (
+            <div className="grid gap-3 rounded-md border border-border/60 bg-muted/20 p-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">DOI</p>
+                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                    Optional
+                  </span>
+                </div>
+                <Input
+                  className={inputClassName}
+                  value={doi}
+                  onChange={(event) => setDoi(event.target.value)}
+                  placeholder="10.1038/s41524-026-01001-5"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">arXiv ID</p>
+                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                    Optional
+                  </span>
+                </div>
+                <Input
+                  className={inputClassName}
+                  value={arxivId}
+                  onChange={(event) => setArxivId(event.target.value)}
+                  placeholder="2408.12345"
+                />
+              </div>
+            </div>
+          ) : null}
+
+          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium">Tags</p>
+              <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                Optional
+              </span>
+            </div>
+            <Input
+              className={inputClassName}
+              value={tags}
+              onChange={(event) => setTags(event.target.value)}
+              placeholder="mlff, benchmark, uncertainty"
+            />
+            {parsedTags.length ? (
+              <div className="text-muted-foreground flex flex-wrap gap-2 text-xs">
+                <span className="uppercase tracking-wide">Tags</span>
+                <span className="flex flex-wrap gap-1.5">
+                  {parsedTags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-border/60 bg-background/70 px-2 py-0.5">
+                      #{tag}
+                    </span>
+                  ))}
+                </span>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-2 rounded-md border border-border p-3">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={isAnonymous}
+                onCheckedChange={setIsAnonymous}
+                id="post-anonymous"
+                disabled={!isOrcidLinked}
+              />
+              <label htmlFor="post-anonymous" className="text-sm font-medium">
+                Post anonymously
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              {displayUser ? (
+                <UserAvatar user={displayUser} size="md" />
+              ) : null}
+              <p className="text-muted-foreground text-sm">
+                {displayName}
+                {!isOrcidLinked ? (
+                  <span className="text-muted-foreground/60 text-xs"> — Link your ORCID to post under your real name</span>
+                ) : null}
+              </p>
+            </div>
+          </div>
+
+          {error ? <p className="text-destructive text-sm">{error}</p> : null}
+
+          <Button
+            type="submit"
+            className="w-full sm:w-auto"
+            disabled={!title.trim() || !content.trim() || isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit Post"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}

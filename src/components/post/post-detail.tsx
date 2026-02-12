@@ -1,0 +1,215 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
+import { Trash2, ExternalLink, MessageSquare } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useAuth } from "@/lib/auth"
+
+import type { Post } from "@/lib"
+import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, showcaseTypeLabels, sectionByKey } from "@/lib/sections"
+import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { AuthorName } from "@/components/user/author-name"
+import { UserAvatar } from "@/components/user/user-avatar"
+import { VoteButton } from "@/components/voting/vote-button"
+import { ShareButton } from "@/components/post/share-button"
+
+type PostDetailProps = {
+  post: Post
+}
+
+export function PostDetail({ post }: PostDetailProps) {
+  const router = useRouter()
+  const { user } = useAuth()
+  const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
+  const sectionColor = sectionByKey[post.section]?.color
+
+  const isOwnPost = Boolean(user && post.author && user.id === post.author.id)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/posts/${post.id}`, { method: "DELETE" })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        toast.error(payload.error ?? "Failed to delete post")
+        return
+      }
+      router.push("/")
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+    }
+  }
+
+  return (
+    <Card className="gap-0 bg-card/80 py-0 shadow-sm">
+      <CardContent className="flex gap-4 px-4 py-5 sm:px-6 sm:py-6">
+        <VoteButton targetType="post" targetId={post.id} initialCount={post.voteCount} orientation="vertical" size="default" />
+
+        <div className="min-w-0 flex-1 space-y-4">
+          <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
+            <Badge
+              asChild
+              variant="secondary"
+              className="border px-2.5 py-0.5 text-[11px]"
+              style={sectionColor ? { color: sectionColor, borderColor: sectionColor, backgroundColor: `color-mix(in srgb, ${sectionColor} 12%, transparent)` } : undefined}
+            >
+              <Link href={getSectionHref(post.section)}>{getSectionLabel(post.section)}</Link>
+            </Badge>
+            {post.flair && flairByKey[post.flair] ? (
+              <Badge className={`px-1.5 py-0 text-[11px] border-0 ${flairByKey[post.flair].className}`}>
+                {flairByKey[post.flair].label}
+              </Badge>
+            ) : null}
+            <span>•</span>
+            <div className="flex items-center gap-2">
+              <UserAvatar user={post.author} size="sm" />
+              <AuthorName user={post.author} />
+            </div>
+            <span>•</span>
+            <span>{timeAgo}</span>
+
+            {isOwnPost ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className="ml-auto"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="size-3" />
+                Delete
+              </Button>
+            ) : null}
+          </div>
+
+          <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">{post.title}</h1>
+
+          <div className="space-y-4 text-sm leading-relaxed sm:text-base">
+            <MarkdownRenderer content={post.content} />
+          </div>
+
+          {post.url && post.section !== "papers" && post.section !== "showcase" && post.section !== "jobs" ? (
+            <Card className="bg-accent/30 border-primary/20 py-3">
+              <CardContent className="flex flex-wrap items-center justify-between gap-2 px-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">External Link</p>
+                  <p className="text-muted-foreground text-xs">Source or reference</p>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <a href={post.url} target="_blank" rel="noreferrer">
+                    <ExternalLink className="size-4" />
+                    Open link
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {post.type === "paper" && (post.doi || post.arxivId || post.url) ? (
+            <Card className="bg-accent/30 border-primary/20 py-3">
+              <CardContent className="flex flex-wrap items-center justify-between gap-2 px-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Paper Reference</p>
+                  {post.doi ? <p className="text-muted-foreground text-xs">DOI: {post.doi}</p> : null}
+                  {post.arxivId ? <p className="text-muted-foreground text-xs">arXiv: {post.arxivId}</p> : null}
+                </div>
+                {post.url ? (
+                  <Button asChild variant="outline" size="sm">
+                    <a href={post.url} target="_blank" rel="noreferrer">
+                      <ExternalLink className="size-4" />
+                      Open source
+                    </a>
+                  </Button>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {post.type === "showcase" && post.projectUrl ? (
+            <Card className="bg-accent/30 border-[var(--section-showcase)]/20 py-3">
+              <CardContent className="space-y-2 px-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Project</p>
+                    {post.showcaseType ? (
+                      <p className="text-muted-foreground text-xs">Type: {showcaseTypeLabels[post.showcaseType]}</p>
+                    ) : null}
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={post.projectUrl} target="_blank" rel="noreferrer">
+                      <ExternalLink className="size-4" />
+                      View Project
+                    </a>
+                  </Button>
+                </div>
+                {post.techStack && post.techStack.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {post.techStack.map((tech) => (
+                      <Badge key={tech} variant="secondary" className="text-[11px]">{tech}</Badge>
+                    ))}
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {post.type === "job" ? (
+            <Card className="bg-accent/30 border-[var(--section-jobs)]/20 py-3">
+              <CardContent className="space-y-2 px-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Job Details</p>
+                    {post.company ? <p className="text-muted-foreground text-xs">{post.company}</p> : null}
+                    {post.location ? <p className="text-muted-foreground text-xs">{post.location}</p> : null}
+                    <div className="flex flex-wrap gap-1.5">
+                      {post.jobType ? <Badge variant="outline" className="text-[11px]">{jobTypeLabels[post.jobType]}</Badge> : null}
+                    </div>
+                  </div>
+                  {post.applicationUrl ? (
+                    <Button asChild variant="default" size="sm">
+                      <a href={post.applicationUrl} target="_blank" rel="noreferrer">
+                        Apply Now
+                      </a>
+                    </Button>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          <div className="text-muted-foreground flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 text-sm">
+            <Button variant="ghost" size="sm" className="h-8 min-h-11 px-2.5 md:min-h-0">
+              <MessageSquare className="size-4" />
+              <span className="sm:hidden">{post.commentCount}</span>
+              <span className="hidden sm:inline">{post.commentCount} Comments</span>
+            </Button>
+            <ShareButton
+              postId={post.id}
+              className="h-8 min-h-11 px-2.5 md:min-h-0"
+              iconClassName="size-4"
+            />
+          </div>
+        </div>
+      </CardContent>
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Delete post"
+        description="Delete this post? This cannot be undone."
+        loading={isDeleting}
+        onConfirm={handleDelete}
+      />
+    </Card>
+  )
+}

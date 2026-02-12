@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "materialist",
+  "compatibility_date": "2026-02-09",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "build": {
+    "command": "NEXT_PUBLIC_SUPABASE_URL=https://kshalsrbtvmuqyvbzolf.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzaGFsc3JidHZtdXF5dmJ6b2xmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDIwODcsImV4cCI6MjA4NjIxODA4N30.O3_C4Fq34cm9rakIW7LqLfL7cjEW_NWMUi1qqq9zIzY NEXT_PUBLIC_APP_URL=https://materialist.science NEXT_PUBLIC_ORCID_CLIENT_ID=APP-YDUPOULQ8KK3MWZW NEXT_PUBLIC_ORCID_BASE_URL=https://orcid.org npx opennextjs-cloudflare build"
+  },
+  // Public vars — available at both build-time (SSG) and runtime.
+  // Secrets (SUPABASE_SERVICE_ROLE_KEY, etc.) are set
+  // via `wrangler secret put` and NOT committed to git.
+  // Google/GitHub OAuth is configured in Supabase Dashboard (Authentication > Providers).
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://kshalsrbtvmuqyvbzolf.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzaGFsc3JidHZtdXF5dmJ6b2xmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NDIwODcsImV4cCI6MjA4NjIxODA4N30.O3_C4Fq34cm9rakIW7LqLfL7cjEW_NWMUi1qqq9zIzY",
+    "NEXT_PUBLIC_APP_URL": "https://materialist.science",
+    "ORCID_CLIENT_ID": "APP-YDUPOULQ8KK3MWZW",
+    "NEXT_PUBLIC_ORCID_CLIENT_ID": "APP-YDUPOULQ8KK3MWZW",
+    "NEXT_PUBLIC_ORCID_BASE_URL": "https://orcid.org"
+  }
+}
