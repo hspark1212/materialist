@@ -32,7 +32,7 @@ export interface AuthContextValue {
   isNavigating: boolean
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>
   signUpWithEmail: (email: string, password: string) => Promise<{ error?: string }>
-  signInWithOAuth: (provider: "google" | "github") => Promise<void>
+  signInWithOAuth: (provider: "google" | "github", returnTo?: string) => Promise<void>
   resetPassword: (email: string) => Promise<{ error?: string }>
   signOut: () => Promise<void>
   deleteAccount: () => Promise<{ error?: string }>

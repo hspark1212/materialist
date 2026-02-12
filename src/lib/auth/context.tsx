@@ -14,7 +14,7 @@ import type { Session, AuthChangeEvent } from "@supabase/supabase-js"
 
 import { createClient } from "@/lib/supabase/client"
 import type { AuthContextValue, AuthStatus, Profile } from "./types"
-import { deriveStatus, profileToUser } from "./utils"
+import { deriveStatus, isValidReturnTo, profileToUser } from "./utils"
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
@@ -121,20 +121,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (cancelled) return
         setProfile(p)
         setPendingSignIn(false)
-        if (p?.username) {
-          router.push(`/u/${p.username}`)
-          return
-        }
-        router.push('/')
       })
       .catch(() => {
         if (cancelled) return
         setPendingSignIn(false)
-        router.push('/')
       })
 
     return () => { cancelled = true }
-  }, [pendingSignIn, session?.user?.id, router])
+  }, [pendingSignIn, session?.user?.id])
 
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
@@ -159,10 +153,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 
   const signInWithOAuth = useCallback(
-    async (provider: "google" | "github") => {
+    async (provider: "google" | "github", returnTo?: string) => {
+      const callbackUrl = new URL("/auth/callback", window.location.origin)
+      if (returnTo && isValidReturnTo(returnTo)) {
+        callbackUrl.searchParams.set("returnTo", returnTo)
+      }
       await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: { redirectTo: callbackUrl.toString() },
       })
     },
     [supabase],

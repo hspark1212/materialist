@@ -208,7 +208,10 @@ export function Header() {
                 </>
               ) : (
                 <DropdownMenuItem asChild>
-                  <Link href="/login" className="cursor-pointer">
+                  <Link
+                    href={pathname === "/" ? "/login" : `/login?returnTo=${encodeURIComponent(pathname)}`}
+                    className="cursor-pointer"
+                  >
                     <LogIn className="size-4" />
                     Sign In
                   </Link>
