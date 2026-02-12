@@ -417,10 +417,9 @@ export async function RightSidebar({
           </EmptyState>
         ) : (
           materialists.map((materialist, index) => (
-            <Link
+            <div
               key={materialist.id}
-              href={materialist.profileUrl}
-              className="group flex items-center justify-between rounded-lg border border-border/70 bg-background/70 p-2.5 transition-colors hover:border-primary/40 hover:bg-accent/35"
+              className="flex items-center rounded-lg border border-border/70 bg-background/70 p-2.5"
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-muted-foreground">
@@ -430,22 +429,16 @@ export async function RightSidebar({
                   user={createSidebarUser({
                     id: materialist.id,
                     username: materialist.username,
-                    displayName: materialist.displayName,
+                    displayName: materialist.username,
                     avatar: materialist.avatar,
                   })}
                   size="sm"
                 />
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{materialist.displayName}</p>
-                  <p className="text-muted-foreground text-[11px]">
-                    {materialist.postCount} posts · {materialist.commentCount} comments
-                  </p>
+                  <p className="truncate text-sm font-medium">{materialist.username}</p>
                 </div>
               </div>
-              <p className="text-muted-foreground text-xs font-semibold tabular-nums">
-                {Math.round(materialist.score)}
-              </p>
-            </Link>
+            </div>
           ))
         )}
       </SidebarSectionCard>
