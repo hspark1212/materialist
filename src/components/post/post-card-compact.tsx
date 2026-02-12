@@ -73,7 +73,7 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
             </div>
           ) : null}
 
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          <div className="text-muted-foreground flex items-center gap-2 pt-0.5 text-xs sm:pt-1">
             <VoteButton
               targetType="post"
               targetId={post.id}
@@ -84,25 +84,27 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
               compact
               hideDownvote
               countMode="nonNegative"
-              variant="reddit"
+              countLabel="Likes"
+              className="h-7 min-h-11 px-2 md:min-h-0"
             />
             <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
               <Link href={`/post/${post.id}#comments`}>
                 <MessageSquare className="size-3.5" />
-                {post.commentCount}
+                <span className="sm:hidden">{post.commentCount}</span>
+                <span className="hidden sm:inline">{post.commentCount} Comments</span>
               </Link>
             </Button>
             <ShareButton
               postId={post.id}
               className="h-7 min-h-11 px-2 md:min-h-0"
               iconClassName="size-3.5"
-              labelClassName="hidden md:inline"
+              labelClassName="hidden sm:inline"
             />
             {primaryLink ? (
               <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
                 <a href={primaryLink} target="_blank" rel="noreferrer">
                   <ExternalLink className="size-3.5" />
-                  <span className="hidden md:inline">{externalActionLabel}</span>
+                  <span className="hidden sm:inline">{externalActionLabel}</span>
                 </a>
               </Button>
             ) : null}

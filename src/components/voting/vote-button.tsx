@@ -17,14 +17,14 @@ type VoteButtonProps = {
   compact?: boolean
   hideDownvote?: boolean
   countMode?: "net" | "nonNegative"
-  variant?: "default" | "reddit"
+  countLabel?: string
+  className?: string
 }
 
 type VoteStyleParams = {
   compact: boolean
   orientation: "vertical" | "horizontal"
   size: "default" | "sm"
-  variant: "default" | "reddit"
 }
 
 function getIconSize({ compact, orientation, size }: VoteStyleParams) {
@@ -56,18 +56,6 @@ function getContainerClass({ compact, orientation }: VoteStyleParams) {
     : "w-12 flex-col py-1"
 }
 
-function getWrapperClass({ variant, orientation }: VoteStyleParams) {
-  if (variant === "reddit" && orientation === "horizontal") {
-    return "rounded-full border border-border/80 bg-muted/55 px-1.5 py-0.5"
-  }
-
-  if (orientation === "vertical") {
-    return ""
-  }
-
-  return ""
-}
-
 export function VoteButton({
   targetType,
   targetId,
@@ -78,7 +66,8 @@ export function VoteButton({
   compact = false,
   hideDownvote = false,
   countMode = "net",
-  variant = "default",
+  countLabel,
+  className,
 }: VoteButtonProps) {
   const { status } = useAuth()
   const [userVote, setUserVote] = useState<-1 | 0 | 1>(initialUserVote)
@@ -124,7 +113,7 @@ export function VoteButton({
     }
   }
 
-  const styleParams: VoteStyleParams = { compact, orientation, size, variant }
+  const styleParams: VoteStyleParams = { compact, orientation, size }
   const iconSize = getIconSize(styleParams)
   const countSize = getCountSize(styleParams)
   const buttonSizeClass = getButtonSizeClass(styleParams)
@@ -132,12 +121,38 @@ export function VoteButton({
   const displayCount = countMode === "nonNegative" ? Math.max(0, voteCount) : voteCount
   const upvoteLabel = hideDownvote ? "Like" : "Upvote"
 
+  if (hideDownvote) {
+    return (
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={() => handleVote(1)}
+        className={cn(
+          "inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-upvote disabled:opacity-60 touch-manipulation",
+          className,
+        )}
+        aria-label={upvoteLabel}
+      >
+        <ThumbsUp className={cn("size-3.5", userVote === 1 && "text-upvote")} />
+        <span
+          className={cn(
+            "font-medium tabular-nums text-sm",
+            userVote === 1 ? "text-upvote" : "text-muted-foreground",
+          )}
+        >
+          <span className={countLabel ? "sm:hidden" : ""}>{displayCount}</span>
+          {countLabel ? <span className="hidden sm:inline">{displayCount} {countLabel}</span> : null}
+        </span>
+      </button>
+    )
+  }
+
   return (
     <div
       className={cn(
         "flex items-center gap-1.5 rounded-md",
-        getWrapperClass(styleParams),
         getContainerClass(styleParams),
+        className,
       )}
     >
       <button
@@ -150,11 +165,7 @@ export function VoteButton({
         )}
         aria-label={upvoteLabel}
       >
-        {hideDownvote ? (
-          <ThumbsUp className={cn(iconSize, userVote === 1 && "text-upvote")} />
-        ) : (
-          <ArrowBigUp className={cn(iconSize, userVote === 1 && "text-upvote")} />
-        )}
+        <ArrowBigUp className={cn(iconSize, userVote === 1 && "text-upvote")} />
       </button>
       <span
         className={cn(
@@ -162,26 +173,24 @@ export function VoteButton({
           isCompactHorizontal ? "min-w-3" : "min-w-4",
           countSize,
           userVote === 1 && "text-upvote",
-          !hideDownvote && userVote === -1 && "text-downvote",
+          userVote === -1 && "text-downvote",
           userVote === 0 && "text-muted-foreground"
         )}
       >
         {displayCount}
       </span>
-      {!hideDownvote ? (
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={() => handleVote(-1)}
-          className={cn(
-            "flex items-center justify-center text-muted-foreground transition-transform hover:text-downvote active:scale-95 disabled:opacity-60 touch-manipulation",
-            buttonSizeClass,
-          )}
-          aria-label="Downvote"
-        >
-          <ArrowBigDown className={cn(iconSize, userVote === -1 && "text-downvote")} />
-        </button>
-      ) : null}
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={() => handleVote(-1)}
+        className={cn(
+          "flex items-center justify-center text-muted-foreground transition-transform hover:text-downvote active:scale-95 disabled:opacity-60 touch-manipulation",
+          buttonSizeClass,
+        )}
+        aria-label="Downvote"
+      >
+        <ArrowBigDown className={cn(iconSize, userVote === -1 && "text-downvote")} />
+      </button>
     </div>
   )
 }

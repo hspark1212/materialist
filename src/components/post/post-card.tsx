@@ -103,7 +103,8 @@ export function PostCard({ post }: PostCardProps) {
               compact
               hideDownvote
               countMode="nonNegative"
-              variant="reddit"
+              countLabel="Likes"
+              className="h-7 min-h-11 px-2 md:min-h-0"
             />
             <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
               <Link href={`/post/${post.id}#comments`}>

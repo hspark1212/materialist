@@ -198,7 +198,8 @@ export function PostDetail({ post }: PostDetailProps) {
               compact
               hideDownvote
               countMode="nonNegative"
-              variant="reddit"
+              countLabel="Likes"
+              className="h-8 min-h-11 px-2.5 md:min-h-0"
             />
             <Button variant="ghost" size="sm" className="h-8 min-h-11 px-2.5 md:min-h-0">
               <MessageSquare className="size-4" />
