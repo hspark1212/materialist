@@ -55,10 +55,8 @@ export function PostDetail({ post }: PostDetailProps) {
 
   return (
     <Card className="gap-0 bg-card/80 py-0 shadow-sm">
-      <CardContent className="flex gap-4 px-4 py-5 sm:px-6 sm:py-6">
-        <VoteButton targetType="post" targetId={post.id} initialCount={post.voteCount} orientation="vertical" size="default" />
-
-        <div className="min-w-0 flex-1 space-y-4">
+      <CardContent className="px-4 py-5 sm:px-6 sm:py-6">
+        <div className="min-w-0 space-y-4">
           <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
             <Badge
               asChild
@@ -190,6 +188,18 @@ export function PostDetail({ post }: PostDetailProps) {
           ) : null}
 
           <div className="text-muted-foreground flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 text-sm">
+            <VoteButton
+              targetType="post"
+              targetId={post.id}
+              initialCount={post.voteCount}
+              initialUserVote={post.userVote ?? 0}
+              orientation="horizontal"
+              size="sm"
+              compact
+              hideDownvote
+              countMode="nonNegative"
+              variant="reddit"
+            />
             <Button variant="ghost" size="sm" className="h-8 min-h-11 px-2.5 md:min-h-0">
               <MessageSquare className="size-4" />
               <span className="sm:hidden">{post.commentCount}</span>

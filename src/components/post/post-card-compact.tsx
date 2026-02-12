@@ -29,15 +29,6 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
   return (
     <Card className="gap-0 bg-card/80 py-0 transition-colors hover:border-primary/30">
       <CardContent className="flex gap-2 px-3 py-2.5 sm:gap-2.5">
-        <VoteButton
-          targetType="post"
-          targetId={post.id}
-          initialCount={post.voteCount}
-          orientation="horizontal"
-          size="sm"
-          compact
-        />
-
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
             <Badge
@@ -83,6 +74,18 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
           ) : null}
 
           <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <VoteButton
+              targetType="post"
+              targetId={post.id}
+              initialCount={post.voteCount}
+              initialUserVote={post.userVote ?? 0}
+              orientation="horizontal"
+              size="sm"
+              compact
+              hideDownvote
+              countMode="nonNegative"
+              variant="reddit"
+            />
             <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
               <Link href={`/post/${post.id}#comments`}>
                 <MessageSquare className="size-3.5" />

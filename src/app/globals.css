@@ -85,7 +85,7 @@
   --sidebar-accent-foreground: #1c2128;
   --sidebar-border: #d0d7de;
   --sidebar-ring: #0969da;
-  --upvote: #ff4500;
+  --upvote: #0969da;
   --downvote: #7193ff;
   --flair-discussion: #0969da;
   --flair-question: #1a7f37;
@@ -128,7 +128,7 @@
   --sidebar-accent-foreground: #e6edf3;
   --sidebar-border: #30363d;
   --sidebar-ring: #58a6ff;
-  --upvote: #ff4500;
+  --upvote: #58a6ff;
   --downvote: #7193ff;
   --flair-discussion: #58a6ff;
   --flair-question: #3fb950;

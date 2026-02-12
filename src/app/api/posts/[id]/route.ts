@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import type { Post } from "@/lib"
 import {
   deletePostUseCase,
   getPostDetailUseCase,
@@ -13,6 +14,33 @@ type RouteContext = {
   params: Promise<{ id: string }>
 }
 
+async function resolvePostUserVote(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  postId: string,
+): Promise<-1 | 0 | 1> {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) return 0
+
+  const { data, error } = await supabase
+    .from("votes")
+    .select("vote_direction")
+    .eq("user_id", user.id)
+    .eq("target_type", "post")
+    .eq("target_id", postId)
+    .maybeSingle()
+
+  if (error) {
+    console.warn("[post-detail/api] Failed to load post vote state:", error.message)
+    return 0
+  }
+
+  return (data?.vote_direction as -1 | 0 | 1 | undefined) ?? 0
+}
+
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params
@@ -21,8 +49,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const supabase = await createClient()
     const repository = createSupabasePostsRepository(supabase)
     const detail = await getPostDetailUseCase(repository, id, commentSort)
+    const userVote = await resolvePostUserVote(supabase, id)
+    const post: Post = { ...detail.post, userVote }
 
-    return NextResponse.json(detail, {
+    return NextResponse.json({ ...detail, post }, {
       headers: {
         "Cache-Control": "no-store",
       },

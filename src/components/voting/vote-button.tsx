@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowBigDown, ArrowBigUp } from "lucide-react"
+import { ArrowBigDown, ArrowBigUp, ThumbsUp } from "lucide-react"
 
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
@@ -15,12 +15,16 @@ type VoteButtonProps = {
   orientation?: "vertical" | "horizontal"
   size?: "default" | "sm"
   compact?: boolean
+  hideDownvote?: boolean
+  countMode?: "net" | "nonNegative"
+  variant?: "default" | "reddit"
 }
 
 type VoteStyleParams = {
   compact: boolean
   orientation: "vertical" | "horizontal"
   size: "default" | "sm"
+  variant: "default" | "reddit"
 }
 
 function getIconSize({ compact, orientation, size }: VoteStyleParams) {
@@ -41,15 +45,27 @@ function getButtonSizeClass({ compact, orientation }: VoteStyleParams) {
 }
 
 function getContainerClass({ compact, orientation }: VoteStyleParams) {
-  if (orientation === "vertical") {
+  if (orientation === "horizontal") {
     return compact
-      ? "w-9 flex-col gap-0.5 py-0.5 md:w-12 md:gap-1.5 md:py-1"
-      : "w-12 flex-col py-1"
+      ? "flex-row gap-0.5 px-0 py-0 md:gap-1 md:px-1 md:py-0.5"
+      : "flex-row px-1 py-0.5"
   }
 
   return compact
-    ? "flex-row gap-0.5 px-0 py-0 md:gap-1 md:px-1 md:py-0.5"
-    : "flex-row px-1 py-0.5"
+    ? "w-9 flex-col gap-0.5 py-0.5 md:w-12 md:gap-1.5 md:py-1"
+    : "w-12 flex-col py-1"
+}
+
+function getWrapperClass({ variant, orientation }: VoteStyleParams) {
+  if (variant === "reddit" && orientation === "horizontal") {
+    return "rounded-full border border-border/80 bg-muted/55 px-1.5 py-0.5"
+  }
+
+  if (orientation === "vertical") {
+    return ""
+  }
+
+  return ""
 }
 
 export function VoteButton({
@@ -60,6 +76,9 @@ export function VoteButton({
   orientation = "vertical",
   size = "default",
   compact = false,
+  hideDownvote = false,
+  countMode = "net",
+  variant = "default",
 }: VoteButtonProps) {
   const { status } = useAuth()
   const [userVote, setUserVote] = useState<-1 | 0 | 1>(initialUserVote)
@@ -105,16 +124,19 @@ export function VoteButton({
     }
   }
 
-  const styleParams: VoteStyleParams = { compact, orientation, size }
+  const styleParams: VoteStyleParams = { compact, orientation, size, variant }
   const iconSize = getIconSize(styleParams)
   const countSize = getCountSize(styleParams)
   const buttonSizeClass = getButtonSizeClass(styleParams)
   const isCompactHorizontal = compact && orientation === "horizontal"
+  const displayCount = countMode === "nonNegative" ? Math.max(0, voteCount) : voteCount
+  const upvoteLabel = hideDownvote ? "Like" : "Upvote"
 
   return (
     <div
       className={cn(
         "flex items-center gap-1.5 rounded-md",
+        getWrapperClass(styleParams),
         getContainerClass(styleParams),
       )}
     >
@@ -126,9 +148,13 @@ export function VoteButton({
           "flex items-center justify-center text-muted-foreground transition-transform hover:text-upvote active:scale-95 disabled:opacity-60 touch-manipulation",
           buttonSizeClass,
         )}
-        aria-label="Upvote"
+        aria-label={upvoteLabel}
       >
-        <ArrowBigUp className={cn(iconSize, userVote === 1 && "text-upvote")} />
+        {hideDownvote ? (
+          <ThumbsUp className={cn(iconSize, userVote === 1 && "text-upvote")} />
+        ) : (
+          <ArrowBigUp className={cn(iconSize, userVote === 1 && "text-upvote")} />
+        )}
       </button>
       <span
         className={cn(
@@ -136,24 +162,26 @@ export function VoteButton({
           isCompactHorizontal ? "min-w-3" : "min-w-4",
           countSize,
           userVote === 1 && "text-upvote",
-          userVote === -1 && "text-downvote",
+          !hideDownvote && userVote === -1 && "text-downvote",
           userVote === 0 && "text-muted-foreground"
         )}
       >
-        {voteCount}
+        {displayCount}
       </span>
-      <button
-        type="button"
-        disabled={isSubmitting}
-        onClick={() => handleVote(-1)}
-        className={cn(
-          "flex items-center justify-center text-muted-foreground transition-transform hover:text-downvote active:scale-95 disabled:opacity-60 touch-manipulation",
-          buttonSizeClass,
-        )}
-        aria-label="Downvote"
-      >
-        <ArrowBigDown className={cn(iconSize, userVote === -1 && "text-downvote")} />
-      </button>
+      {!hideDownvote ? (
+        <button
+          type="button"
+          disabled={isSubmitting}
+          onClick={() => handleVote(-1)}
+          className={cn(
+            "flex items-center justify-center text-muted-foreground transition-transform hover:text-downvote active:scale-95 disabled:opacity-60 touch-manipulation",
+            buttonSizeClass,
+          )}
+          aria-label="Downvote"
+        >
+          <ArrowBigDown className={cn(iconSize, userVote === -1 && "text-downvote")} />
+        </button>
+      ) : null}
     </div>
   )
 }
