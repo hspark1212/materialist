@@ -1,7 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { Component, type ErrorInfo, type FormEvent, type ReactNode } from "react"
+import {
+  Component,
+  type ErrorInfo,
+  type FormEvent,
+  type ReactNode,
+  useSyncExternalStore,
+} from "react"
 import { usePathname } from "next/navigation"
 import {
   LogIn,
@@ -56,13 +62,24 @@ class AvatarErrorBoundary extends Component<
   }
 }
 
+const subscribe = () => () => {}
+
+function useIsHydrated() {
+  return useSyncExternalStore(subscribe, () => true, () => false)
+}
+
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
   const { status, user, signOut } = useAuth()
   const { activeQuery, submitSearch } = useSearchFilter()
+  const isHydrated = useIsHydrated()
 
   const avatarFallback = <User className="size-5 text-muted-foreground" />
+  const effectiveStatus = isHydrated ? status : "loading"
+  const isLoading = effectiveStatus === "loading"
+  const showSignedInMenu =
+    effectiveStatus === "authenticated" || effectiveStatus === "verified"
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -166,7 +183,7 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="size-9 rounded-full p-0" aria-label="User menu">
-                {status === "loading" ? (
+                {isLoading ? (
                   <div className="size-8 animate-pulse rounded-full bg-muted" />
                 ) : user ? (
                   <AvatarErrorBoundary fallback={avatarFallback}>
@@ -178,7 +195,7 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              {status !== "anonymous" && status !== "loading" ? (
+              {showSignedInMenu ? (
                 <>
                   {user ? (
                     <DropdownMenuItem asChild>
