@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import type { Post, Section } from "@/lib"
+import type { PostsFeedInitialData } from "../domain/feed-initial-data"
 import type { PostSort } from "../domain/types"
 
 type UsePostsFeedOptions = {
@@ -14,6 +15,7 @@ type UsePostsFeedOptions = {
   sortBy: PostSort
   limit?: number
   enabled?: boolean
+  initialData?: PostsFeedInitialData
 }
 
 type FetchResult = {
@@ -31,13 +33,17 @@ export function usePostsFeed({
   sortBy,
   limit = 20,
   enabled = true,
+  initialData,
 }: UsePostsFeedOptions) {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
+  const [posts, setPosts] = useState<Post[]>(() => initialData?.posts ?? [])
+  const [loading, setLoading] = useState(() => {
+    if (!enabled) return false
+    return initialData === undefined
+  })
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [hasMore, setHasMore] = useState(false)
-  const nextOffsetRef = useRef<number | null>(null)
+  const [hasMore, setHasMore] = useState(() => initialData?.hasMore ?? false)
+  const nextOffsetRef = useRef<number | null>(initialData?.nextOffset ?? null)
 
   const baseQueryString = useMemo(() => {
     const params = new URLSearchParams()
@@ -86,6 +92,12 @@ export function usePostsFeed({
     [baseQueryString],
   )
 
+  const applyResult = useCallback((result: FetchResult) => {
+    setPosts(result.posts)
+    setHasMore(result.hasMore)
+    nextOffsetRef.current = result.nextOffset
+  }, [])
+
   const load = useCallback(
     async (signal?: AbortSignal) => {
       setLoading(true)
@@ -94,9 +106,7 @@ export function usePostsFeed({
       try {
         const result = await fetchPosts(0, signal)
         if (result) {
-          setPosts(result.posts)
-          setHasMore(result.hasMore)
-          nextOffsetRef.current = result.nextOffset
+          applyResult(result)
         }
       } catch (err) {
         if (signal?.aborted) return
@@ -110,7 +120,7 @@ export function usePostsFeed({
         }
       }
     },
-    [fetchPosts],
+    [applyResult, fetchPosts],
   )
 
   const loadMore = useCallback(async () => {
@@ -146,14 +156,24 @@ export function usePostsFeed({
       setLoading(false)
       setError(null)
       setPosts([])
+      setLoadingMore(false)
       setHasMore(false)
       nextOffsetRef.current = null
       return
     }
+
+    if (initialData) {
+      setLoading(false)
+      setError(null)
+      setLoadingMore(false)
+      applyResult(initialData)
+      return
+    }
+
     const controller = new AbortController()
     void load(controller.signal)
     return () => controller.abort()
-  }, [enabled, load])
+  }, [enabled, initialData, applyResult, load])
 
   const filteredPosts = useMemo(() => {
     if (filterAnonymous === undefined) return posts

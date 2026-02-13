@@ -3,13 +3,9 @@
 import { useCallback } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
-const FEED_PATHS = new Set(["/", "/papers", "/forum", "/showcase", "/jobs"])
+import { normalizeSearchQuery } from "../domain/query-normalization"
 
-function normalizeQuery(value: string): string | undefined {
-  const normalized = value.trim().replace(/\s+/g, " ")
-  if (normalized.length < 2) return undefined
-  return normalized.slice(0, 120)
-}
+const FEED_PATHS = new Set(["/", "/papers", "/forum", "/showcase", "/jobs"])
 
 function resolveTargetPath(pathname: string): string {
   return FEED_PATHS.has(pathname) ? pathname : "/"
@@ -19,7 +15,7 @@ export function useSearchFilter() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
-  const activeQuery = normalizeQuery(searchParams.get("q") ?? "")
+  const activeQuery = normalizeSearchQuery(searchParams.get("q"))
 
   const submitSearch = useCallback((value: string) => {
     const targetPath = resolveTargetPath(pathname)
@@ -27,7 +23,7 @@ export function useSearchFilter() {
       ? new URLSearchParams(searchParams.toString())
       : new URLSearchParams()
 
-    const nextQuery = normalizeQuery(value)
+    const nextQuery = normalizeSearchQuery(value)
     if (nextQuery) {
       params.set("q", nextQuery)
     } else {
