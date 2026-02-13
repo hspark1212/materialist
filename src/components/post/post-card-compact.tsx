@@ -5,6 +5,8 @@ import { formatDistanceToNow } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
 import type { Post } from "@/lib"
+import { AuthorName } from "@/components/user/author-name"
+import { UserAvatar } from "@/components/user/user-avatar"
 import { getSectionLabel, getSectionHref, flairByKey, sectionByKey } from "@/lib/sections"
 import { getPaperMetaLinks, getPostPreviewText, getPostPrimaryLink } from "@/components/post/post-feed-utils"
 import { ShareButton } from "@/components/post/share-button"
@@ -44,6 +46,9 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
                 {flairByKey[post.flair].label}
               </Badge>
             ) : null}
+            <UserAvatar user={post.author} size="sm" />
+            <AuthorName user={post.author} />
+            <span>•</span>
             <span className="truncate">{compactTimeAgo}</span>
           </div>
 

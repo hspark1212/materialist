@@ -6,6 +6,7 @@ import { ExternalLink, MessageSquare } from "lucide-react"
 
 import type { Post } from "@/lib"
 import { AuthorName } from "@/components/user/author-name"
+import { UserAvatar } from "@/components/user/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -47,6 +48,7 @@ export function PostCard({ post }: PostCardProps) {
             ) : null}
             <span className="hidden sm:inline">•</span>
             <span className="hidden sm:inline">Posted by</span>
+            <UserAvatar user={post.author} size="sm" />
             <AuthorName user={post.author} />
             <span>•</span>
             <span>{compactTimeAgo}</span>
