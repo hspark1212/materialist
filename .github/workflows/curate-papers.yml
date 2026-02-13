@@ -1,0 +1,73 @@
+name: Daily Paper Curation
+
+on:
+  schedule:
+    - cron: '0 2 * * 1-5' # 02:00 UTC, weekdays only
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Override date (YYYY-MM-DD). Defaults to yesterday.'
+        required: false
+        type: string
+      persona:
+        description: 'Bot persona'
+        required: false
+        default: 'mendeleev'
+        type: string
+
+concurrency:
+  group: paper-curation
+  cancel-in-progress: false
+
+jobs:
+  curate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run curation pipeline
+        env:
+          INPUT_DATE: ${{ github.event.inputs.date }}
+          INPUT_PERSONA: ${{ github.event.inputs.persona || 'mendeleev' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          BOT_USER_ID_MENDELEEV: ${{ secrets.BOT_USER_ID_MENDELEEV }}
+        run: |
+          DATE="${INPUT_DATE:-$(date -u -d 'yesterday' +%Y-%m-%d)}"
+          PERSONA="${INPUT_PERSONA:-mendeleev}"
+          npx tsx scripts/curate-papers.ts --date "$DATE" --persona "$PERSONA"
+
+      - name: Upload curation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: curation-output-${{ github.run_id }}
+          path: output/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = process.env.INPUT_DATE || new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Paper curation failed: ${date}`,
+              body: `The daily paper curation pipeline failed.\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nCheck the workflow logs for details.`,
+              labels: ['bot', 'curation-failure'],
+            });
+        env:
+          INPUT_DATE: ${{ github.event.inputs.date }}
