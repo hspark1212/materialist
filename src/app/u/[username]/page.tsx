@@ -148,7 +148,10 @@ function UserPageContent() {
         </div>
       ) : null}
 
-      <UserProfileHeader user={profileHeaderUser} isOwnProfile={isOwnProfile} />
+      <UserProfileHeader
+        user={profileHeaderUser}
+        showVerifyAction={isOwnProfile && !myProfile?.orcid_id}
+      />
 
       {isOwnProfile ? (
         <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>

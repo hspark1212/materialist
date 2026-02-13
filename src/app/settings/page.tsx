@@ -2,10 +2,9 @@
 
 import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { Moon, Sun, LogOut, Mail, Trash2 } from "lucide-react"
+import { LogOut, Mail, Trash2 } from "lucide-react"
 
 import { useAuth } from "@/lib/auth"
-import { useIdentity } from "@/lib/identity"
 import { buildOrcidAuthUrl } from "@/lib/orcid"
 import { ProfileEditForm } from "@/components/user/profile-edit-form"
 import { DeleteAccountDialog } from "@/components/user/delete-account-dialog"
@@ -13,12 +12,9 @@ import { OrcidBadge } from "@/components/user/orcid-badge"
 import { OrcidDisconnectDialog } from "@/components/user/orcid-disconnect-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 
 export default function SettingsPage() {
   const { profile, user, signOut, refreshProfile } = useAuth()
-  const { isAnonymousMode, switchMode } = useIdentity()
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [disconnectOpen, setDisconnectOpen] = useState(false)
@@ -103,34 +99,6 @@ export default function SettingsPage() {
               Sign Out
             </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="py-4">
-        <CardContent className="space-y-3 px-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Identity & Appearance
-          </h2>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="identity-toggle" className="text-sm">
-              Anonymous mode
-            </Label>
-            <div className="flex items-center gap-2">
-              <Sun className={`size-4 ${isAnonymousMode ? "text-muted-foreground" : "text-foreground"}`} />
-              <Switch
-                id="identity-toggle"
-                checked={isAnonymousMode}
-                onCheckedChange={(checked) => switchMode(checked ? "anonymous" : "verified")}
-                aria-label="Toggle identity mode"
-              />
-              <Moon className={`size-4 ${isAnonymousMode ? "text-foreground" : "text-muted-foreground"}`} />
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {isAnonymousMode
-              ? "You are in anonymous mode. Posts will be attributed to your anonymous identity."
-              : "You are in verified mode. Posts will be attributed to your verified profile."}
-          </p>
         </CardContent>
       </Card>
 
