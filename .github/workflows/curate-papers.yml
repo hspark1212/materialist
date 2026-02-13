@@ -19,6 +19,9 @@ concurrency:
   group: paper-curation
   cancel-in-progress: false
 
+permissions:
+  issues: write
+
 jobs:
   curate:
     runs-on: ubuntu-latest
