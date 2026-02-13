@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { ApplicationError } from "../application/errors"
 import type { CommentSort, PostSort, VoteDirection, VoteTargetType } from "../domain/types"
+import { normalizeSearchQuery, normalizeTag } from "../domain/query-normalization"
 
 const validSections = new Set(["papers", "forum", "showcase", "jobs"])
 
@@ -44,10 +45,11 @@ export function parsePostsOffset(value: string | null): number {
 }
 
 export function parseSearchQuery(value: string | null): string | undefined {
-  if (!value) return undefined
-  const normalized = value.trim().replace(/\s+/g, " ")
-  if (normalized.length < 2) return undefined
-  return normalized.slice(0, 120)
+  return normalizeSearchQuery(value)
+}
+
+export function parseTag(value: string | null): string | undefined {
+  return normalizeTag(value)
 }
 
 export function parseVoteTargetType(value: unknown): VoteTargetType {

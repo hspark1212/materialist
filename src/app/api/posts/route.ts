@@ -12,6 +12,7 @@ import {
   parsePostsOffset,
   parseSearchQuery,
   parseSection,
+  parseTag,
 } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
 import { createClient } from "@/lib/supabase/server"
@@ -24,6 +25,12 @@ type VoteDirectionRow = {
 type PostsWithVoteState = {
   posts: Post[]
   authenticated: boolean
+}
+
+const AUTH_COOKIE_PATTERN = /^sb-.*-auth-token/
+
+function hasSupabaseAuthCookie(request: NextRequest): boolean {
+  return request.cookies.getAll().some((cookie) => AUTH_COOKIE_PATTERN.test(cookie.name))
 }
 
 async function attachPostVoteState(
@@ -78,7 +85,7 @@ export async function GET(request: NextRequest) {
     const sort = parsePostSort(request.nextUrl.searchParams.get("sort"))
     const section = parseSection(request.nextUrl.searchParams.get("section"))
     const authorId = request.nextUrl.searchParams.get("authorId") ?? undefined
-    const tag = request.nextUrl.searchParams.get("tag") ?? undefined
+    const tag = parseTag(request.nextUrl.searchParams.get("tag"))
     const query = parseSearchQuery(request.nextUrl.searchParams.get("q"))
     const limit = parsePostsLimit(request.nextUrl.searchParams.get("limit"))
     const offset = parsePostsOffset(request.nextUrl.searchParams.get("offset"))
@@ -90,7 +97,10 @@ export async function GET(request: NextRequest) {
 
     const hasMore = posts.length > limit
     const items = hasMore ? posts.slice(0, limit) : posts
-    const { posts: postsWithVoteState, authenticated } = await attachPostVoteState(supabase, items)
+    const shouldAttachVoteState = hasSupabaseAuthCookie(request)
+    const { posts: postsWithVoteState, authenticated } = shouldAttachVoteState
+      ? await attachPostVoteState(supabase, items)
+      : { posts: items, authenticated: false }
 
     return NextResponse.json(
       {
