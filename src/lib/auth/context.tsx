@@ -169,8 +169,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPassword = useCallback(
     async (email: string) => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/reset-password`,
       })
+      if (error) return { error: error.message }
+      return {}
+    },
+    [supabase],
+  )
+
+  const updatePassword = useCallback(
+    async (password: string) => {
+      const { error } = await supabase.auth.updateUser({ password })
       if (error) return { error: error.message }
       return {}
     },
@@ -245,12 +254,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUpWithEmail,
       signInWithOAuth,
       resetPassword,
+      updatePassword,
       signOut,
       deleteAccount,
       refreshProfile,
       updateProfile,
     }),
-    [status, profile, user, isNavigating, signInWithEmail, signUpWithEmail, signInWithOAuth, resetPassword, signOut, deleteAccount, refreshProfile, updateProfile],
+    [status, profile, user, isNavigating, signInWithEmail, signUpWithEmail, signInWithOAuth, resetPassword, updatePassword, signOut, deleteAccount, refreshProfile, updateProfile],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>
