@@ -2,6 +2,7 @@ import "server-only"
 
 import type { Section } from "@/lib"
 import { createClient } from "@/lib/supabase/server"
+import type { AuthorType } from "../application/ports"
 import { listPostsUseCase } from "../application/use-cases"
 import type { PostsFeedInitialData } from "../domain/feed-initial-data"
 import { normalizeSearchQuery, normalizeTag } from "../domain/query-normalization"
@@ -32,6 +33,7 @@ type GetInitialPostsFeedOptions = {
   searchParams?: PageSearchParams
   limit?: number
   sortBy?: PostSort
+  authorType?: AuthorType
 }
 
 function buildEmptyInitialFeed(options: {
@@ -40,6 +42,7 @@ function buildEmptyInitialFeed(options: {
   sortBy: PostSort
   tag?: string
   query?: string
+  authorType?: AuthorType
 }): PostsFeedInitialData {
   return {
     prefetched: false,
@@ -51,6 +54,7 @@ function buildEmptyInitialFeed(options: {
     section: options.section,
     tag: options.tag,
     query: options.query,
+    authorType: options.authorType,
   }
 }
 
@@ -59,6 +63,7 @@ export async function getInitialPostsFeed({
   searchParams,
   limit = INITIAL_FEED_LIMIT,
   sortBy = INITIAL_FEED_SORT,
+  authorType,
 }: GetInitialPostsFeedOptions): Promise<PostsFeedInitialData> {
   const tag = normalizeTag(firstValue(searchParams?.tag))
   const query = normalizeSearchQuery(firstValue(searchParams?.q))
@@ -71,6 +76,7 @@ export async function getInitialPostsFeed({
       section,
       tag,
       query,
+      authorType,
       limit: limit + 1,
       offset: 0,
     })
@@ -88,9 +94,10 @@ export async function getInitialPostsFeed({
       section,
       tag,
       query,
+      authorType,
     }
   } catch (error) {
     console.warn("[posts] Failed to load initial feed:", error)
-    return buildEmptyInitialFeed({ section, limit, sortBy, tag, query })
+    return buildEmptyInitialFeed({ section, limit, sortBy, tag, query, authorType })
   }
 }

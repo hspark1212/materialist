@@ -13,11 +13,14 @@ import type {
   PersistedVoteDirection,
 } from "../domain/types"
 
+export type AuthorType = "all" | "human" | "bot"
+
 export type ListPostsParams = {
   section?: Section
   authorId?: string
   tag?: string
   query?: string
+  authorType?: AuthorType
   sort: PostSort
   limit?: number
   offset?: number

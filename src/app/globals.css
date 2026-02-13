@@ -176,6 +176,13 @@
   animation: verified-ring-spin 4s linear infinite;
 }
 
+/* ── Bot avatar ring ── */
+.avatar-bot-ring {
+  padding: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #6b7280, #8b5cf6);
+}
+
 /* ── Logo "ia" flip animation ── */
 .logo-ia {
   display: inline-block;

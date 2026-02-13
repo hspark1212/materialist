@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import type { Post, Section } from "@/lib"
+import type { AuthorType } from "../application/ports"
 import type { PostsFeedInitialData } from "../domain/feed-initial-data"
 import type { PostSort } from "../domain/types"
 
@@ -12,6 +13,7 @@ type UsePostsFeedOptions = {
   filterAnonymous?: boolean
   tag?: string
   query?: string
+  authorType?: AuthorType
   sortBy: PostSort
   limit?: number
   enabled?: boolean
@@ -30,6 +32,7 @@ export function usePostsFeed({
   filterAnonymous,
   tag,
   query,
+  authorType,
   sortBy,
   limit = 20,
   enabled = true,
@@ -60,9 +63,12 @@ export function usePostsFeed({
     if (query) {
       params.set("q", query)
     }
+    if (authorType && authorType !== "all") {
+      params.set("authorType", authorType)
+    }
     params.set("limit", String(limit))
     return params.toString()
-  }, [section, authorId, tag, query, sortBy, limit])
+  }, [section, authorId, tag, query, authorType, sortBy, limit])
 
   const fetchPosts = useCallback(
     async (offset: number, signal?: AbortSignal): Promise<FetchResult | null> => {

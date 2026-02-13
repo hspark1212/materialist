@@ -50,6 +50,7 @@ describe("createCommentUseCase", () => {
         bio: null,
         karma: 0,
         is_anonymous: false,
+        is_bot: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         position: null,

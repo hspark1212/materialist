@@ -28,6 +28,7 @@ export function profileToUser(profile: Profile): User {
     avatar: profile.avatar_url ?? "",
     email: profile.email ?? undefined,
     isAnonymous: profile.is_anonymous ?? true,
+    isBot: profile.is_bot ?? false,
     institution: profile.institution ?? undefined,
     karma: profile.karma ?? 0,
     joinDate: profile.created_at ?? new Date().toISOString(),

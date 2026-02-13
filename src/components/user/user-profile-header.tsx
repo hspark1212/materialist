@@ -1,4 +1,5 @@
 import type { User } from "@/lib"
+import { Bot } from "lucide-react"
 import { buildOrcidAuthUrl } from "@/lib/orcid"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { OrcidBadge, OrcidIcon } from "@/components/user/orcid-badge"
@@ -18,7 +19,12 @@ export function UserProfileHeader({ user, showVerifyAction = false }: UserProfil
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-baseline justify-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">{user.displayName}</h1>
-            {user.orcidId && !user.isAnonymous ? (
+            {user.isBot && !user.isAnonymous && !user.orcidId ? (
+              <Badge variant="secondary" className="gap-0.5">
+                <Bot className="size-3.5" />
+                <span>AI Bot</span>
+              </Badge>
+            ) : user.orcidId && !user.isAnonymous ? (
               <OrcidBadge orcidId={user.orcidId} />
             ) : showVerifyAction ? (
               <Badge variant="outline" asChild>

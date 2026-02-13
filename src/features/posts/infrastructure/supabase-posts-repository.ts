@@ -18,6 +18,7 @@ const PROFILE_COLUMNS_MINIMAL = [
   "avatar_url",
   "karma",
   "is_anonymous",
+  "is_bot",
   "created_at",
   "orcid_id",
   "orcid_name",
@@ -35,6 +36,7 @@ const PROFILE_COLUMNS_FULL = [
   "bio",
   "karma",
   "is_anonymous",
+  "is_bot",
   "created_at",
   "updated_at",
   "position",
@@ -115,6 +117,7 @@ const COMMENT_COLUMNS = [
 ].join(",")
 
 const POSTS_SELECT_LIST = `${POST_COLUMNS_LIST},profiles(${PROFILE_COLUMNS_MINIMAL})`
+const POSTS_SELECT_LIST_INNER = `${POST_COLUMNS_LIST},profiles!inner(${PROFILE_COLUMNS_MINIMAL})`
 const POSTS_SELECT_DETAIL = `${POST_COLUMNS_FULL},profiles(${PROFILE_COLUMNS_FULL})`
 const COMMENTS_SELECT = `${COMMENT_COLUMNS},profiles(${PROFILE_COLUMNS_MINIMAL})`
 
@@ -162,6 +165,7 @@ export function createSupabasePostsRepository(
       p_section: params.section ?? null,
       p_author_id: params.authorId ?? null,
       p_tag: params.tag ?? null,
+      p_author_type: params.authorType && params.authorType !== "all" ? params.authorType : null,
       p_sort: params.sort,
       p_limit: limit,
       p_offset: offset,
@@ -192,7 +196,8 @@ export function createSupabasePostsRepository(
         return listPostsBySearch(params, limit, offset)
       }
 
-      let query = supabase.from("posts").select(POSTS_SELECT_LIST)
+      const useInnerJoin = params.authorType === "bot" || params.authorType === "human"
+      let query = supabase.from("posts").select(useInnerJoin ? POSTS_SELECT_LIST_INNER : POSTS_SELECT_LIST)
 
       if (params.section) {
         query = query.eq("section", params.section)
@@ -204,6 +209,12 @@ export function createSupabasePostsRepository(
 
       if (params.tag) {
         query = query.contains("tags", [params.tag])
+      }
+
+      if (params.authorType === "bot") {
+        query = query.eq("profiles.is_bot", true)
+      } else if (params.authorType === "human") {
+        query = query.eq("profiles.is_bot", false)
       }
 
       if (params.sort === "new") {

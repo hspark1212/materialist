@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { ApplicationError } from "../application/errors"
+import type { AuthorType } from "../application/ports"
 import type { CommentSort, PostSort, VoteDirection, VoteTargetType } from "../domain/types"
 import { normalizeSearchQuery, normalizeTag } from "../domain/query-normalization"
 
@@ -50,6 +51,14 @@ export function parseSearchQuery(value: string | null): string | undefined {
 
 export function parseTag(value: string | null): string | undefined {
   return normalizeTag(value)
+}
+
+const validAuthorTypes = new Set(["all", "human", "bot"])
+
+export function parseAuthorType(value: string | null): AuthorType {
+  if (!value || value === "all") return "all"
+  if (validAuthorTypes.has(value)) return value as AuthorType
+  throw new ApplicationError(400, "Invalid author type")
 }
 
 export function parseVoteTargetType(value: unknown): VoteTargetType {

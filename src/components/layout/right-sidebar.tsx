@@ -103,6 +103,7 @@ function createSidebarUser(params: {
   username: string
   displayName: string
   avatar: string
+  isBot?: boolean
 }): AppUser {
   return {
     id: params.id,
@@ -110,6 +111,7 @@ function createSidebarUser(params: {
     displayName: params.displayName,
     avatar: params.avatar,
     isAnonymous: false,
+    isBot: params.isBot ?? false,
     karma: 0,
     joinDate: SIDEBAR_AVATAR_JOIN_DATE,
   }
@@ -311,15 +313,49 @@ async function fetchTopMaterialists(
   return { materialists }
 }
 
+type BotUser = {
+  id: string
+  username: string
+  displayName: string
+  avatar: string
+  postCount: number
+}
+
+async function fetchBotUsers(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<BotUser[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, avatar_url, posts(count)")
+    .eq("is_bot", true)
+
+  if (error) {
+    console.warn("RightSidebar bot users error:", { error: error.message })
+    return []
+  }
+
+  return (data ?? [])
+    .map((row) => ({
+      id: row.id,
+      username: row.username ?? `bot-${row.id.slice(0, 8)}`,
+      displayName: row.display_name ?? row.username ?? "Bot",
+      avatar: row.avatar_url ?? "",
+      postCount: (row.posts as unknown as { count: number }[])?.[0]?.count ?? 0,
+    }))
+    .filter((bot) => bot.postCount > 0)
+    .sort((a, b) => b.postCount - a.postCount)
+}
+
 const getRightSidebarData = cache(async () => {
   const supabase = await createClient()
-  const [stats, materialistsResult, developersResult] = await Promise.all([
+  const [stats, materialistsResult, botUsers, developersResult] = await Promise.all([
     fetchCommunityStats(supabase),
     fetchTopMaterialists(supabase),
+    fetchBotUsers(supabase),
     fetchTopDevelopers(),
   ])
 
-  return { stats, materialistsResult, developersResult }
+  return { stats, materialistsResult, botUsers, developersResult }
 })
 
 export async function RightSidebar({
@@ -331,7 +367,7 @@ export async function RightSidebar({
     return null
   }
 
-  const { stats, materialistsResult, developersResult } = await getRightSidebarData()
+  const { stats, materialistsResult, botUsers, developersResult } = await getRightSidebarData()
   const { materialists, reason: materialistsReason } = materialistsResult
   const { developers, reason: developersReason, detail: developersDetail } = developersResult
 
@@ -439,6 +475,44 @@ export async function RightSidebar({
           ))
         )}
       </SidebarSectionCard>
+
+      {botUsers.length > 0 && (
+        <SidebarSectionCard
+          title="AI Bots"
+          description="Automated research assistants"
+          gradientClassName="bg-gradient-to-r from-violet-500 to-purple-600"
+          iconBgClassName="bg-[color-mix(in_srgb,#8b5cf6_12%,transparent)]"
+          iconColorClassName="text-violet-500"
+          icon={<Bot className="size-4" />}
+        >
+          {botUsers.map((bot, index) => (
+            <Link
+              key={bot.id}
+              href={`/u/${bot.username}`}
+              className="group flex items-center rounded-lg border border-border/70 bg-background/70 p-2.5 transition-colors hover:border-primary/40 hover:bg-accent/35"
+            >
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-muted-foreground">
+                  {index + 1}
+                </span>
+                <UserAvatar
+                  user={createSidebarUser({
+                    id: bot.id,
+                    username: bot.username,
+                    displayName: bot.displayName,
+                    avatar: bot.avatar,
+                    isBot: true,
+                  })}
+                  size="sm"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{bot.username}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </SidebarSectionCard>
+      )}
 
       <SidebarSectionCard
         title="Developers"

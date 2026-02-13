@@ -23,6 +23,7 @@ export type ProfileRow = {
   bio: string | null
   karma: number
   is_anonymous: boolean
+  is_bot: boolean
   created_at: string
   updated_at: string
   position: string | null
