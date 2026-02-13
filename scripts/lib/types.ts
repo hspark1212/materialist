@@ -34,6 +34,7 @@ export type PaperEvaluation = {
   clarityScore: number
   overallScore: number
   reasoning: string
+  summary: string
   suggestedTags: string[]
 }
 

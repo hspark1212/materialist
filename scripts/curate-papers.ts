@@ -255,9 +255,20 @@ async function runPhase3(
       continue
     }
 
+    const formattedTitle = `[${date}] ${paper.title}`
+    const formattedContent = [
+      `**Summary:** ${paper.evaluation.summary}`,
+      '',
+      `**Why this paper?** ${paper.evaluation.reasoning}`,
+      '',
+      `**Abstract:** ${paper.abstract}`,
+      '',
+      `**Authors:** ${paper.authors.join(', ')}`,
+    ].join('\n')
+
     const { error: insertError } = await supabase.from("posts").insert({
-      title: paper.title,
-      content: paper.abstract,
+      title: formattedTitle,
+      content: formattedContent,
       author_id: botUserId,
       section: "papers",
       type: "paper",
@@ -281,7 +292,7 @@ async function runPhase3(
       continue
     }
 
-    console.log(`  POST: ${paper.title}`)
+    console.log(`  POST: ${formattedTitle}`)
     posted++
   }
 

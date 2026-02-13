@@ -143,6 +143,7 @@ function buildEvaluationPrompt(papers: ArxivPaper[]): string {
 
 For each paper, also provide:
 - "reasoning": 2-3 sentences explaining your scores
+- "summary": 1-2 sentences summarizing the paper's key contribution for a materials science audience
 - "suggestedTags": 2-5 kebab-case tags (e.g., "crystal-structure", "gnn", "property-prediction")
 
 Return ONLY a JSON array of objects with these fields:
@@ -152,6 +153,7 @@ Return ONLY a JSON array of objects with these fields:
 - "impactScore": number (1-10)
 - "clarityScore": number (1-10)
 - "reasoning": string
+- "summary": string
 - "suggestedTags": string[]
 
 Return ONLY a JSON array, no other text.
@@ -207,6 +209,7 @@ export async function evaluatePapers(
       clarityScore: raw.clarityScore,
       overallScore: computeOverallScore(raw),
       reasoning: raw.reasoning,
+      summary: raw.summary,
       suggestedTags: raw.suggestedTags,
     })
   }
