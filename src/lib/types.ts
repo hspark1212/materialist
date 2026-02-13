@@ -6,6 +6,7 @@ export interface User {
   avatar: string
   email?: string
   isAnonymous: boolean
+  isBot: boolean
   institution?: string
   karma: number
   joinDate: string

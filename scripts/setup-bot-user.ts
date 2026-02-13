@@ -150,6 +150,7 @@ async function main(): Promise<void> {
       ...(persona.avatarUrl ? { avatar_url: persona.avatarUrl } : {}),
       bio: persona.bio,
       is_anonymous: false,
+      is_bot: true,
       profile_completed: true,
     })
     .eq("id", userId)

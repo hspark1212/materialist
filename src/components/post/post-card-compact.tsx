@@ -6,6 +6,7 @@ import { ExternalLink, MessageSquare } from "lucide-react"
 
 import type { Post } from "@/lib"
 import { AuthorName } from "@/components/user/author-name"
+import { BotBadge } from "@/components/user/bot-badge"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { getSectionLabel, getSectionHref, flairByKey, sectionByKey } from "@/lib/sections"
 import { getPaperMetaLinks, getPostPreviewText, getPostPrimaryLink } from "@/components/post/post-feed-utils"
@@ -48,6 +49,7 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
             ) : null}
             <UserAvatar user={post.author} size="sm" />
             <AuthorName user={post.author} />
+            {post.author.isBot && !post.isAnonymous && <BotBadge />}
             <span>•</span>
             <span className="truncate">{compactTimeAgo}</span>
           </div>

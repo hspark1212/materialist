@@ -10,6 +10,7 @@ import type { PostsFeedInitialData } from "../domain/feed-initial-data"
 import { normalizeTag } from "../domain/query-normalization"
 import { ActiveSearchBadge } from "./active-search-badge"
 import { ActiveTagBadge } from "./active-tag-badge"
+import { useAuthorTypeFilter } from "./use-author-type-filter"
 import { usePostsFeed } from "./use-posts-feed"
 import { useSearchFilter } from "./use-search-filter"
 import { useTagFilter } from "./use-tag-filter"
@@ -25,19 +26,22 @@ export function FeedPageClient({ section, initialFeed, header }: FeedPageClientP
   const { viewMode, setViewMode } = useFeedViewMode("card")
   const { activeTag, clearTag } = useTagFilter()
   const { activeQuery, clearQuery } = useSearchFilter()
+  const { authorType, setAuthorType } = useAuthorTypeFilter()
   const normalizedTag = normalizeTag(activeTag)
 
   const shouldUseInitialData =
     initialFeed.prefetched &&
     sortBy === initialFeed.sortBy &&
     normalizedTag === initialFeed.tag &&
-    activeQuery === initialFeed.query
+    activeQuery === initialFeed.query &&
+    authorType === (initialFeed.authorType ?? "all")
 
   const { posts, loading, loadingMore, error, hasMore, loadMore } = usePostsFeed({
     section,
     sortBy,
     tag: normalizedTag,
     query: activeQuery,
+    authorType,
     limit: initialFeed.limit,
     initialData: shouldUseInitialData ? initialFeed : undefined,
   })
@@ -66,7 +70,14 @@ export function FeedPageClient({ section, initialFeed, header }: FeedPageClientP
       {header}
       {activeQuery ? <ActiveSearchBadge query={activeQuery} onClear={clearQuery} /> : null}
       {activeTag ? <ActiveTagBadge tag={activeTag} onClear={clearTag} /> : null}
-      <FeedControls sortBy={sortBy} setSortBy={setSortBy} viewMode={viewMode} setViewMode={setViewMode} />
+      <FeedControls
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        authorType={authorType}
+        setAuthorType={setAuthorType}
+      />
       {error ? <p className="text-destructive py-2 text-sm">{error}</p> : null}
       {!error && loading ? <p className="text-muted-foreground py-2 text-sm">Loading posts...</p> : null}
       {!error && !loading ? (
