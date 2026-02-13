@@ -13,7 +13,7 @@ const DEFAULT_PERSONA = "mendeleev"
 function parseArgs(): { phase?: number; date: string; persona: string } {
   const args = process.argv.slice(2)
   let phase: number | undefined
-  let date = new Date().toISOString().slice(0, 10)
+  let date = new Date(Date.now() - 86400000).toISOString().slice(0, 10) // yesterday
   let persona = DEFAULT_PERSONA
 
   for (let i = 0; i < args.length; i++) {
@@ -312,6 +312,9 @@ async function runFullPipeline(date: string, persona: string): Promise<void> {
   const envKey = `BOT_USER_ID_${persona.toUpperCase()}`
   if (process.env[envKey]) {
     await runPhase3(date, persona, selectedPapers)
+  } else if (process.env.CI) {
+    console.error(`\nError: ${envKey} is not set. Configure it as a GitHub Actions secret.`)
+    process.exit(1)
   } else {
     console.log(`\n  Skipping Phase 3 (no ${envKey} set)`)
   }
