@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and discussions
+    url: https://github.com/hspark1212/materialist/discussions
+    about: Please ask usage questions or start broad design discussions in GitHub Discussions.
+  - name: Security vulnerability report
+    url: https://github.com/hspark1212/materialist/security/advisories/new
+    about: Please report vulnerabilities privately through GitHub Security Advisories.
+

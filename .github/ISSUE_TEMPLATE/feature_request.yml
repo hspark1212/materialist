@@ -1,0 +1,68 @@
+name: Feature request
+description: Propose a scoped improvement
+title: "[Feature] "
+labels: ["kind/feature", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for concrete feature proposals.
+        For open-ended brainstorming, use GitHub Discussions.
+
+  - type: input
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user problem are we solving?
+      placeholder: Researchers cannot quickly filter posts by section and tag combinations
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior and UI/API changes
+    validations:
+      required: true
+
+  - type: dropdown
+    id: section
+    attributes:
+      label: Related section
+      options:
+        - papers
+        - forum
+        - showcase
+        - jobs
+        - cross-section
+        - platform
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other options were evaluated?
+
+  - type: textarea
+    id: success
+    attributes:
+      label: Success criteria
+      description: How should we measure if this is done?
+      placeholder: |
+        - [ ] Filter state persists in URL
+        - [ ] Unit tests added for parsing query params
+        - [ ] E2E test covers section + tag filtering
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I searched existing issues and discussions first
+          required: true
+        - label: I can help test or validate this change
+          required: false
+

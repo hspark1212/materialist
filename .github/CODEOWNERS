@@ -1,0 +1,13 @@
+# Global ownership
+* @hspark1212
+
+# Infrastructure and deployment
+wrangler.jsonc @hspark1212
+open-next.config.ts @hspark1212
+middleware.ts @hspark1212
+
+# Database and auth-sensitive paths
+supabase/migrations/** @hspark1212
+src/lib/supabase/** @hspark1212
+src/lib/auth/** @hspark1212
+

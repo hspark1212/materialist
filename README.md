@@ -207,6 +207,16 @@ npm run deploy     # OpenNext Cloudflare deploy
 
 Keep secrets (for example `SUPABASE_SERVICE_ROLE_KEY`, `ORCID_CLIENT_SECRET`, `GITHUB_TOKEN`) out of git and in runtime secret storage.
 
+## Contributing and Collaboration
+
+- Read contribution guidelines in [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
+- Review behavior standards in [.github/CODE_OF_CONDUCT.md](.github/CODE_OF_CONDUCT.md)
+- Report vulnerabilities via [.github/SECURITY.md](.github/SECURITY.md)
+- Use support channels listed in [.github/SUPPORT.md](.github/SUPPORT.md)
+
+Maintainers can run private collaboration setup from [docs/github-private-collaboration-checklist.md](docs/github-private-collaboration-checklist.md).
+When ready to open source, use [docs/github-public-launch-checklist.md](docs/github-public-launch-checklist.md).
+
 ## Guardrails
 
 - Tailwind v4 is CSS-driven; do not introduce `tailwind.config.ts`
