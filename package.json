@@ -12,9 +12,11 @@
     "test:e2e": "playwright test",
     "test:all": "vitest run && playwright test",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "curate": "tsx scripts/curate-papers.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@opennextjs/cloudflare": "^1.16.3",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
@@ -46,6 +48,7 @@
     "eslint-config-next": "16.1.6",
     "jsdom": "^28.0.0",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.0",
     "vitest": "^4.0.18",

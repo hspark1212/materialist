@@ -53,7 +53,12 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts# Screenshots and test artifacts
+next-env.d.ts
+
+# curation script output
+/output/
+
+# Screenshots and test artifacts
 *.png
 *.jpg
 *.jpeg
