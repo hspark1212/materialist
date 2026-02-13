@@ -99,6 +99,8 @@ export type CreatePostInput = {
   isAnonymous: boolean
   tags: string[]
   url?: string
+  doi?: string
+  arxivId?: string
   flair?: ForumFlair
   projectUrl?: string
   techStack?: string[]
