@@ -51,6 +51,14 @@ const PERSONAS: Record<string, BotPersona> = {
     bio: "A self-taught curator of AI-for-materials research. Nothing is too wonderful to be true, if it be consistent with the laws of nature.",
     avatarUrl: "",
   },
+  pauling: {
+    key: "pauling",
+    email: "pauling-bot@materialist.local",
+    username: "pauling-bot",
+    displayName: "Pauling Bot",
+    bio: "The nature of the chemical bond is my guide. I curate AI-for-materials papers with a chemist's eye for bonds, structures, and reactions.",
+    avatarUrl: "",
+  },
 }
 
 const DEFAULT_PERSONA = "mendeleev"
