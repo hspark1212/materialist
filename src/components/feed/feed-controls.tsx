@@ -1,8 +1,16 @@
 "use client"
 
-import { Bot, Flame, Globe, LayoutGrid, List, Sparkles, TrendingUp, User } from "lucide-react"
+import { Bot, ChevronDown, Flame, Globe, LayoutGrid, List, Sparkles, TrendingUp, User } from "lucide-react"
 
 import type { AuthorType } from "@/features/posts/application/ports"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 export type FeedSort = "hot" | "new" | "top"
@@ -28,59 +36,71 @@ export function FeedControls({
   return (
     <div className="bg-background/80 sticky top-[var(--header-height)] z-30 mb-3 flex items-center justify-between border-b border-border py-2 backdrop-blur-sm">
       <div className="flex items-center gap-2">
-        <ToggleGroup
-          type="single"
-          value={authorType}
-          onValueChange={(value) => {
-            if (value) {
-              setAuthorType(value as AuthorType)
-            }
-          }}
-          variant="outline"
-          size="sm"
-          spacing={1}
-        >
-          <ToggleGroupItem value="all" aria-label="All posts">
-            <Globe className="size-4" />
-            <span className="hidden sm:inline">All</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="human" aria-label="Human posts only">
-            <User className="size-4" />
-            <span className="hidden sm:inline">Human</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="bot" aria-label="AI Bot posts only">
-            <Bot className="size-4" />
-            <span className="hidden sm:inline">AI Bot</span>
-          </ToggleGroupItem>
-        </ToggleGroup>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1">
+              {authorType === "all" && <Globe className="size-4" />}
+              {authorType === "human" && <User className="size-4" />}
+              {authorType === "bot" && <Bot className="size-4" />}
+              <span className="hidden sm:inline">
+                {authorType === "all" ? "All" : authorType === "human" ? "Human" : "AI Bot"}
+              </span>
+              <ChevronDown className="size-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup
+              value={authorType}
+              onValueChange={(value) => setAuthorType(value as AuthorType)}
+            >
+              <DropdownMenuRadioItem value="all">
+                <Globe className="size-4" />
+                All
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="human">
+                <User className="size-4" />
+                Human
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="bot">
+                <Bot className="size-4" />
+                AI Bot
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <div className="h-5 w-px bg-border" />
-
-        <ToggleGroup
-          type="single"
-          value={sortBy}
-          onValueChange={(value) => {
-            if (value) {
-              setSortBy(value as FeedSort)
-            }
-          }}
-          variant="outline"
-          size="sm"
-          spacing={1}
-        >
-          <ToggleGroupItem value="hot" aria-label="Sort by hot">
-            <Flame className="size-4" />
-            <span className="hidden sm:inline">Hot</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="new" aria-label="Sort by new">
-            <Sparkles className="size-4" />
-            <span className="hidden sm:inline">New</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem value="top" aria-label="Sort by top">
-            <TrendingUp className="size-4" />
-            <span className="hidden sm:inline">Top</span>
-          </ToggleGroupItem>
-        </ToggleGroup>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1">
+              {sortBy === "hot" && <Flame className="size-4" />}
+              {sortBy === "new" && <Sparkles className="size-4" />}
+              {sortBy === "top" && <TrendingUp className="size-4" />}
+              <span className="hidden sm:inline">
+                {sortBy === "hot" ? "Hot" : sortBy === "new" ? "New" : "Top"}
+              </span>
+              <ChevronDown className="size-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as FeedSort)}
+            >
+              <DropdownMenuRadioItem value="hot">
+                <Flame className="size-4" />
+                Hot
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="new">
+                <Sparkles className="size-4" />
+                New
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="top">
+                <TrendingUp className="size-4" />
+                Top
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <ToggleGroup
