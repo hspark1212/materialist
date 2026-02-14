@@ -89,10 +89,8 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
               orientation="horizontal"
               size="sm"
               compact
-              hideDownvote
-              countMode="nonNegative"
-              countLabel="Likes"
-              className="h-7 min-h-11 px-2 md:min-h-0"
+              countMode="net"
+              className="h-7 min-h-11 px-1 md:min-h-0"
             />
             <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
               <Link href={`/post/${post.id}#comments`}>
