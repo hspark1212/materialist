@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import type { ForumFlair, JobType, Section, ShowcaseType } from "@/lib"
 import { useAuth } from "@/lib/auth"
+import { trackPostCreated } from "@/lib/analytics"
 import { useIdentity } from "@/lib/identity"
 import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseTypeLabels } from "@/lib/sections"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -103,6 +104,7 @@ export function PostComposer() {
         throw new Error(payload.error ?? "Failed to create post")
       }
 
+      trackPostCreated(section, isAnonymousMode)
       router.push(`/post/${payload.post.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create post")

@@ -5,6 +5,7 @@ import { useRef, useState } from "react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
+import { trackCommentCreated } from "@/lib/analytics"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
 import { Button } from "@/components/ui/button"
@@ -60,6 +61,7 @@ export function CommentComposer({ postId, parentCommentId = null, onSubmitted, a
       }
 
       setContent("")
+      trackCommentCreated(isAnonymousMode, !!parentCommentId)
 
       if (onSubmitted) {
         await onSubmitted()
