@@ -5,6 +5,7 @@ import { ArrowBigDown, ArrowBigUp } from "lucide-react"
 
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
+import { trackVote } from "@/lib/analytics"
 import { cn } from "@/lib"
 
 type VoteButtonProps = {
@@ -102,6 +103,7 @@ export function VoteButton({
 
       setUserVote(payload.userVote as -1 | 0 | 1)
       setVoteCount(payload.voteCount as number)
+      trackVote(targetType, direction, payload.userVote as -1 | 0 | 1)
     } catch (error) {
       console.error("[VoteButton] Vote failed:", error)
     } finally {
