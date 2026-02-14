@@ -10,6 +10,7 @@ import {
   initConsentDefaults,
   updateConsent,
 } from "./consent"
+import { isGdprCountry } from "./geo"
 import type { ConsentState } from "./types"
 
 type ConsentPhase = "loading" | "banner" | "granted" | "denied"
@@ -26,7 +27,7 @@ const AnalyticsContext = createContext<AnalyticsContextValue | null>(null)
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? ""
 const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ?? ""
 
-export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
+export function AnalyticsProvider({ children, countryCode }: { children: React.ReactNode; countryCode: string | null }) {
   const [phase, setPhase] = useState<ConsentPhase>("loading")
   const initialized = useRef(false)
 
@@ -37,10 +38,13 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
     if (hasRespondedToConsent()) {
       setPhase(getConsentState().analytics ? "granted" : "denied")
+    } else if (!isGdprCountry(countryCode)) {
+      updateConsent({ analytics: true })
+      setPhase("granted")
     } else {
       setPhase("banner")
     }
-  }, [])
+  }, [countryCode])
 
   const consentGiven = phase === "granted"
   const showBanner = phase === "banner"

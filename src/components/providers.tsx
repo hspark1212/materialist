@@ -9,9 +9,9 @@ import { AnalyticsProvider, PageTracker } from "@/lib/analytics";
 import { VerificationRequiredDialog } from "@/components/identity/verification-required-dialog";
 import { ConsentBanner } from "@/components/analytics/consent-banner";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children, countryCode }: { children: React.ReactNode; countryCode: string | null }) {
   return (
-    <AnalyticsProvider>
+    <AnalyticsProvider countryCode={countryCode}>
       <NextThemesProvider
         attribute="class"
         defaultTheme="dark"

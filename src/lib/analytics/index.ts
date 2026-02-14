@@ -8,4 +8,5 @@ export {
   trackAuthEvent,
   trackIdentityModeSwitch,
 } from "./events"
+export { isGdprCountry } from "./geo"
 export type { AnalyticsEvent, ConsentState } from "./types"
