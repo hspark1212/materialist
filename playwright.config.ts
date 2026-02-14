@@ -1,4 +1,18 @@
 import { defineConfig, devices } from "@playwright/test";
+import fs from "fs";
+import path from "path";
+
+// Manually load .env.local to avoid dependency issues
+const envPath = path.resolve(__dirname, ".env.local");
+if (fs.existsSync(envPath)) {
+  const envConfig = fs.readFileSync(envPath, "utf8");
+  envConfig.split("\n").forEach((line) => {
+    const [key, ...values] = line.split("=");
+    if (key && values.length > 0) {
+      process.env[key.trim()] = values.join("=").trim().replace(/^["'](.*)["']$/, '$1');
+    }
+  });
+}
 
 export default defineConfig({
   testDir: "./tests",
@@ -8,7 +22,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:3002",
     trace: "on-first-retry",
   },
   projects: [
@@ -26,8 +40,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: "npm run dev -- -p 3002",
+    url: "http://localhost:3002",
     reuseExistingServer: !process.env.CI,
   },
 });

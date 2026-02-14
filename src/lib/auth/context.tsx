@@ -61,6 +61,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase])
 
   useEffect(() => {
+    // --- DEMO MODE BACKDOOR ---
+    if (typeof window !== "undefined" && localStorage.getItem("DEMO_MODE") === "true") {
+      console.log("⚠️ DEMO MODE ACTIVE ⚠️");
+      const demoProfile: Profile = {
+        id: "demo-user-id",
+        username: "stark_mater",
+        display_name: "Stark Mater",
+        avatar_url: "https://api.dicebear.com/9.x/dylan/svg?seed=Stark",
+        email: "demo@materialist.ai",
+        is_anonymous: false,
+        is_bot: false,
+        karma: 1250,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        institution: "Materialist Institute",
+        bio: "Demo Account for Professional Video",
+        position: "Lead Researcher",
+        department: "AI Materials",
+        country: "South Korea",
+        website_url: "https://materialist.ai",
+        research_interests: ["Generative Models", "Crystals"],
+        generated_display_name: null,
+        orcid_id: "0000-0002-1825-0097",
+        orcid_name: "Stark Mater",
+        orcid_verified_at: new Date().toISOString(),
+      };
+
+      setSession({
+        access_token: "fake",
+        token_type: "bearer",
+        expires_in: 3600,
+        refresh_token: "fake",
+        user: {
+          id: demoProfile.id,
+          aud: "authenticated",
+          role: "authenticated",
+          email: demoProfile.email,
+          email_confirmed_at: new Date().toISOString(),
+          phone: "",
+          app_metadata: { provider: "email", providers: ["email"] },
+          user_metadata: {},
+          identities: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      } as any);
+
+      setProfile(demoProfile);
+      setInitialized(true);
+      return;
+    }
+    // --------------------------
+
     const init = async () => {
       try {
         const { data: { session: current } } = await supabase.auth.getSession()
