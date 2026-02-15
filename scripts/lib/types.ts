@@ -19,6 +19,16 @@ export type ArxivSearchConfig = {
   dateRange?: { from: string; to: string }
 }
 
+export type RssFeedConfig = {
+  groups: RssQueryGroup[]
+}
+
+export type RssQueryGroup = {
+  label: string
+  categories: string[]        // arXiv categories (joined with + in URL)
+  abstractKeywords: string[]  // abstract keyword filter (OR matching)
+}
+
 // ── Gemini types ──
 
 export type FilterResult = {

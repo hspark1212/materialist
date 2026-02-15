@@ -1,7 +1,7 @@
 import * as fs from "node:fs"
 import * as path from "node:path"
 
-import { DEFAULT_CONFIG, QUERY_LABELS, searchArxiv } from "./lib/arxiv"
+import { DEFAULT_CONFIG, QUERY_LABELS, RSS_FEED_CONFIG, searchArxiv, fetchRssPapers } from "./lib/arxiv"
 import { DEFAULT_GEMINI_CONFIG, evaluatePapers, filterPapers } from "./lib/gemini"
 import { createScriptAdminClient } from "./lib/supabase"
 import type { ArxivPaper, CuratedPaper, CurationResult } from "./lib/types"
@@ -10,11 +10,14 @@ import type { ArxivPaper, CuratedPaper, CurationResult } from "./lib/types"
 
 const DEFAULT_PERSONA = "mendeleev"
 
-function parseArgs(): { phase?: number; date: string; persona: string } {
+type FetchStrategy = "rss" | "search-api"
+
+function parseArgs(): { phase?: number; date: string; persona: string; strategy?: FetchStrategy } {
   const args = process.argv.slice(2)
   let phase: number | undefined
   let date = new Date(Date.now() - 86400000).toISOString().slice(0, 10) // yesterday
   let persona = DEFAULT_PERSONA
+  let strategy: FetchStrategy | undefined
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--phase" && args[i + 1]) {
@@ -26,10 +29,32 @@ function parseArgs(): { phase?: number; date: string; persona: string } {
     } else if (args[i] === "--persona" && args[i + 1]) {
       persona = args[i + 1]
       i++
+    } else if (args[i] === "--strategy" && args[i + 1]) {
+      const val = args[i + 1]
+      if (val !== "rss" && val !== "search-api") {
+        console.error(`Invalid --strategy: ${val} (must be "rss" or "search-api")`)
+        process.exit(1)
+      }
+      strategy = val
+      i++
     }
   }
 
-  return { phase, date, persona }
+  return { phase, date, persona, strategy }
+}
+
+/** Calculate how many days ago a YYYY-MM-DD date is from today (UTC) */
+function daysAgo(dateStr: string): number {
+  const target = new Date(dateStr + "T00:00:00Z")
+  const now = new Date()
+  const todayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  return Math.round((todayUtc.getTime() - target.getTime()) / 86400000)
+}
+
+/** Choose fetch strategy based on how recent the target date is */
+function chooseFetchStrategy(date: string): FetchStrategy {
+  const age = daysAgo(date)
+  return age <= 1 ? "rss" : "search-api"
 }
 
 /** Convert a YYYY-MM-DD date string to arXiv submittedDate range (full day) */
@@ -70,11 +95,25 @@ function readJson<T>(filename: string): T {
 
 // ── Phase 1: arXiv collection ──
 
-async function runPhase1(date: string): Promise<ArxivPaper[]> {
+async function runPhase1(date: string, strategyOverride?: FetchStrategy): Promise<ArxivPaper[]> {
   console.log(`\n=== Phase 1: arXiv Paper Collection ===\n`)
 
-  const config = { ...DEFAULT_CONFIG, dateRange: toDateRange(date) }
-  const { papers, querySummary } = await searchArxiv(config)
+  const strategy = strategyOverride ?? chooseFetchStrategy(date)
+  console.log(`  Strategy: ${strategy} (date: ${date}, ${daysAgo(date)} day(s) ago)`)
+
+  let papers: ArxivPaper[]
+  let querySummary: Record<string, number>
+
+  if (strategy === "rss") {
+    const result = await fetchRssPapers(RSS_FEED_CONFIG)
+    papers = result.papers
+    querySummary = result.querySummary
+  } else {
+    const config = { ...DEFAULT_CONFIG, dateRange: toDateRange(date) }
+    const result = await searchArxiv(config)
+    papers = result.papers
+    querySummary = result.querySummary
+  }
 
   console.log(`\n  Summary:`)
   for (const [label, count] of Object.entries(querySummary)) {
@@ -303,14 +342,14 @@ async function runPhase3(
 
 // ── Full pipeline ──
 
-async function runFullPipeline(date: string, persona: string): Promise<void> {
+async function runFullPipeline(date: string, persona: string, strategyOverride?: FetchStrategy): Promise<void> {
   const startTime = Date.now()
 
   console.log(`Paper Curation Pipeline — ${date}`)
   console.log("=".repeat(50))
 
   // Phase 1
-  const candidates = await runPhase1(date)
+  const candidates = await runPhase1(date, strategyOverride)
   if (candidates.length === 0) {
     console.error("\nPipeline aborted: no candidates found.")
     process.exit(1)
@@ -368,17 +407,17 @@ function readJsonSafe(filename: string): CuratedPaper[] | null {
 // ── Main ──
 
 async function main(): Promise<void> {
-  const { phase, date, persona } = parseArgs()
+  const { phase, date, persona, strategy } = parseArgs()
 
   try {
     if (phase === 1) {
-      await runPhase1(date)
+      await runPhase1(date, strategy)
     } else if (phase === 2) {
       await runPhase2(date)
     } else if (phase === 3) {
       await runPhase3(date, persona)
     } else {
-      await runFullPipeline(date, persona)
+      await runFullPipeline(date, persona, strategy)
     }
   } catch (err) {
     console.error("\nFatal error:", err)
