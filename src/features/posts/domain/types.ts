@@ -58,6 +58,7 @@ export type PostRow = {
   location: string | null
   job_type: JobType | null
   application_url: string | null
+  deadline: string | null
   created_at: string
   updated_at: string
 }
@@ -110,6 +111,7 @@ export type CreatePostInput = {
   location?: string
   jobType?: JobType
   applicationUrl?: string
+  deadline?: string
 }
 
 export type UpdatePostInput = Partial<CreatePostInput>
@@ -150,6 +152,7 @@ export type PostInsertPayload = {
   location: string | null
   job_type: JobType | null
   application_url: string | null
+  deadline: string | null
 }
 
 export type PostUpdatePayload = Partial<PostInsertPayload>

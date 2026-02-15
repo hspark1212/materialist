@@ -1,15 +1,16 @@
 "use client"
 
 import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
+import { format, formatDistanceToNow, isPast } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
 import type { Post } from "@/lib"
 import { AuthorName } from "@/components/user/author-name"
 import { BotBadge } from "@/components/user/bot-badge"
 import { UserAvatar } from "@/components/user/user-avatar"
-import { getSectionLabel, getSectionHref, flairByKey, sectionByKey } from "@/lib/sections"
+import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, sectionByKey } from "@/lib/sections"
 import { getPaperMetaLinks, getPostPreviewText, getPostPrimaryLink } from "@/components/post/post-feed-utils"
+import { TagLink } from "@/components/post/post-tags"
 import { ShareButton } from "@/components/post/share-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -64,7 +65,7 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
             </p>
           ) : null}
 
-          {paperLinks.length > 0 ? (
+          {(paperLinks.length > 0 || (post.tags && post.tags.length > 0)) ? (
             <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-[11px]">
               {paperLinks.map((link) => (
                 <a
@@ -77,6 +78,26 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
                   {link.label}
                 </a>
               ))}
+              {post.tags?.map((tag) => (
+                <TagLink key={tag} tag={tag} size="sm" />
+              ))}
+            </div>
+          ) : null}
+
+          {post.type === "job" && post.company ? (
+            <div className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span className="font-medium text-foreground">{post.company}</span>
+              {post.location ? <span>· {post.location}</span> : null}
+              {post.jobType ? (
+                <Badge variant="outline" className="text-[10px] px-1 py-0">{jobTypeLabels[post.jobType]}</Badge>
+              ) : null}
+              {post.deadline ? (
+                isPast(new Date(post.deadline)) ? (
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-muted text-muted-foreground">Closed</Badge>
+                ) : (
+                  <span className="text-muted-foreground">· Due: {format(new Date(post.deadline), "MMM d")}</span>
+                )
+              ) : null}
             </div>
           ) : null}
 

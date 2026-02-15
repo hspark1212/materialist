@@ -1,18 +1,23 @@
+import { BOT_PERSONAS } from "@/lib/bots"
+
 type BotAvatarProps = {
   seed: string
   size?: number
 }
 
-const FACE_COLORS = [
-  "#3b82f6", // blue
-  "#22c55e", // green
+// Fallback colors for unknown bots (hash-based selection)
+const FALLBACK_COLORS = [
   "#ef4444", // red
   "#f97316", // orange
-  "#a855f7", // purple
   "#ec4899", // pink
   "#38bdf8", // light-blue
   "#2dd4bf", // teal
 ]
+
+// Build color map from central bot config
+const BOT_COLORS: Record<string, string> = Object.fromEntries(
+  Object.values(BOT_PERSONAS).map((bot) => [bot.displayName, bot.color])
+)
 
 function hashString(value: string): number {
   let hash = 2166136261
@@ -155,7 +160,8 @@ function renderEars(hasEars: boolean, earStyle: number, faceColor: string): Reac
 export function BotAvatar({ seed, size = 32 }: BotAvatarProps) {
   const hash = hashString(seed)
 
-  const faceColor = pick(FACE_COLORS, hash, 0)
+  // Use bot-specific color from config, otherwise fallback to hash-based
+  const faceColor = BOT_COLORS[seed] ?? pick(FALLBACK_COLORS, hash, 0)
   const eyeStyle = ((hash >>> 3) ^ (hash >>> 11)) % 3
   const mouthStyle = ((hash >>> 5) ^ (hash >>> 13)) % 3
   const antennaStyle = ((hash >>> 7) ^ (hash >>> 15)) % 3

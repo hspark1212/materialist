@@ -90,6 +90,7 @@ export function mapPostRowToPost(row: PostWithAuthorRow): Post {
     location: row.location ?? undefined,
     jobType: row.job_type ?? undefined,
     applicationUrl: row.application_url ?? undefined,
+    deadline: row.deadline ?? undefined,
   }
 }
 

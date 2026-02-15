@@ -61,6 +61,32 @@ describe("buildCreatePostInsert", () => {
     expect(job.type).toBe("job")
   })
 
+  it("includes deadline for job posts", () => {
+    const post = buildCreatePostInsert("user-1", {
+      title: "ML Engineer",
+      content: "Job description",
+      section: "jobs",
+      isAnonymous: false,
+      tags: ["ml"],
+      deadline: "2026-03-31",
+    })
+
+    expect(post.deadline).toBe("2026-03-31")
+  })
+
+  it("ignores deadline for non-job posts", () => {
+    const post = buildCreatePostInsert("user-1", {
+      title: "Forum post",
+      content: "Content",
+      section: "forum",
+      isAnonymous: false,
+      tags: [],
+      deadline: "2026-03-31",
+    })
+
+    expect(post.deadline).toBeNull()
+  })
+
   it("trims and validates title/content", () => {
     expect(() =>
       buildCreatePostInsert("user-1", {

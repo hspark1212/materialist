@@ -57,6 +57,7 @@ export interface Post {
   location?: string
   jobType?: JobType
   applicationUrl?: string
+  deadline?: string  // ISO date string
 }
 
 export interface Comment {
