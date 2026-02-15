@@ -16,6 +16,18 @@ export async function POST() {
     }
 
     const admin = createAdminClient()
+
+    // Clear ORCID connection before deleting the user
+    // This ensures the ORCID can be reused if the user creates a new account
+    await admin
+      .from("profiles")
+      .update({
+        orcid_id: null,
+        orcid_name: null,
+        orcid_verified_at: null,
+      })
+      .eq("id", user.id)
+
     const { error: deleteError } = await admin.auth.admin.deleteUser(user.id)
 
     if (deleteError) {

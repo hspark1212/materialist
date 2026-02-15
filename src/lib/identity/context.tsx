@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 
 import type { User } from "@/lib/types"
@@ -42,10 +42,31 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
   // ORCID verification is the gate for Verified mode
   const canUseVerifiedMode = isAuthenticated && !!user?.orcidVerifiedAt
 
+  // Track previous auth status for detecting transitions
+  const prevStatusRef = useRef(status)
+
   const activeUser = useMemo<User | null>(() => {
     if (!user || !isAuthenticated) return null
     return isAnonymousMode ? buildAnonymousUser(user) : buildVerifiedUser(user)
   }, [user, isAuthenticated, isAnonymousMode])
+
+  // Auto-switch identity mode based on auth status transitions
+  useEffect(() => {
+    const prevStatus = prevStatusRef.current
+    prevStatusRef.current = status
+
+    // 1. Logout detected: verified/authenticated → anonymous
+    if ((prevStatus === "verified" || prevStatus === "authenticated") && status === "anonymous") {
+      setTheme("dark") // Switch to anonymous mode
+      return
+    }
+
+    // 2. ORCID-verified user login detected: → verified with canUseVerifiedMode
+    if (prevStatus !== "verified" && status === "verified" && canUseVerifiedMode) {
+      setTheme("light") // Switch to verified mode
+      return
+    }
+  }, [status, canUseVerifiedMode, setTheme])
 
   // Force dark mode for unverified users who somehow end up in light mode
   useEffect(() => {
