@@ -40,6 +40,7 @@ The review highlights open challenges including generalization to out-of-distrib
 ```markdown
 📌 This post is a summary. Please check the [original listing](https://example.com/job-posting) for full details and the latest status.
 
+
 The Ceder Group at MIT's Department of Materials Science and Engineering is seeking a postdoctoral researcher to lead ML-driven discovery of next-generation solid-state battery electrolytes.
 
 ### What You'll Do
