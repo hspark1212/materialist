@@ -72,6 +72,7 @@ const POST_COLUMNS_FULL = [
   "location",
   "job_type",
   "application_url",
+  "deadline",
   "created_at",
   "updated_at",
 ].join(",")
@@ -99,6 +100,7 @@ const POST_COLUMNS_LIST = [
   "location",
   "job_type",
   "application_url",
+  "deadline",
   "created_at",
   "updated_at",
 ].join(",")

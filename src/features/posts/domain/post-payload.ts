@@ -57,6 +57,7 @@ export function buildCreatePostInsert(authorId: string, input: CreatePostInput):
     location: input.section === "jobs" ? cleanOptional(input.location) : null,
     job_type: input.section === "jobs" ? input.jobType ?? null : null,
     application_url: input.section === "jobs" ? cleanOptional(input.applicationUrl) : null,
+    deadline: input.section === "jobs" ? cleanOptional(input.deadline) : null,
   }
 }
 
@@ -123,6 +124,10 @@ export function buildUpdatePostPatch(
 
   if (input.applicationUrl !== undefined) {
     patch.application_url = nextSection === "jobs" ? cleanOptional(input.applicationUrl) : null
+  }
+
+  if (input.deadline !== undefined) {
+    patch.deadline = nextSection === "jobs" ? cleanOptional(input.deadline) : null
   }
 
   patch.type = resolvePostType(nextSection, nextUrl)

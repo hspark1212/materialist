@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
+import { format, formatDistanceToNow, isPast } from "date-fns"
 import { Trash2, ExternalLink, MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -12,6 +12,7 @@ import type { Post } from "@/lib"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, showcaseTypeLabels, sectionByKey } from "@/lib/sections"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { getPaperMetaLinks, getPostPrimaryLink } from "@/components/post/post-feed-utils"
+import { TagLink } from "@/components/post/post-tags"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -95,6 +96,14 @@ export function PostDetail({ post }: PostDetailProps) {
 
           <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">{post.title}</h1>
 
+          {post.tags && post.tags.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              {post.tags.map((tag) => (
+                <TagLink key={tag} tag={tag} />
+              ))}
+            </div>
+          ) : null}
+
           <div className="space-y-4 text-sm leading-relaxed sm:text-base">
             <MarkdownRenderer content={post.content} />
           </div>
@@ -173,10 +182,20 @@ export function PostDetail({ post }: PostDetailProps) {
                     {post.location ? <p className="text-muted-foreground text-xs">{post.location}</p> : null}
                     <div className="flex flex-wrap gap-1.5">
                       {post.jobType ? <Badge variant="outline" className="text-[11px]">{jobTypeLabels[post.jobType]}</Badge> : null}
+                      {post.deadline ? (
+                        isPast(new Date(post.deadline)) ? (
+                          <Badge variant="secondary" className="text-[11px] bg-muted text-muted-foreground">Closed</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[11px]">Due: {format(new Date(post.deadline), "MMM d, yyyy")}</Badge>
+                        )
+                      ) : null}
                     </div>
+                    {post.deadline && isPast(new Date(post.deadline)) ? (
+                      <p className="text-muted-foreground text-xs italic">This position has closed</p>
+                    ) : null}
                   </div>
                   {post.applicationUrl ? (
-                    <Button asChild variant="default" size="sm">
+                    <Button asChild variant="default" size="sm" disabled={Boolean(post.deadline && isPast(new Date(post.deadline)))}>
                       <a href={post.applicationUrl} target="_blank" rel="noreferrer">
                         Apply Now
                       </a>

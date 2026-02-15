@@ -14,65 +14,23 @@
  */
 
 import { createScriptAdminClient } from "./lib/supabase"
-
-// ── Persona registry ──
-
-type BotPersona = {
-  key: string
-  email: string
-  username: string
-  displayName: string
-  bio: string
-  avatarUrl?: string
-}
-
-const PERSONAS: Record<string, BotPersona> = {
-  mendeleev: {
-    key: "mendeleev",
-    email: "mendeleev-bot@materialist.local",
-    username: "mendeleev-bot",
-    displayName: "Mendeleev Bot",
-    bio: "I systematically organize today's AI-for-materials papers from arXiv — like arranging elements in a periodic table. Daily curation, no gaps.",
-    avatarUrl: "",
-  },
-  curie: {
-    key: "curie",
-    email: "curie-bot@materialist.local",
-    username: "curie-bot",
-    displayName: "Marie Curie Bot",
-    bio: "Automated paper curation bot. I surface the most relevant AI-for-materials papers from arXiv daily.",
-    avatarUrl: "",
-  },
-  faraday: {
-    key: "faraday",
-    email: "faraday-bot@materialist.local",
-    username: "faraday-bot",
-    displayName: "Faraday Bot",
-    bio: "A self-taught curator of AI-for-materials research. Nothing is too wonderful to be true, if it be consistent with the laws of nature.",
-    avatarUrl: "",
-  },
-  pauling: {
-    key: "pauling",
-    email: "pauling-bot@materialist.local",
-    username: "pauling-bot",
-    displayName: "Pauling Bot",
-    bio: "The nature of the chemical bond is my guide. I curate AI-for-materials papers with a chemist's eye for bonds, structures, and reactions.",
-    avatarUrl: "",
-  },
-}
-
-const DEFAULT_PERSONA = "mendeleev"
+import {
+  BOT_PERSONAS,
+  DEFAULT_PERSONA,
+  VALID_PERSONAS,
+  type BotPersona,
+} from "@/lib/bots"
 
 // ── CLI ──
 
-function parseArgs(): { persona: string; list: boolean } {
+function parseArgs(): { persona: BotPersona; list: boolean } {
   const args = process.argv.slice(2)
-  let persona = DEFAULT_PERSONA
+  let persona: BotPersona = DEFAULT_PERSONA
   let list = false
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--persona" && args[i + 1]) {
-      persona = args[i + 1]
+      persona = args[i + 1] as BotPersona
       i++
     } else if (args[i] === "--list") {
       list = true
@@ -89,7 +47,8 @@ async function main(): Promise<void> {
 
   if (list) {
     console.log("Available personas:\n")
-    for (const [key, p] of Object.entries(PERSONAS)) {
+    for (const key of VALID_PERSONAS) {
+      const p = BOT_PERSONAS[key]
       const marker = key === DEFAULT_PERSONA ? " (default)" : ""
       console.log(`  ${key}${marker}`)
       console.log(`    @${p.username} — ${p.displayName}`)
@@ -98,15 +57,15 @@ async function main(): Promise<void> {
     return
   }
 
-  const persona = PERSONAS[personaKey]
-  if (!persona) {
+  if (!VALID_PERSONAS.includes(personaKey)) {
     console.error(
       `Unknown persona: "${personaKey}"\n` +
-        `Available: ${Object.keys(PERSONAS).join(", ")}`
+        `Available: ${VALID_PERSONAS.join(", ")}`
     )
     process.exit(1)
   }
 
+  const persona = BOT_PERSONAS[personaKey]
   console.log(`Setting up bot: @${persona.username} (${persona.displayName})\n`)
 
   const supabase = createScriptAdminClient()
@@ -117,11 +76,9 @@ async function main(): Promise<void> {
     (u) => u.email === persona.email
   )
 
-  const envKey = `BOT_USER_ID_${personaKey.toUpperCase()}`
-
   if (existing) {
     console.log(`Bot user already exists: ${existing.id}`)
-    console.log(`\nAdd to .env.local:\n  ${envKey}=${existing.id}`)
+    console.log(`\nAdd to .env.local:\n  ${persona.envKey}=${existing.id}`)
     return
   }
 
@@ -147,7 +104,6 @@ async function main(): Promise<void> {
     .update({
       username: persona.username,
       display_name: persona.displayName,
-      ...(persona.avatarUrl ? { avatar_url: persona.avatarUrl } : {}),
       bio: persona.bio,
       is_anonymous: false,
       is_bot: true,
@@ -161,7 +117,7 @@ async function main(): Promise<void> {
   }
 
   console.log(`Updated profile: @${persona.username} (${persona.displayName})`)
-  console.log(`\nAdd to .env.local:\n  ${envKey}=${userId}`)
+  console.log(`\nAdd to .env.local:\n  ${persona.envKey}=${userId}`)
 }
 
 main()

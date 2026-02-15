@@ -43,6 +43,7 @@ export function PostComposer() {
   const [location, setLocation] = useState("")
   const [jobType, setJobType] = useState<JobType>("full-time")
   const [applicationUrl, setApplicationUrl] = useState("")
+  const [deadline, setDeadline] = useState("")
   const [tags, setTags] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -95,6 +96,7 @@ export function PostComposer() {
           location,
           jobType,
           applicationUrl,
+          deadline: section === "jobs" ? deadline : undefined,
         }),
       })
 
@@ -256,6 +258,20 @@ export function PostComposer() {
                   value={applicationUrl}
                   onChange={(event) => setApplicationUrl(event.target.value)}
                   placeholder="https://company.com/jobs/role"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">Application Deadline</p>
+                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                    Optional
+                  </span>
+                </div>
+                <Input
+                  type="date"
+                  className={inputClassName}
+                  value={deadline}
+                  onChange={(event) => setDeadline(event.target.value)}
                 />
               </div>
             </div>

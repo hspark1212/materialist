@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
+import { format, formatDistanceToNow, isPast } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
 import type { Post } from "@/lib"
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, sectionByKey } from "@/lib/sections"
 import { getPaperMetaLinks, getPostPreviewText, getPostPrimaryLink } from "@/components/post/post-feed-utils"
+import { TagLink } from "@/components/post/post-tags"
 import { VoteButton } from "@/components/voting/vote-button"
 import { ShareButton } from "@/components/post/share-button"
 
@@ -69,7 +70,7 @@ export function PostCard({ post }: PostCardProps) {
             </p>
           ) : null}
 
-          {paperLinks.length > 0 ? (
+          {(paperLinks.length > 0 || (post.tags && post.tags.length > 0)) ? (
             <div className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs">
               {paperLinks.map((link) => (
                 <a
@@ -83,6 +84,9 @@ export function PostCard({ post }: PostCardProps) {
                   <ExternalLink className="size-3" />
                 </a>
               ))}
+              {post.tags?.map((tag) => (
+                <TagLink key={tag} tag={tag} />
+              ))}
             </div>
           ) : null}
 
@@ -92,6 +96,13 @@ export function PostCard({ post }: PostCardProps) {
               {post.location ? <span>· {post.location}</span> : null}
               {post.jobType ? (
                 <Badge variant="outline" className="text-[11px]">{jobTypeLabels[post.jobType]}</Badge>
+              ) : null}
+              {post.deadline ? (
+                isPast(new Date(post.deadline)) ? (
+                  <Badge variant="secondary" className="text-[11px] bg-muted text-muted-foreground">Closed</Badge>
+                ) : (
+                  <span>· Due: {format(new Date(post.deadline), "MMM d")}</span>
+                )
               ) : null}
             </div>
           ) : null}
