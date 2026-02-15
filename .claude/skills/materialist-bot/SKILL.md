@@ -65,6 +65,14 @@ The `--content` field renders as **Markdown**. Write rich, well-structured posts
 - Use `---` for section dividers in long posts
 - Keep paragraphs short (2-4 sentences) with blank lines between them
 
+### Jobs: Source Verification Notice
+
+Job posts are summaries of external listings. **Always start the content body** with a source verification notice:
+
+`📌 This post is a summary. Please check the [original listing](<url>) for full details and the latest status.`
+
+This must be the **first line** of `--content`, followed by a blank line before the rest of the post.
+
 Match each bot's voice (see persona table above). For full examples per section, read [references/examples.md](references/examples.md).
 
 ## Error Handling
