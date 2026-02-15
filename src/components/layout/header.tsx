@@ -9,14 +9,18 @@ import {
 } from "react"
 import { usePathname } from "next/navigation"
 import {
+  ChevronDown,
+  Lock,
   LogIn,
+  LogOut,
   Menu,
+  Moon,
   Plus,
   Search,
   Settings,
   ShieldCheck,
+  Sun,
   User,
-  LogOut,
   X,
 } from "lucide-react"
 
@@ -30,6 +34,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -112,10 +118,52 @@ export function Header() {
         </Sheet>
 
         <Link href="/" className="flex items-center gap-2">
-          <CrystalLogo size="sm" className="text-primary" />
+          <CrystalLogo size="md" className="text-primary" />
           <LogoText size="sm" />
         </Link>
 
+        {/* Mobile Mode Pill Dropdown (md:hidden) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium",
+                "min-h-8 transition-colors hover:bg-muted md:hidden"
+              )}
+            >
+              {isHydrated && isAnonymousMode ? (
+                <>
+                  <Moon className="size-3.5" />
+                  <span>A</span>
+                </>
+              ) : (
+                <>
+                  {canUseVerifiedMode ? <Sun className="size-3.5" /> : <Lock className="size-3.5" />}
+                  <span>V</span>
+                </>
+              )}
+              <ChevronDown className="size-3 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup
+              value={isAnonymousMode ? "anonymous" : "verified"}
+              onValueChange={(v) => switchMode(v as "verified" | "anonymous")}
+            >
+              <DropdownMenuRadioItem value="verified" className={!canUseVerifiedMode ? "opacity-60" : ""}>
+                {canUseVerifiedMode ? <Sun className="size-4" /> : <Lock className="size-4" />}
+                Verified
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="anonymous">
+                <Moon className="size-4" />
+                Anonymous
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Desktop IdentitySwitch */}
         <div className="hidden md:contents">
           <IdentitySwitch
             isAnonymousMode={isAnonymousMode}
