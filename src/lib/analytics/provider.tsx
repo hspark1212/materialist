@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { GoogleAnalytics } from "@next/third-parties/google"
 import Script from "next/script"
 
 import {
@@ -64,7 +63,24 @@ export function AnalyticsProvider({ children, countryCode }: { children: React.R
   return (
     <AnalyticsContext value={{ consentGiven, showBanner, acceptAll, rejectAll }}>
       {consentGiven && GA_MEASUREMENT_ID ? (
-        <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script
+            id="gtag-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
+              `,
+            }}
+          />
+        </>
       ) : null}
 
       {consentGiven && CLARITY_PROJECT_ID ? (

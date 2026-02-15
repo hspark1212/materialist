@@ -13,7 +13,11 @@ export function PageTracker() {
     if (typeof window === "undefined" || !window.gtag || !GA_MEASUREMENT_ID) return
 
     const url = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "")
-    window.gtag("config", GA_MEASUREMENT_ID, { page_path: url })
+    window.gtag("event", "page_view", {
+      page_path: url,
+      page_location: window.location.origin + url,
+      page_title: document.title,
+    })
   }, [pathname, searchParams])
 
   return null
