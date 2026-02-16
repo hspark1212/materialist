@@ -24,6 +24,7 @@ type PostCardCompactProps = {
 export function PostCardCompact({ post }: PostCardCompactProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const compactTimeAgo = timeAgo.replace(/^about\s+/i, "")
+  const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000
   const sectionColor = sectionByKey[post.section]?.color
   const previewText = getPostPreviewText(post.content, 180)
   const primaryLink = getPostPrimaryLink(post)
@@ -53,6 +54,7 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
             {post.author.isBot && !post.isAnonymous && <BotBadge />}
             <span>•</span>
             <span className="truncate">{compactTimeAgo}</span>
+            {isEdited ? <span className="italic">(edited)</span> : null}
           </div>
 
           <Link href={`/post/${post.id}`} className="block line-clamp-1 text-sm font-semibold hover:text-primary">

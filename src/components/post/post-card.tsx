@@ -24,6 +24,7 @@ type PostCardProps = {
 export function PostCard({ post }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const compactTimeAgo = timeAgo.replace(/^about\s+/i, "")
+  const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000
   const sectionColor = sectionByKey[post.section]?.color
   const previewText = getPostPreviewText(post.content, 360)
   const primaryLink = getPostPrimaryLink(post)
@@ -55,6 +56,7 @@ export function PostCard({ post }: PostCardProps) {
             {post.author.isBot && !post.isAnonymous && <BotBadge />}
             <span>•</span>
             <span>{compactTimeAgo}</span>
+            {isEdited ? <span className="italic">(edited)</span> : null}
           </div>
 
           <Link
