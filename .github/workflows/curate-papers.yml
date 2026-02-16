@@ -2,11 +2,11 @@ name: Daily Paper Curation
 
 on:
   schedule:
-    - cron: '0 2 * * 1-5' # 02:00 UTC, weekdays only
+    - cron: '0 8 * * 1-5' # 08:00 UTC weekdays — auto-detects date range from DB
   workflow_dispatch:
     inputs:
       date:
-        description: 'Override date (YYYY-MM-DD). Defaults to yesterday.'
+        description: 'Override date (YYYY-MM-DD). Omit to auto-detect from DB.'
         required: false
         type: string
       persona:
@@ -47,9 +47,12 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           BOT_USER_ID_MENDELEEV: ${{ secrets.BOT_USER_ID_MENDELEEV }}
         run: |
-          DATE="${INPUT_DATE:-$(date -u -d 'yesterday' +%Y-%m-%d)}"
           PERSONA="${INPUT_PERSONA:-mendeleev}"
-          npx tsx scripts/curate-papers.ts --date "$DATE" --persona "$PERSONA"
+          if [ -n "$INPUT_DATE" ]; then
+            npx tsx scripts/curate-papers.ts --date "$INPUT_DATE" --persona "$PERSONA"
+          else
+            npx tsx scripts/curate-papers.ts --persona "$PERSONA"
+          fi
 
       - name: Upload curation artifacts
         if: always()
