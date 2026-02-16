@@ -15,43 +15,8 @@ export default function PrivacyPage() {
         <section>
           <h2 className="mb-2 text-base font-semibold text-foreground">What we collect</h2>
           <p>
-            When you accept analytics cookies, we collect anonymous usage data to understand how people
-            use Materialist. This includes page views, button clicks (such as voting and posting), and
-            general navigation patterns. We do not collect personal information through analytics.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="mb-2 text-base font-semibold text-foreground">Analytics services</h2>
-          <p>We use the following third-party services:</p>
-          <ul className="mt-2 list-inside list-disc space-y-1">
-            <li>
-              <strong className="text-foreground">Google Analytics 4</strong> — page views, user
-              interactions, and traffic sources. Google may process data according to their own privacy
-              policy.
-            </li>
-            <li>
-              <strong className="text-foreground">Microsoft Clarity</strong> — heatmaps and session
-              replays to understand how users interact with the interface. Clarity automatically masks
-              sensitive input fields.
-            </li>
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="mb-2 text-base font-semibold text-foreground">Cookies</h2>
-          <p>
-            Analytics cookies are only set after you explicitly accept them via the consent banner. If
-            you reject cookies, no analytics data is collected and no tracking scripts are loaded.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="mb-2 text-base font-semibold text-foreground">Your choices</h2>
-          <p>
-            You can withdraw consent at any time by clearing your browser&apos;s local storage for this
-            site. The consent banner will reappear on your next visit, allowing you to make a new
-            choice.
+            Materialist does not use third-party analytics or tracking services. We do not collect
+            anonymous usage data, page views, or navigation patterns through external tools.
           </p>
         </section>
 
