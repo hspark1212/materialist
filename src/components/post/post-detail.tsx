@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { format, formatDistanceToNow, isPast } from "date-fns"
-import { Trash2, ExternalLink, MessageSquare } from "lucide-react"
+import { Pencil, Trash2, ExternalLink, MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
@@ -34,6 +34,7 @@ export function PostDetail({ post }: PostDetailProps) {
   const primaryLink = getPostPrimaryLink(post)
   const paperMeta = getPaperMetaLinks(post)[0] ?? null
 
+  const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000
   const isOwnPost = Boolean(user && post.author && user.id === post.author.id)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -79,18 +80,30 @@ export function PostDetail({ post }: PostDetailProps) {
             </div>
             <span>•</span>
             <span>{timeAgo}</span>
+            {isEdited ? <span className="italic">(edited)</span> : null}
 
             {isOwnPost ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                className="ml-auto"
-                onClick={() => setShowDeleteDialog(true)}
-              >
-                <Trash2 className="size-3" />
-                Delete
-              </Button>
+              <div className="ml-auto flex items-center gap-1">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="xs"
+                >
+                  <Link href={`/post/${post.id}/edit`}>
+                    <Pencil className="size-3" />
+                    Edit
+                  </Link>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="size-3" />
+                  Delete
+                </Button>
+              </div>
             ) : null}
           </div>
 

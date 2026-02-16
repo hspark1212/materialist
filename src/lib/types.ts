@@ -40,6 +40,7 @@ export interface Post {
   voteCount: number
   commentCount: number
   createdAt: string
+  updatedAt: string
   tags: string[]
   isAnonymous: boolean
   type: PostType
@@ -68,6 +69,7 @@ export interface Comment {
   replies: Comment[]
   depth: number
   createdAt: string
+  updatedAt: string
   isAnonymous: boolean
   isCollapsed: boolean
   postId: string

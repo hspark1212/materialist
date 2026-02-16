@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, type CSSProperties, type FormEvent } from "r
 import { useRouter } from "next/navigation"
 
 import { toast } from "sonner"
-import type { ForumFlair, JobType, Section, ShowcaseType } from "@/lib"
+import type { ForumFlair, JobType, Post, Section, ShowcaseType } from "@/lib"
 import { useAuth } from "@/lib/auth"
 import { trackPostCreated } from "@/lib/analytics"
 import { useIdentity } from "@/lib/identity"
@@ -26,25 +26,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-export function PostComposer() {
+type PostComposerProps = {
+  initialPost?: Post
+}
+
+export function PostComposer({ initialPost }: PostComposerProps) {
+  const isEditMode = Boolean(initialPost)
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { status } = useAuth()
   const { activeUser, isAnonymousMode } = useIdentity()
-  const [section, setSection] = useState<Section>("forum")
-  const [flair, setFlair] = useState<ForumFlair>("discussion")
-  const [title, setTitle] = useState("")
-  const [url, setUrl] = useState("")
-  const [content, setContent] = useState("")
-  const [projectUrl, setProjectUrl] = useState("")
-  const [techStack, setTechStack] = useState("")
-  const [showcaseType, setShowcaseType] = useState<ShowcaseType>("tool")
-  const [company, setCompany] = useState("")
-  const [location, setLocation] = useState("")
-  const [jobType, setJobType] = useState<JobType>("full-time")
-  const [applicationUrl, setApplicationUrl] = useState("")
-  const [deadline, setDeadline] = useState("")
-  const [tags, setTags] = useState("")
+  const [section, setSection] = useState<Section>(initialPost?.section ?? "forum")
+  const [flair, setFlair] = useState<ForumFlair>(initialPost?.flair ?? "discussion")
+  const [title, setTitle] = useState(initialPost?.title ?? "")
+  const [url, setUrl] = useState(initialPost?.url ?? "")
+  const [content, setContent] = useState(initialPost?.content ?? "")
+  const [projectUrl, setProjectUrl] = useState(initialPost?.projectUrl ?? "")
+  const [techStack, setTechStack] = useState(initialPost?.techStack?.join(", ") ?? "")
+  const [showcaseType, setShowcaseType] = useState<ShowcaseType>(initialPost?.showcaseType ?? "tool")
+  const [company, setCompany] = useState(initialPost?.company ?? "")
+  const [location, setLocation] = useState(initialPost?.location ?? "")
+  const [jobType, setJobType] = useState<JobType>(initialPost?.jobType ?? "full-time")
+  const [applicationUrl, setApplicationUrl] = useState(initialPost?.applicationUrl ?? "")
+  const [deadline, setDeadline] = useState(initialPost?.deadline ?? "")
+  const [tags, setTags] = useState(initialPost?.tags?.join(", ") ?? "")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -76,8 +81,11 @@ export function PostComposer() {
     setError(null)
 
     try {
-      const response = await fetch("/api/posts", {
-        method: "POST",
+      const endpoint = isEditMode ? `/api/posts/${initialPost!.id}` : "/api/posts"
+      const method = isEditMode ? "PATCH" : "POST"
+
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -103,13 +111,17 @@ export function PostComposer() {
       const payload = await response.json()
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Failed to create post")
+        throw new Error(payload.error ?? (isEditMode ? "Failed to update post" : "Failed to create post"))
       }
 
-      trackPostCreated(section, isAnonymousMode)
-      router.push(`/post/${payload.post.id}`)
+      if (isEditMode) {
+        router.push(`/post/${initialPost!.id}`)
+      } else {
+        trackPostCreated(section, isAnonymousMode)
+        router.push(`/post/${payload.post.id}`)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create post")
+      setError(err instanceof Error ? err.message : (isEditMode ? "Failed to update post" : "Failed to create post"))
     } finally {
       setIsSubmitting(false)
     }
@@ -120,7 +132,7 @@ export function PostComposer() {
   return (
     <Card className="bg-card/80 py-4 shadow-sm">
       <CardHeader className="px-4 pb-2 sm:px-6">
-        <CardTitle>Compose your research post</CardTitle>
+        <CardTitle>{isEditMode ? "Edit post" : "Compose your research post"}</CardTitle>
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -130,13 +142,14 @@ export function PostComposer() {
               type="single"
               value={section}
               onValueChange={(value) => {
-                if (value) {
+                if (value && !isEditMode) {
                   setSection(value as Section)
                 }
               }}
               variant="outline"
               size="sm"
               spacing={1}
+              disabled={isEditMode}
             >
               {sections.map((entry) => (
                 <ToggleGroupItem
@@ -387,7 +400,7 @@ export function PostComposer() {
             className="w-full sm:w-auto"
             disabled={!title.trim() || !content.trim() || isSubmitting}
           >
-            {isSubmitting ? "Submitting..." : "Submit Post"}
+            {isSubmitting ? (isEditMode ? "Saving..." : "Submitting...") : (isEditMode ? "Save Changes" : "Submit Post")}
           </Button>
         </form>
       </CardContent>
