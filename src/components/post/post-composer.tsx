@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import type { ForumFlair, JobType, Post, Section, ShowcaseType } from "@/lib"
 import { useAuth } from "@/lib/auth"
-import { trackPostCreated } from "@/lib/analytics"
 import { useIdentity } from "@/lib/identity"
 import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseTypeLabels } from "@/lib/sections"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -117,7 +116,6 @@ export function PostComposer({ initialPost }: PostComposerProps) {
       if (isEditMode) {
         router.push(`/post/${initialPost!.id}`)
       } else {
-        trackPostCreated(section, isAnonymousMode)
         router.push(`/post/${payload.post.id}`)
       }
     } catch (err) {

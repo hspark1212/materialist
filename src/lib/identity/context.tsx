@@ -5,7 +5,6 @@ import { useTheme } from "next-themes"
 
 import type { User } from "@/lib/types"
 import { useAuth } from "@/lib/auth"
-import { trackIdentityModeSwitch } from "@/lib/analytics"
 import type { IdentityContextValue, IdentityMode } from "./types"
 
 const IdentityContext = createContext<IdentityContextValue | null>(null)
@@ -89,10 +88,9 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
         requestVerification()
         return
       }
-      trackIdentityModeSwitch(mode, target)
       setTheme(target === "anonymous" ? "dark" : "light")
     },
-    [canUseVerifiedMode, mode, requestVerification, setTheme],
+    [canUseVerifiedMode, requestVerification, setTheme],
   )
 
   const value = useMemo<IdentityContextValue>(

@@ -1,107 +1,53 @@
-"use client"
+"use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
-import Script from "next/script"
+import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import Script from "next/script";
+import { GA_MEASUREMENT_ID, pageview } from "./gtag";
 
-import {
-  getConsentState,
-  hasRespondedToConsent,
-  initConsentDefaults,
-  updateConsent,
-} from "./consent"
-import { isGdprCountry } from "./geo"
-import type { ConsentState } from "./types"
+const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ?? "";
 
-type ConsentPhase = "loading" | "banner" | "granted" | "denied"
-
-type AnalyticsContextValue = {
-  consentGiven: boolean
-  showBanner: boolean
-  acceptAll: () => void
-  rejectAll: () => void
-}
-
-const AnalyticsContext = createContext<AnalyticsContextValue | null>(null)
-
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? ""
-const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ?? ""
-
-export function AnalyticsProvider({ children, countryCode }: { children: React.ReactNode; countryCode: string | null }) {
-  const [phase, setPhase] = useState<ConsentPhase>("loading")
-  const initialized = useRef(false)
+function PageviewTracker() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (initialized.current) return
-    initialized.current = true
-    initConsentDefaults()
+    if (!pathname) return;
+    const url = searchParams?.size
+      ? `${pathname}?${searchParams.toString()}`
+      : pathname;
+    pageview(url);
+  }, [pathname, searchParams]);
 
-    if (hasRespondedToConsent()) {
-      setPhase(getConsentState().analytics ? "granted" : "denied")
-    } else if (!isGdprCountry(countryCode)) {
-      updateConsent({ analytics: true })
-      setPhase("granted")
-    } else {
-      setPhase("banner")
-    }
-  }, [countryCode])
+  return null;
+}
 
-  const consentGiven = phase === "granted"
-  const showBanner = phase === "banner"
+export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
+  const hasGA = !!GA_MEASUREMENT_ID;
+  const hasClarity = !!CLARITY_PROJECT_ID;
 
-  const acceptAll = useCallback(() => {
-    const consent: ConsentState = { analytics: true }
-    updateConsent(consent)
-    setPhase("granted")
-  }, [])
-
-  const rejectAll = useCallback(() => {
-    const consent: ConsentState = { analytics: false }
-    updateConsent(consent)
-    setPhase("denied")
-  }, [])
+  if (!hasGA && !hasClarity) return <>{children}</>;
 
   return (
-    <AnalyticsContext value={{ consentGiven, showBanner, acceptAll, rejectAll }}>
-      {consentGiven && GA_MEASUREMENT_ID ? (
+    <>
+      {hasGA && (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
             strategy="afterInteractive"
           />
-          <Script
-            id="gtag-init"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
-              `,
-            }}
-          />
+          <Script id="ga-init" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}');`}
+          </Script>
+          <PageviewTracker />
         </>
-      ) : null}
-
-      {consentGiven && CLARITY_PROJECT_ID ? (
-        <Script
-          id="microsoft-clarity"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");`,
-          }}
-        />
-      ) : null}
-
+      )}
+      {hasClarity && (
+        <Script id="clarity-init" strategy="afterInteractive">
+          {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${CLARITY_PROJECT_ID}");`}
+        </Script>
+      )}
       {children}
-    </AnalyticsContext>
-  )
-}
-
-export function useAnalyticsConsent(): AnalyticsContextValue {
-  const ctx = useContext(AnalyticsContext)
-  if (!ctx) {
-    throw new Error("useAnalyticsConsent must be used within AnalyticsProvider")
-  }
-  return ctx
+    </>
+  );
 }
