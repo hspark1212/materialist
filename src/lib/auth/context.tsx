@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation"
 import type { Session, AuthChangeEvent } from "@supabase/supabase-js"
 
 import { createClient } from "@/lib/supabase/client"
-import { trackAuthEvent } from "@/lib/analytics"
 import type { AuthContextValue, AuthStatus, Profile } from "./types"
 import { deriveStatus, isValidReturnTo, profileToUser } from "./utils"
 
@@ -103,8 +102,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!hasReceivedInitialSession.current) return
           if (hasProcessedSignIn.current) return
           hasProcessedSignIn.current = true
-          const provider = newSession?.user?.app_metadata?.provider as string | undefined
-          trackAuthEvent("auth_login", provider ?? "unknown")
           setProfile(null)
           setPendingSignIn(true)
           return
@@ -191,7 +188,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      trackAuthEvent("auth_logout")
       await supabase.auth.signOut()
     } catch (err) {
       console.warn("signOut error:", err)

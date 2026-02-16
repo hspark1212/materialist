@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Header } from "@/components/layout/header"
@@ -47,20 +46,17 @@ export const metadata: Metadata = {
     "A community platform for materials science and AI researchers. Discuss papers, share tools, and connect with fellow researchers.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const h = await headers()
-  const countryCode = h.get("cf-ipcountry") ?? null
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${ibmPlexSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <Providers countryCode={countryCode}>
+        <Providers>
           <Suspense fallback={<HeaderFallback />}>
             <Header />
           </Suspense>
