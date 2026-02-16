@@ -1,7 +1,7 @@
 import * as fs from "node:fs"
 import * as path from "node:path"
 
-import { DEFAULT_CONFIG, QUERY_LABELS, RSS_FEED_CONFIG, searchArxiv, fetchRssPapers } from "./lib/arxiv"
+import { DEFAULT_CONFIG, QUERY_LABELS, searchArxiv } from "./lib/arxiv"
 import { DEFAULT_GEMINI_CONFIG, evaluatePapers, filterPapers } from "./lib/gemini"
 import { createScriptAdminClient } from "./lib/supabase"
 import type { ArxivPaper, CuratedPaper, CurationResult } from "./lib/types"
@@ -10,14 +10,11 @@ import type { ArxivPaper, CuratedPaper, CurationResult } from "./lib/types"
 
 const DEFAULT_PERSONA = "mendeleev"
 
-type FetchStrategy = "rss" | "search-api"
-
-function parseArgs(): { phase?: number; date: string; persona: string; strategy?: FetchStrategy } {
+function parseArgs(): { phase?: number; date?: string; persona: string } {
   const args = process.argv.slice(2)
   let phase: number | undefined
-  let date = new Date(Date.now() - 86400000).toISOString().slice(0, 10) // yesterday
+  let date: string | undefined
   let persona = DEFAULT_PERSONA
-  let strategy: FetchStrategy | undefined
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--phase" && args[i + 1]) {
@@ -29,39 +26,69 @@ function parseArgs(): { phase?: number; date: string; persona: string; strategy?
     } else if (args[i] === "--persona" && args[i + 1]) {
       persona = args[i + 1]
       i++
-    } else if (args[i] === "--strategy" && args[i + 1]) {
-      const val = args[i + 1]
-      if (val !== "rss" && val !== "search-api") {
-        console.error(`Invalid --strategy: ${val} (must be "rss" or "search-api")`)
-        process.exit(1)
-      }
-      strategy = val
-      i++
     }
   }
 
-  return { phase, date, persona, strategy }
+  return { phase, date, persona }
 }
 
-/** Calculate how many days ago a YYYY-MM-DD date is from today (UTC) */
-function daysAgo(dateStr: string): number {
-  const target = new Date(dateStr + "T00:00:00Z")
-  const now = new Date()
-  const todayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-  return Math.round((todayUtc.getTime() - target.getTime()) / 86400000)
+// ── Date helpers ──
+
+/** Get yesterday's date in YYYY-MM-DD (UTC) */
+function yesterday(): string {
+  return new Date(Date.now() - 86400000).toISOString().slice(0, 10)
 }
 
-/** Choose fetch strategy based on how recent the target date is */
-function chooseFetchStrategy(date: string): FetchStrategy {
-  const age = daysAgo(date)
-  return age <= 1 ? "rss" : "search-api"
+/** Add N days to a YYYY-MM-DD date string */
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T00:00:00Z")
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
 }
 
-/** Convert a YYYY-MM-DD date string to arXiv submittedDate range (full day) */
-function toDateRange(date: string): { from: string; to: string } | undefined {
-  const compact = date.replace(/-/g, "")
-  if (compact.length !== 8) return undefined
-  return { from: `${compact}0000`, to: `${compact}2359` }
+/** Count calendar days between two YYYY-MM-DD dates (inclusive) */
+function daysBetween(from: string, to: string): number {
+  const a = new Date(from + "T00:00:00Z")
+  const b = new Date(to + "T00:00:00Z")
+  return Math.round((b.getTime() - a.getTime()) / 86400000) + 1
+}
+
+/** Convert YYYY-MM-DD to arXiv submittedDate compact format */
+function toCompact(dateStr: string): string {
+  return dateStr.replace(/-/g, "")
+}
+
+// ── DB date lookup ──
+
+/**
+ * Query Supabase for the latest paper date posted by the bot.
+ * Extracts dates from title prefix "[YYYY-MM-DD]".
+ * Returns null if no bot papers exist.
+ */
+async function getLatestPaperDate(): Promise<string | null> {
+  const supabase = createScriptAdminClient()
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select("title")
+    .eq("section", "papers")
+    .not("arxiv_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(20)
+
+  if (error) {
+    throw new Error(`Failed to query latest paper date: ${error.message}`)
+  }
+
+  if (!data?.length) return null
+
+  let maxDate = ""
+  for (const row of data) {
+    const match = (row.title as string).match(/^\[(\d{4}-\d{2}-\d{2})\]/)
+    if (match && match[1] > maxDate) maxDate = match[1]
+  }
+
+  return maxDate || null
 }
 
 // ── File I/O ──
@@ -93,51 +120,63 @@ function readJson<T>(filename: string): T {
   return JSON.parse(fs.readFileSync(filepath, "utf-8")) as T
 }
 
+function readJsonSafe(filename: string): CuratedPaper[] | null {
+  try {
+    return readJson<CuratedPaper[]>(filename)
+  } catch {
+    return null
+  }
+}
+
 // ── Phase 1: arXiv collection ──
 
-async function runPhase1(date: string, strategyOverride?: FetchStrategy): Promise<ArxivPaper[]> {
+async function runPhase1(
+  fromDate: string,
+  toDate: string
+): Promise<ArxivPaper[]> {
   console.log(`\n=== Phase 1: arXiv Paper Collection ===\n`)
+  console.log(`  Search range: ${fromDate} → ${toDate}`)
 
-  const strategy = strategyOverride ?? chooseFetchStrategy(date)
-  console.log(`  Strategy: ${strategy} (date: ${date}, ${daysAgo(date)} day(s) ago)`)
+  const days = daysBetween(fromDate, toDate)
+  console.log(`  Days in range: ${days}`)
 
-  let papers: ArxivPaper[]
-  let querySummary: Record<string, number>
+  // Scale maxResults by number of days (min 25, max 100)
+  const maxResults = Math.min(100, Math.max(25, 25 * days))
 
-  if (strategy === "rss") {
-    const result = await fetchRssPapers(RSS_FEED_CONFIG)
-    papers = result.papers
-    querySummary = result.querySummary
-  } else {
-    const config = { ...DEFAULT_CONFIG, dateRange: toDateRange(date) }
-    const result = await searchArxiv(config)
-    papers = result.papers
-    querySummary = result.querySummary
+  const config = {
+    ...DEFAULT_CONFIG,
+    maxResultsPerQuery: maxResults,
+    dateRange: {
+      from: `${toCompact(fromDate)}0000`,
+      to: `${toCompact(toDate)}2359`,
+    },
   }
+
+  const result = await searchArxiv(config)
 
   console.log(`\n  Summary:`)
-  for (const [label, count] of Object.entries(querySummary)) {
+  for (const [label, count] of Object.entries(result.querySummary)) {
     console.log(`    ${label}: ${count} papers`)
   }
-  console.log(`    Total unique candidates: ${papers.length}`)
+  console.log(`    Total unique candidates: ${result.papers.length}`)
 
-  const outFile = writeJson(`arxiv-candidates-${date}.json`, papers)
+  const tag = fromDate === toDate ? fromDate : `${fromDate}_${toDate}`
+  const outFile = writeJson(`arxiv-candidates-${tag}.json`, result.papers)
   console.log(`\n  Output: ${outFile}`)
 
-  return papers
+  return result.papers
 }
 
 // ── Phase 2: Gemini evaluation ──
 
 async function runPhase2(
-  date: string,
+  tag: string,
   candidates?: ArxivPaper[]
 ): Promise<CuratedPaper[]> {
   console.log(`\n=== Phase 2: Gemini 2-Stage Evaluation ===\n`)
 
-  // Load candidates from file if not provided
   const papers =
-    candidates ?? readJson<ArxivPaper[]>(`arxiv-candidates-${date}.json`)
+    candidates ?? readJson<ArxivPaper[]>(`arxiv-candidates-${tag}.json`)
 
   if (papers.length === 0) {
     console.error("  No candidates to evaluate.")
@@ -156,7 +195,6 @@ async function runPhase2(
     `\n  Stage 1 results: ${relevantIds.size} relevant / ${papers.length - relevantIds.size} filtered out`
   )
 
-  // Show filtered-out papers
   const rejected = filterResults.filter((r) => !r.isRelevant)
   if (rejected.length > 0) {
     console.log(`\n  Filtered out:`)
@@ -174,7 +212,6 @@ async function runPhase2(
   // Stage 2: Evaluate
   const evaluations = await evaluatePapers(filteredPapers)
 
-  // Build curated papers with scores
   const curatedPapers: CuratedPaper[] = filteredPapers
     .map((p) => {
       const evaluation = evaluations.get(p.id)
@@ -194,13 +231,11 @@ async function runPhase2(
     .filter((p): p is CuratedPaper => p !== null)
     .sort((a, b) => b.evaluation.overallScore - a.evaluation.overallScore)
 
-  // Select papers: above threshold, capped at topN
   const { topN, scoreThreshold } = DEFAULT_GEMINI_CONFIG
   const selected = curatedPapers
     .filter((p) => p.evaluation.overallScore >= scoreThreshold)
     .slice(0, topN)
 
-  // Print ranking table
   const selectedIds = new Set(selected.map((p) => p.arxivId))
   console.log(`\n  Full ranking (threshold ≥ ${scoreThreshold}, max ${topN}):`)
   curatedPapers.forEach((p, i) => {
@@ -213,7 +248,7 @@ async function runPhase2(
   })
   console.log(`\n  (* = selected, ${selected.length} papers above ${scoreThreshold})`)
 
-  const outFile = writeJson(`gemini-evaluations-${date}.json`, curatedPapers)
+  const outFile = writeJson(`gemini-evaluations-${tag}.json`, curatedPapers)
   console.log(`\n  Output: ${outFile}`)
 
   return selected
@@ -236,39 +271,37 @@ function resolveBotUserId(persona: string): string {
 }
 
 async function runPhase3(
-  date: string,
+  tag: string,
   persona: string,
   papers?: CuratedPaper[]
 ): Promise<void> {
   console.log(`\n=== Phase 3: Supabase Posting (${persona}) ===\n`)
 
-  // Load selected papers from evaluation file if not provided
-  const allEvaluated =
-    papers ?? readJsonSafe(`gemini-evaluations-${date}.json`)
+  let selected: CuratedPaper[]
 
-  if (!allEvaluated || allEvaluated.length === 0) {
-    console.error(
-      `  No evaluation data found for ${date}.\n` +
-        `  Run Phase 1+2 first: npx tsx scripts/curate-papers.ts --date ${date}`
-    )
-    return
+  if (papers) {
+    selected = papers
+  } else {
+    const allEvaluated = readJsonSafe(`gemini-evaluations-${tag}.json`)
+    if (!allEvaluated || allEvaluated.length === 0) {
+      console.error(
+        `  No evaluation data found for ${tag}.\n` +
+          `  Run Phase 1+2 first: npx tsx scripts/curate-papers.ts --date <date>`
+      )
+      return
+    }
+    const { topN, scoreThreshold } = DEFAULT_GEMINI_CONFIG
+    selected = allEvaluated
+      .filter((p) => p.evaluation.overallScore >= scoreThreshold)
+      .slice(0, topN)
   }
 
-  // Apply score threshold to get selected papers
-  const { topN, scoreThreshold } = DEFAULT_GEMINI_CONFIG
-  const selected = papers
-    ? papers
-    : allEvaluated
-        .filter((p) => p.evaluation.overallScore >= scoreThreshold)
-        .slice(0, topN)
-
   if (selected.length === 0) {
-    console.log("  No papers to post.")
+    console.log("  No papers above threshold. Nothing to post.")
     return
   }
 
   const botUserId = resolveBotUserId(persona)
-
   const supabase = createScriptAdminClient()
 
   // Check which arxiv_ids already exist
@@ -294,7 +327,9 @@ async function runPhase3(
       continue
     }
 
-    const formattedTitle = `[${date}] ${paper.title}`
+    // Use the paper's actual submission date for the title
+    const paperDate = paper.published.slice(0, 10)
+    const formattedTitle = `[${paperDate}] ${paper.title}`
     const formattedContent = [
       `**Summary:** ${paper.evaluation.summary}`,
       '',
@@ -342,26 +377,32 @@ async function runPhase3(
 
 // ── Full pipeline ──
 
-async function runFullPipeline(date: string, persona: string, strategyOverride?: FetchStrategy): Promise<void> {
+async function runFullPipeline(
+  fromDate: string,
+  toDate: string,
+  persona: string
+): Promise<void> {
   const startTime = Date.now()
+  const tag = fromDate === toDate ? fromDate : `${fromDate}_${toDate}`
 
-  console.log(`Paper Curation Pipeline — ${date}`)
+  console.log(`Paper Curation Pipeline`)
+  console.log(`  Range: ${fromDate} → ${toDate}`)
   console.log("=".repeat(50))
 
   // Phase 1
-  const candidates = await runPhase1(date, strategyOverride)
+  const candidates = await runPhase1(fromDate, toDate)
   if (candidates.length === 0) {
-    console.error("\nPipeline aborted: no candidates found.")
-    process.exit(1)
+    console.log("\nNo candidates found — likely a weekend or holiday. Skipping.")
+    process.exit(0)
   }
 
   // Phase 2
-  const selectedPapers = await runPhase2(date, candidates)
+  const selectedPapers = await runPhase2(tag, candidates)
 
   // Phase 3
   const envKey = `BOT_USER_ID_${persona.toUpperCase()}`
   if (process.env[envKey]) {
-    await runPhase3(date, persona, selectedPapers)
+    await runPhase3(tag, persona, selectedPapers)
   } else if (process.env.CI) {
     console.error(`\nError: ${envKey} is not set. Configure it as a GitHub Actions secret.`)
     process.exit(1)
@@ -371,9 +412,9 @@ async function runFullPipeline(date: string, persona: string, strategyOverride?:
 
   // Build final result
   const durationMs = Date.now() - startTime
-  const allEvaluated = readJsonSafe(`gemini-evaluations-${date}.json`)
+  const allEvaluated = readJsonSafe(`gemini-evaluations-${tag}.json`)
   const result: CurationResult = {
-    runDate: date,
+    runDate: tag,
     candidateCount: candidates.length,
     filteredCount: allEvaluated?.length ?? selectedPapers.length,
     selectedCount: selectedPapers.length,
@@ -386,7 +427,7 @@ async function runFullPipeline(date: string, persona: string, strategyOverride?:
     },
   }
 
-  const outFile = writeJson(`curated-papers-${date}.json`, result)
+  const outFile = writeJson(`curated-papers-${tag}.json`, result)
 
   console.log(`\n${"=".repeat(50)}`)
   console.log(`Pipeline complete in ${(durationMs / 1000).toFixed(1)}s`)
@@ -396,28 +437,54 @@ async function runFullPipeline(date: string, persona: string, strategyOverride?:
   console.log(`  Output: ${outFile}`)
 }
 
-function readJsonSafe(filename: string): CuratedPaper[] | null {
-  try {
-    return readJson<CuratedPaper[]>(filename)
-  } catch {
-    return null
-  }
-}
-
 // ── Main ──
 
 async function main(): Promise<void> {
-  const { phase, date, persona, strategy } = parseArgs()
+  const { phase, date, persona } = parseArgs()
 
   try {
-    if (phase === 1) {
-      await runPhase1(date, strategy)
-    } else if (phase === 2) {
-      await runPhase2(date)
-    } else if (phase === 3) {
-      await runPhase3(date, persona)
+    // Determine date range
+    let fromDate: string
+    let toDate: string
+
+    if (date) {
+      // Manual override: single date
+      fromDate = date
+      toDate = date
+      console.log(`Manual date override: ${date}`)
     } else {
-      await runFullPipeline(date, persona, strategy)
+      // Auto-detect: query DB for latest paper date
+      console.log("Auto-detecting date range from database...")
+      const latestDate = await getLatestPaperDate()
+      toDate = yesterday()
+
+      if (latestDate) {
+        fromDate = addDays(latestDate, 1)
+        console.log(`  Latest paper in DB: ${latestDate}`)
+        console.log(`  Searching: ${fromDate} → ${toDate}`)
+      } else {
+        // No papers in DB yet — just fetch yesterday
+        fromDate = toDate
+        console.log(`  No papers in DB. Fetching yesterday: ${toDate}`)
+      }
+
+      // If we're already up to date, nothing to do
+      if (fromDate > toDate) {
+        console.log(`  Already up to date (latest: ${latestDate}, yesterday: ${toDate}). Nothing to fetch.`)
+        process.exit(0)
+      }
+    }
+
+    const tag = fromDate === toDate ? fromDate : `${fromDate}_${toDate}`
+
+    if (phase === 1) {
+      await runPhase1(fromDate, toDate)
+    } else if (phase === 2) {
+      await runPhase2(tag)
+    } else if (phase === 3) {
+      await runPhase3(tag, persona)
+    } else {
+      await runFullPipeline(fromDate, toDate, persona)
     }
   } catch (err) {
     console.error("\nFatal error:", err)

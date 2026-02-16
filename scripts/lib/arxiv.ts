@@ -1,6 +1,6 @@
-import type { ArxivPaper, ArxivSearchConfig, RssFeedConfig } from "./types"
+import type { ArxivPaper, ArxivSearchConfig } from "./types"
 
-// ── XML helpers (adapted from src/app/api/topics/trending-papers/route.ts) ──
+// ── XML helpers ──
 
 function decodeXmlEntities(value: string): string {
   return value
@@ -52,7 +52,6 @@ function extractCategories(entry: string): string[] {
 
 function extractArxivId(entry: string): string {
   const idTag = extractTag(entry, "id")
-  // id looks like http://arxiv.org/abs/2602.12345v1
   const m = idTag.match(/abs\/(.+?)(?:v\d+)?$/)
   return m ? m[1] : idTag
 }
@@ -101,45 +100,6 @@ const QUERY_AI_TO_MATERIALS = [
   'OR abs:"alloy" OR abs:"polymer" OR abs:"catalysis")',
 ].join(" ")
 
-// ── RSS keyword arrays (extracted from search queries above) ──
-
-const ML_KEYWORDS = [
-  "machine learning",
-  "deep learning",
-  "neural network",
-  "graph neural",
-  "generative model",
-  "foundation model",
-  "language model",
-]
-
-const MATERIALS_KEYWORDS = [
-  "materials science",
-  "materials discovery",
-  "crystal structure",
-  "molecular dynamics",
-  "density functional",
-  "electronic structure",
-  "alloy",
-  "polymer",
-  "catalysis",
-]
-
-export const RSS_FEED_CONFIG: RssFeedConfig = {
-  groups: [
-    {
-      label: "Materials→AI",
-      categories: ["cond-mat.mtrl-sci", "cond-mat.mes-hall", "physics.comp-ph"],
-      abstractKeywords: ML_KEYWORDS,
-    },
-    {
-      label: "AI→Materials",
-      categories: ["cs.LG", "cs.AI"],
-      abstractKeywords: MATERIALS_KEYWORDS,
-    },
-  ],
-}
-
 export const DEFAULT_CONFIG: ArxivSearchConfig = {
   queries: [QUERY_MATERIALS_TO_AI, QUERY_AI_TO_MATERIALS],
   maxResultsPerQuery: 25,
@@ -173,7 +133,6 @@ async function fetchWithRetry(
       throw new Error(`arXiv API failed with status ${res.status} after ${retries + 1} attempts`)
     }
   }
-  // The for-loop always returns or throws, but TypeScript can't prove it
   throw new Error("unreachable: retries exhausted")
 }
 
@@ -183,7 +142,6 @@ export async function searchArxiv(
   const allPapers: ArxivPaper[] = []
   const querySummary: Record<string, number> = {}
 
-  // Build date filter suffix if dateRange is provided
   const dateFilter = config.dateRange
     ? ` AND submittedDate:[${config.dateRange.from} TO ${config.dateRange.to}]`
     : ""
@@ -227,139 +185,6 @@ export async function searchArxiv(
     const papers = entries.map(parseEntry)
     querySummary[label] = papers.length
     allPapers.push(...papers)
-  }
-
-  // Deduplicate by arXiv ID
-  const seen = new Set<string>()
-  const deduplicated = allPapers.filter((p) => {
-    if (seen.has(p.id)) return false
-    seen.add(p.id)
-    return true
-  })
-
-  const dupeCount = allPapers.length - deduplicated.length
-  if (dupeCount > 0) {
-    console.log(`  Removed ${dupeCount} duplicate(s). Total unique: ${deduplicated.length}`)
-  }
-
-  if (deduplicated.length < 5) {
-    console.warn(`  ⚠ Only ${deduplicated.length} candidates found (less than 5)`)
-  }
-
-  return { papers: deduplicated, querySummary }
-}
-
-// ── RSS feed fetching ──
-
-type ParsedSummary = {
-  arxivId: string
-  announceType: string
-  abstract: string
-}
-
-/**
- * Parse RSS `<summary>` content.
- * Format: "arXiv:2602.12345v1 Announce Type: new\nAbstract: ..."
- */
-function parseAtomSummary(raw: string): ParsedSummary | null {
-  const text = decodeXmlEntities(raw).trim()
-
-  const idMatch = text.match(/arXiv:(\d+\.\d+)(?:v\d+)?/)
-  if (!idMatch) return null
-
-  const typeMatch = text.match(/Announce Type:\s*(\S+)/)
-  const announceType = typeMatch ? typeMatch[1] : "unknown"
-
-  const absMatch = text.match(/Abstract:\s*([\s\S]*)/)
-  const abstract = absMatch ? normalizeWhitespace(absMatch[1]) : ""
-
-  return { arxivId: idMatch[1], announceType, abstract }
-}
-
-/** Extract authors from RSS `<dc:creator>` (comma-and-newline separated) */
-function extractRssAuthors(entry: string): string[] {
-  const m = entry.match(/<dc:creator[^>]*>([\s\S]*?)<\/dc:creator>/)
-  if (!m) return []
-  return m[1]
-    .split(/,\s*\n\s*|\n\s*/)
-    .map((a) => normalizeWhitespace(decodeXmlEntities(a)))
-    .filter(Boolean)
-}
-
-/** Parse an RSS entry into an ArxivPaper, or null if it should be skipped */
-function parseRssEntry(entry: string): ArxivPaper | null {
-  const summaryRaw = extractTag(entry, "summary")
-  const parsed = parseAtomSummary(summaryRaw)
-  if (!parsed) return null
-
-  // Filter out replace/replace-cross (updates to already-announced papers)
-  if (parsed.announceType === "replace" || parsed.announceType === "replace-cross") {
-    return null
-  }
-
-  const id = parsed.arxivId
-  const title = extractTag(entry, "title")
-  const authors = extractRssAuthors(entry)
-  const categories = extractCategories(entry)
-
-  return {
-    id,
-    title: normalizeWhitespace(title),
-    abstract: parsed.abstract,
-    authors,
-    categories,
-    published: extractTag(entry, "updated"),
-    absUrl: `https://arxiv.org/abs/${id}`,
-    pdfUrl: `https://arxiv.org/pdf/${id}`,
-  }
-}
-
-/** Check if text contains any of the keywords (case-insensitive) */
-function matchesKeywords(text: string, keywords: string[]): boolean {
-  const lower = text.toLowerCase()
-  return keywords.some((kw) => lower.includes(kw.toLowerCase()))
-}
-
-/**
- * Fetch papers from arXiv RSS/Atom feeds.
- * Returns the same shape as searchArxiv() for downstream compatibility.
- */
-export async function fetchRssPapers(
-  config: RssFeedConfig = RSS_FEED_CONFIG
-): Promise<{ papers: ArxivPaper[]; querySummary: Record<string, number> }> {
-  const allPapers: ArxivPaper[] = []
-  const querySummary: Record<string, number> = {}
-
-  for (let i = 0; i < config.groups.length; i++) {
-    const group = config.groups[i]
-
-    if (i > 0) {
-      console.log("  Waiting 3s (rate limit)...")
-      await sleep(3000)
-    }
-
-    const catPath = group.categories.join("+")
-    const url = `https://rss.arxiv.org/atom/${catPath}`
-    console.log(`  [${group.label}] Fetching RSS: ${url}`)
-
-    const xml = await fetchWithRetry(url, 2, 5000)
-    const entries = extractEntries(xml)
-    console.log(`  [${group.label}] Got ${entries.length} entries`)
-
-    // Parse entries, filter announce type, then filter by keywords
-    let matched = 0
-    for (const entry of entries) {
-      const paper = parseRssEntry(entry)
-      if (!paper) continue
-
-      if (!matchesKeywords(paper.abstract, group.abstractKeywords)) continue
-
-      allPapers.push(paper)
-      matched++
-    }
-
-    console.log(`  [${group.label}] ${matched} papers matched keywords`)
-    querySummary[group.label] = matched
   }
 
   // Deduplicate by arXiv ID
