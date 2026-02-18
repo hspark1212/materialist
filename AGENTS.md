@@ -154,7 +154,7 @@ src/
     ui/                            — shadcn components (DO NOT EDIT)
 
 supabase/
-  migrations/                      — Incremental SQL migrations
+  migrations/                      — Single squashed migration (all history consolidated)
   config.toml                      — Supabase CLI config
 
 wrangler.jsonc                    — Cloudflare Workers config (build command, vars)
