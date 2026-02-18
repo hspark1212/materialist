@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
       status: error.status,
       code: error.code,
     })
-    const errorParam = encodeURIComponent(error.message || 'auth_callback_failed')
-    return NextResponse.redirect(`${origin}/login?error=${errorParam}`)
+    return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
   }
 
   const {
