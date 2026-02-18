@@ -94,4 +94,3 @@ Key triggers: `handle_new_user()` auto-creates profile with generated display na
 
 - **Unit tests** (Vitest, jsdom): `src/**/*.test.{ts,tsx}` — domain logic, utils, mappers
 - **E2E tests** (Playwright): `tests/**/*.spec.ts` — 3 viewports (desktop 1440, tablet 768, mobile 375)
-- Mock data: `src/lib/mock-data.ts` (8 users, posts, comments)
