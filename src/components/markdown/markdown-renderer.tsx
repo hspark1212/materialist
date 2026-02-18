@@ -60,6 +60,7 @@ export function MarkdownRenderer({ content, className, compact = false }: Markdo
           img: ({ src, alt }) => {
             const safeSrc = typeof src === "string" ? sanitizeUrl(src) : undefined
             if (!safeSrc) return null
+            // eslint-disable-next-line @next/next/no-img-element -- User-generated content with unknown dimensions
             return <img src={safeSrc} alt={alt || ""} />
           },
         }}
