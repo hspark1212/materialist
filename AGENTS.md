@@ -280,3 +280,7 @@ CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE
 - **Runtime secrets** — Available at request-time in API routes/middleware (set via `wrangler secret put`)
 
 **Important**: `wrangler.jsonc` `build.command` and `vars` are **NOT used by Workers Builds**. Only dashboard settings apply.
+
+## See also
+
+- [CLAUDE.md](CLAUDE.md) — code conventions, commands, and architecture constraints
