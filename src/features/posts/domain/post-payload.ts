@@ -1,4 +1,5 @@
 import type { PostType, Section } from "@/lib"
+import { sanitizeUrl } from "@/lib/url"
 
 import type {
   CreatePostInput,
@@ -10,6 +11,14 @@ import type {
 function cleanOptional(value?: string): string | null {
   const next = value?.trim()
   return next ? next : null
+}
+
+function validateUrl(value: string | null, fieldName: string): string | null {
+  if (!value) return null
+  if (!sanitizeUrl(value)) {
+    throw new Error(`${fieldName} contains a disallowed URL scheme`)
+  }
+  return value
 }
 
 function cleanArray(values?: string[]): string[] {
@@ -36,7 +45,7 @@ export function buildCreatePostInsert(authorId: string, input: CreatePostInput):
     throw new Error("Content is required")
   }
 
-  const url = cleanOptional(input.url)
+  const url = validateUrl(cleanOptional(input.url), "URL")
 
   return {
     title,
@@ -50,13 +59,13 @@ export function buildCreatePostInsert(authorId: string, input: CreatePostInput):
     arxiv_id: cleanOptional(input.arxivId),
     url,
     flair: input.section === "forum" ? input.flair ?? null : null,
-    project_url: input.section === "showcase" ? cleanOptional(input.projectUrl) : null,
+    project_url: input.section === "showcase" ? validateUrl(cleanOptional(input.projectUrl), "Project URL") : null,
     tech_stack: input.section === "showcase" ? cleanArray(input.techStack) : [],
     showcase_type: input.section === "showcase" ? input.showcaseType ?? null : null,
     company: input.section === "jobs" ? cleanOptional(input.company) : null,
     location: input.section === "jobs" ? cleanOptional(input.location) : null,
     job_type: input.section === "jobs" ? input.jobType ?? null : null,
-    application_url: input.section === "jobs" ? cleanOptional(input.applicationUrl) : null,
+    application_url: input.section === "jobs" ? validateUrl(cleanOptional(input.applicationUrl), "Application URL") : null,
     deadline: input.section === "jobs" ? cleanOptional(input.deadline) : null,
   }
 }
@@ -68,7 +77,7 @@ export function buildUpdatePostPatch(
 ): PostUpdatePayload {
   const patch: PostUpdatePayload = {}
   const nextSection = input.section ?? currentSection
-  const nextUrl = input.url === undefined ? currentUrl : cleanOptional(input.url)
+  const nextUrl = input.url === undefined ? currentUrl : validateUrl(cleanOptional(input.url), "URL")
 
   if (input.title !== undefined) {
     const title = input.title.trim()
@@ -99,7 +108,7 @@ export function buildUpdatePostPatch(
   }
 
   if (input.projectUrl !== undefined) {
-    patch.project_url = nextSection === "showcase" ? cleanOptional(input.projectUrl) : null
+    patch.project_url = nextSection === "showcase" ? validateUrl(cleanOptional(input.projectUrl), "Project URL") : null
   }
 
   if (input.techStack !== undefined) {
@@ -123,7 +132,7 @@ export function buildUpdatePostPatch(
   }
 
   if (input.applicationUrl !== undefined) {
-    patch.application_url = nextSection === "jobs" ? cleanOptional(input.applicationUrl) : null
+    patch.application_url = nextSection === "jobs" ? validateUrl(cleanOptional(input.applicationUrl), "Application URL") : null
   }
 
   if (input.deadline !== undefined) {

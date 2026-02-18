@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: NextRequest) {
@@ -15,6 +16,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       `${baseUrl}?orcid_error=${encodeURIComponent("Missing authorization code")}`,
     )
+  }
+
+  // Validate CSRF state parameter
+  const state = searchParams.get("state")
+  const cookieState = request.cookies.get("orcid_state")?.value
+  if (!state || !cookieState || state !== cookieState) {
+    const response = NextResponse.redirect(
+      `${baseUrl}?orcid_error=${encodeURIComponent("Invalid state parameter. Please try again.")}`,
+    )
+    response.cookies.delete("orcid_state")
+    return response
   }
 
   try {
@@ -84,8 +96,9 @@ export async function GET(request: NextRequest) {
 
     const username = profile?.username
 
-    // 5. Update the user's profile with ORCID info
-    const { error: updateError } = await supabase
+    // 5. Update the user's profile with ORCID info (admin client to bypass field protection trigger)
+    const admin = createAdminClient()
+    const { error: updateError } = await admin
       .from("profiles")
       .update({
         orcid_id: orcidId,
@@ -105,9 +118,11 @@ export async function GET(request: NextRequest) {
 
     // 6. Redirect to the user's profile About tab with success message
     const redirectPath = username ? `/u/${username}` : "/"
-    return NextResponse.redirect(
+    const response = NextResponse.redirect(
       `${baseUrl}${redirectPath}?tab=about&orcid_success=true`,
     )
+    response.cookies.delete("orcid_state")
+    return response
   } catch (error) {
     console.error("Unexpected error during ORCID verification:", error)
     return NextResponse.redirect(
