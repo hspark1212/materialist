@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, sectionByKey } from "@/lib/sections"
 import { getPaperMetaLinks, getPostPreviewText, getPostPrimaryLink } from "@/components/post/post-feed-utils"
+import { InlineLatex } from "@/components/markdown/inline-latex"
 import { TagLink } from "@/components/post/post-tags"
 import { VoteButton } from "@/components/voting/vote-button"
 import { ShareButton } from "@/components/post/share-button"
@@ -63,7 +64,7 @@ export function PostCard({ post }: PostCardProps) {
             href={`/post/${post.id}`}
             className="block line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight hover:text-primary sm:line-clamp-none sm:text-lg"
           >
-            {post.title}
+            <InlineLatex content={post.title} />
           </Link>
 
           {previewText ? (

@@ -6,6 +6,11 @@ const MARKDOWN_IMAGE_PATTERN = /!\[([^\]]*)\]\((?:[^)]+)\)/g
 const MARKDOWN_LINK_PATTERN = /\[([^\]]+)\]\((?:[^)]+)\)/g
 const ARXIV_PATH_PATTERN = /arxiv\.org\/(?:abs|pdf)\/([^?#/]+?)(?:\.pdf)?\/?(?:[?#].*)?$/i
 
+const SUB = "₀₁₂₃₄₅₆₇₈₉"
+const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹"
+const toSub = (s: string) => s.replace(/[0-9]/g, (c) => SUB[+c])
+const toSup = (s: string) => s.replace(/[0-9]/g, (c) => SUP[+c])
+
 export type PostMetaLink = {
   key: string
   label: string
@@ -26,9 +31,18 @@ function truncate(value: string, maxLength: number): string {
   return `${value.slice(0, maxLength - 1).trimEnd()}…`
 }
 
+function stripLatex(content: string): string {
+  return content
+    .replace(/\$_\{?([^}$]+)\}?\$/g, (_m, s: string) => toSub(s))
+    .replace(/\$\^\{?([^}$]+)\}?\$/g, (_m, s: string) => toSup(s))
+    .replace(/\$([^$]+)\$/g, "$1")
+    .replace(/_\{([^}]+)\}/g, (_m, s: string) => toSub(s))
+    .replace(/\^\{([^}]+)\}/g, (_m, s: string) => toSup(s))
+}
+
 function stripMarkdown(content: string): string {
   return normalizeWhitespace(
-    content
+    stripLatex(content)
       .replace(MARKDOWN_CODE_BLOCK_PATTERN, " ")
       .replace(MARKDOWN_INLINE_CODE_PATTERN, "$1")
       .replace(MARKDOWN_IMAGE_PATTERN, "$1")

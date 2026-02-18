@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth"
 
 import type { Post } from "@/lib"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, showcaseTypeLabels, sectionByKey } from "@/lib/sections"
+import { InlineLatex } from "@/components/markdown/inline-latex"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { getPaperMetaLinks, getPostPrimaryLink } from "@/components/post/post-feed-utils"
 import { TagLink } from "@/components/post/post-tags"
@@ -107,7 +108,7 @@ export function PostDetail({ post }: PostDetailProps) {
             ) : null}
           </div>
 
-          <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">{post.title}</h1>
+          <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl"><InlineLatex content={post.title} /></h1>
 
           {post.tags && post.tags.length > 0 ? (
             <div className="flex flex-wrap gap-1.5 text-xs">
