@@ -84,7 +84,7 @@ Flat DB storage with `parent_comment_id` + `depth` (max 6). `buildCommentTree()`
 
 ## Database
 
-Single consolidated migration: `supabase/migrations/00000000000000_initial.sql`
+Single squashed migration: `supabase/migrations/20260218120000_drop_profile_pii_columns.sql`
 
 Core tables: `profiles` (extends auth.users), `posts`, `comments`, `votes` (unique constraint on user_id + target_type + target_id).
 
