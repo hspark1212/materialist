@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("[API] Failed to fetch trending papers:", error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal server error" },
       { status: 500 },
     )
   }

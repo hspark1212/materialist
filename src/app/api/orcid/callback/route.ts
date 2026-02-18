@@ -6,13 +6,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const code = searchParams.get("code")
 
-  // Resolve base URL from the incoming request headers so redirects go back
-  // to the same host the user is actually browsing (e.g. 192.0.0.2:3001),
-  // not the internal localhost Next.js binds to.
-  const forwardedHost = request.headers.get("x-forwarded-host")
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "http"
-  const host = forwardedHost ?? request.headers.get("host") ?? request.nextUrl.host
-  const baseUrl = `${forwardedProto}://${host}`
+  // Use the configured app URL to prevent host header injection attacks.
+  // Fall back to request.nextUrl.origin which is derived from the trusted
+  // server-side URL, NOT from user-controlled headers.
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
 
   if (!code) {
     return NextResponse.redirect(
