@@ -34,7 +34,7 @@ export function FeedPageClient({ section, initialFeed, header }: FeedPageClientP
     sortBy === initialFeed.sortBy &&
     normalizedTag === initialFeed.tag &&
     activeQuery === initialFeed.query &&
-    authorType === (initialFeed.authorType ?? "all")
+    authorType === (initialFeed.authorType ?? "human")
 
   const { posts, loading, loadingMore, error, hasMore, loadMore } = usePostsFeed({
     section,

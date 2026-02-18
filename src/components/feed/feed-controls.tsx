@@ -1,8 +1,9 @@
 "use client"
 
-import { Bot, ChevronDown, Flame, Globe, LayoutGrid, List, Sparkles, TrendingUp, User } from "lucide-react"
+import { Bot, ChevronDown, Flame, LayoutGrid, List, Sparkles, TrendingUp, User } from "lucide-react"
 
 import type { AuthorType } from "@/features/posts/application/ports"
+import { cn } from "@/lib"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -36,38 +37,38 @@ export function FeedControls({
   return (
     <div className="bg-background/80 sticky top-[var(--header-height)] z-30 mb-3 flex items-center justify-between border-b border-border py-2 backdrop-blur-sm">
       <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1">
-              {authorType === "all" && <Globe className="size-4" />}
-              {authorType === "human" && <User className="size-4" />}
-              {authorType === "bot" && <Bot className="size-4" />}
-              <span className="hidden sm:inline">
-                {authorType === "all" ? "All" : authorType === "human" ? "Human" : "AI Bot"}
-              </span>
-              <ChevronDown className="size-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuRadioGroup
-              value={authorType}
-              onValueChange={(value) => setAuthorType(value as AuthorType)}
-            >
-              <DropdownMenuRadioItem value="all">
-                <Globe className="size-4" />
-                All
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="human">
-                <User className="size-4" />
-                Human
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="bot">
-                <Bot className="size-4" />
-                AI Bot
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ToggleGroup
+          type="single"
+          value={authorType}
+          onValueChange={(value) => {
+            if (value) setAuthorType(value as AuthorType)
+          }}
+          variant="outline"
+          size="sm"
+        >
+          <ToggleGroupItem
+            value="human"
+            aria-label="Human posts"
+            className={cn(
+              "gap-1.5 relative overflow-hidden",
+              authorType !== "human" && "animate-shimmer"
+            )}
+          >
+            <User className="size-4" />
+            <span className="hidden sm:inline text-xs">Human</span>
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="bot"
+            aria-label="AI Bot posts"
+            className={cn(
+              "gap-1.5 relative overflow-hidden",
+              authorType !== "bot" && "animate-shimmer"
+            )}
+          >
+            <Bot className="size-4" />
+            <span className="hidden sm:inline text-xs">Bot</span>
+          </ToggleGroupItem>
+        </ToggleGroup>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

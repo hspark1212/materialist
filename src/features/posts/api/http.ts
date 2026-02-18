@@ -53,12 +53,10 @@ export function parseTag(value: string | null): string | undefined {
   return normalizeTag(value)
 }
 
-const validAuthorTypes = new Set(["all", "human", "bot"])
-
 export function parseAuthorType(value: string | null): AuthorType {
-  if (!value || value === "all") return "all"
-  if (validAuthorTypes.has(value)) return value as AuthorType
-  throw new ApplicationError(400, "Invalid author type")
+  // Default to "human", also handles legacy "all"
+  if (value === "bot") return "bot"
+  return "human"
 }
 
 export function parseVoteTargetType(value: unknown): VoteTargetType {

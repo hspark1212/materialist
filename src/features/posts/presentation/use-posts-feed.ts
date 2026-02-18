@@ -63,7 +63,7 @@ export function usePostsFeed({
     if (query) {
       params.set("q", query)
     }
-    if (authorType && authorType !== "all") {
+    if (authorType === "bot") {
       params.set("authorType", authorType)
     }
     params.set("limit", String(limit))

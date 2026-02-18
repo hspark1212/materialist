@@ -1,23 +1,28 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useSyncExternalStore } from "react"
 
 import type { FeedViewMode } from "@/components/feed/feed-controls"
 
 const STORAGE_KEY = "feed-view-mode"
 
-function readStoredMode(fallback: FeedViewMode): FeedViewMode {
-  if (typeof window === "undefined") return fallback
+function subscribe(callback: () => void) {
+  window.addEventListener("storage", callback)
+  return () => window.removeEventListener("storage", callback)
+}
+
+function getSnapshot(): FeedViewMode {
   const stored = localStorage.getItem(STORAGE_KEY)
-  return stored === "card" || stored === "compact" ? stored : fallback
+  return stored === "card" || stored === "compact" ? stored : "card"
 }
 
 export function useFeedViewMode(defaultMode: FeedViewMode = "card") {
-  const [viewMode, setStoredViewMode] = useState<FeedViewMode>(() => readStoredMode(defaultMode))
+  const viewMode = useSyncExternalStore(subscribe, getSnapshot, () => defaultMode)
 
   const setViewMode = useCallback((nextMode: FeedViewMode) => {
-    setStoredViewMode(nextMode)
     localStorage.setItem(STORAGE_KEY, nextMode)
+    // Trigger storage event for useSyncExternalStore to pick up
+    window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY }))
   }, [])
 
   return { viewMode, setViewMode }
