@@ -59,6 +59,11 @@ describe("resolveAuthorIdentity", () => {
     expect(result.email).toBeUndefined()
   })
 
+  it("does not leak bio for anonymous content", () => {
+    const result = resolveAuthorIdentity(testUser, true)
+    expect(result.bio).toBeUndefined()
+  })
+
   it("does not leak ORCID fields for anonymous content", () => {
     const result = resolveAuthorIdentity(testUser, true)
     expect(result.orcidId).toBeUndefined()
