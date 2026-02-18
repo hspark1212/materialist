@@ -10,7 +10,10 @@ import type {
 } from "../domain/types"
 import type { ListPostsParams, PostsRepository } from "../application/ports"
 
-const PROFILE_COLUMNS_MINIMAL = [
+// Only fetch profile fields needed for post/comment rendering.
+// PII fields (institution, bio, orcid_id, etc.) are fetched separately
+// by the profile page via select("*").
+const PROFILE_COLUMNS = [
   "id",
   "username",
   "display_name",
@@ -20,32 +23,6 @@ const PROFILE_COLUMNS_MINIMAL = [
   "is_anonymous",
   "is_bot",
   "created_at",
-  "orcid_id",
-  "orcid_name",
-  "orcid_verified_at",
-].join(",")
-
-const PROFILE_COLUMNS_FULL = [
-  "id",
-  "username",
-  "display_name",
-  "generated_display_name",
-  "avatar_url",
-  "email",
-  "institution",
-  "bio",
-  "karma",
-  "is_anonymous",
-  "is_bot",
-  "created_at",
-  "updated_at",
-  "position",
-  "department",
-  "country",
-  "website_url",
-  "research_interests",
-  "orcid_id",
-  "orcid_name",
   "orcid_verified_at",
 ].join(",")
 
@@ -118,10 +95,10 @@ const COMMENT_COLUMNS = [
   "updated_at",
 ].join(",")
 
-const POSTS_SELECT_LIST = `${POST_COLUMNS_LIST},profiles(${PROFILE_COLUMNS_MINIMAL})`
-const POSTS_SELECT_LIST_INNER = `${POST_COLUMNS_LIST},profiles!inner(${PROFILE_COLUMNS_MINIMAL})`
-const POSTS_SELECT_DETAIL = `${POST_COLUMNS_FULL},profiles(${PROFILE_COLUMNS_FULL})`
-const COMMENTS_SELECT = `${COMMENT_COLUMNS},profiles(${PROFILE_COLUMNS_MINIMAL})`
+const POSTS_SELECT_LIST = `${POST_COLUMNS_LIST},profiles(${PROFILE_COLUMNS})`
+const POSTS_SELECT_LIST_INNER = `${POST_COLUMNS_LIST},profiles!inner(${PROFILE_COLUMNS})`
+const POSTS_SELECT_DETAIL = `${POST_COLUMNS_FULL},profiles(${PROFILE_COLUMNS})`
+const COMMENTS_SELECT = `${COMMENT_COLUMNS},profiles(${PROFILE_COLUMNS})`
 
 type SearchPostIdRow = {
   post_id: string

@@ -3,7 +3,6 @@
 import { useState } from "react"
 
 import { useAuth } from "@/lib/auth"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -37,20 +36,16 @@ export function OrcidDisconnectDialog({
     setDisconnecting(true)
     setError(null)
 
-    const supabase = createClient()
-    const { error: dbError } = await supabase
-      .from("profiles")
-      .update({
-        orcid_id: null,
-        orcid_name: null,
-        orcid_verified_at: null,
-        display_name: profile.generated_display_name ?? profile.display_name,
-        is_anonymous: true,
-      })
-      .eq("id", profile.id)
-
-    if (dbError) {
-      setError(dbError.message)
+    try {
+      const res = await fetch("/api/orcid/disconnect", { method: "POST" })
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || "Failed to disconnect ORCID")
+        setDisconnecting(false)
+        return
+      }
+    } catch {
+      setError("Failed to disconnect ORCID. Please try again.")
       setDisconnecting(false)
       return
     }

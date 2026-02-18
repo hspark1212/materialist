@@ -9,13 +9,16 @@ import type {
 export function resolveAuthorIdentity(user: User, contentIsAnonymous: boolean): User {
   if (!contentIsAnonymous) return user
   return {
-    ...user,
+    id: "anonymous",
+    username: "anonymous",
     displayName: user.generatedDisplayName ?? "Anonymous",
+    generatedDisplayName: user.generatedDisplayName ?? "Anonymous",
     avatar: "",
     isAnonymous: true,
-    orcidVerifiedAt: undefined,
-    orcidId: undefined,
-    orcidName: undefined,
+    isBot: false,
+    karma: 0,
+    joinDate: "",
+    researchInterests: [],
   }
 }
 

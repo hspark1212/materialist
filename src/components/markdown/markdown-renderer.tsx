@@ -5,6 +5,7 @@ import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
 import rehypeKatex from "rehype-katex"
 
+import { sanitizeUrl } from "@/lib/url"
 import { cn } from "@/lib/utils"
 
 type MarkdownRendererProps = {
@@ -28,11 +29,15 @@ export function MarkdownRenderer({ content, className, compact = false }: Markdo
           ul: ({ children }) => <ul>{children}</ul>,
           ol: ({ children }) => <ol>{children}</ol>,
           li: ({ children }) => <li>{children}</li>,
-          a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noreferrer">
-              {children}
-            </a>
-          ),
+          a: ({ href, children }) => {
+            const safeHref = sanitizeUrl(href)
+            if (!safeHref) return <span>{children}</span>
+            return (
+              <a href={safeHref} target="_blank" rel="noreferrer">
+                {children}
+              </a>
+            )
+          },
           strong: ({ children }) => <strong>{children}</strong>,
           em: ({ children }) => <em>{children}</em>,
           del: ({ children }) => <del>{children}</del>,
@@ -52,7 +57,11 @@ export function MarkdownRenderer({ content, className, compact = false }: Markdo
           th: ({ children }) => <th>{children}</th>,
           td: ({ children }) => <td>{children}</td>,
           hr: () => <hr />,
-          img: ({ src, alt }) => <img src={src} alt={alt || ""} />,
+          img: ({ src, alt }) => {
+            const safeSrc = typeof src === "string" ? sanitizeUrl(src) : undefined
+            if (!safeSrc) return null
+            return <img src={safeSrc} alt={alt || ""} />
+          },
         }}
       >
         {content}
