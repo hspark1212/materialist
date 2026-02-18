@@ -8,6 +8,7 @@ import type { Post } from "@/lib"
 import { AuthorName } from "@/components/user/author-name"
 import { BotBadge } from "@/components/user/bot-badge"
 import { UserAvatar } from "@/components/user/user-avatar"
+import { InlineLatex } from "@/components/markdown/inline-latex"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, sectionByKey } from "@/lib/sections"
 import { getPaperMetaLinks, getPostPreviewText, getPostPrimaryLink } from "@/components/post/post-feed-utils"
 import { TagLink } from "@/components/post/post-tags"
@@ -58,7 +59,7 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
           </div>
 
           <Link href={`/post/${post.id}`} className="block line-clamp-1 text-sm font-semibold hover:text-primary">
-            {post.title}
+            <InlineLatex content={post.title} />
           </Link>
 
           {previewText ? (
