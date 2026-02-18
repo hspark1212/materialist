@@ -19,18 +19,12 @@ export type ProfileRow = {
   generated_display_name: string | null
   avatar_url: string | null
   email: string | null
-  institution: string | null
   bio: string | null
   karma: number
   is_anonymous: boolean
   is_bot: boolean
   created_at: string
   updated_at: string
-  position: string | null
-  department: string | null
-  country: string | null
-  website_url: string | null
-  research_interests: string[] | null
   orcid_id: string | null
   orcid_name: string | null
   orcid_verified_at: string | null

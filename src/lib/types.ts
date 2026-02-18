@@ -7,15 +7,9 @@ export interface User {
   email?: string
   isAnonymous: boolean
   isBot: boolean
-  institution?: string
+  bio?: string
   karma: number
   joinDate: string
-  bio?: string
-  position?: string
-  department?: string
-  country?: string
-  websiteUrl?: string
-  researchInterests?: string[]
   orcidId?: string
   orcidName?: string
   orcidVerifiedAt?: string
