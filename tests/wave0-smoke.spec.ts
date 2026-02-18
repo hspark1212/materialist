@@ -21,20 +21,4 @@ test.describe("Wave 0-3: Foundation + Home Feed", () => {
     await expect(page.locator("header")).toBeVisible();
     await expect(page.getByText("Materialist")).toBeVisible();
   });
-
-  test("take desktop screenshot", async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
-    await page.screenshot({ path: "tests/screenshots/desktop-home.png", fullPage: false });
-  });
-
-  test("take mobile screenshot", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
-    await page.screenshot({ path: "tests/screenshots/mobile-home.png", fullPage: false });
-  });
 });

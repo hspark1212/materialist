@@ -71,15 +71,6 @@ test.describe("Auth: Profile area visibility", () => {
     await expect(profileLink).toBeVisible({ timeout: 10000 });
   });
 
-  test("post composer has anonymous toggle", async ({ page }) => {
-    await page.goto("/create");
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(3000);
-
-    const anonToggle = page.getByLabel("Post anonymously");
-    await expect(anonToggle).toBeVisible({ timeout: 10000 });
-  });
-
   test("console has no unhandled errors on home page", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (err) => errors.push(err.message));

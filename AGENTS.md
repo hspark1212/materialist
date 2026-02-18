@@ -2,7 +2,7 @@
 
 **Hybrid Autonomous Materials Science + AI Community**
 
-Verified rigor + anonymous wildness. A platform where verified researchers and anonymous contributors coexist—creating a trust spectrum instead of binary authentication. 
+Verified rigor + anonymous wildness. A platform where verified researchers and anonymous contributors coexist—creating a trust spectrum instead of binary authentication.
 
 ---
 
@@ -16,7 +16,7 @@ Verified rigor + anonymous wildness. A platform where verified researchers and a
 **Autonomous** = Community self-governs through voting, karma, and bot curation
 - Voting system (upvote/downvote) determines visibility
 - Karma-based reputation incentivizes quality
-- Verified bots (MaterialsBot) autonomously post arXiv digests, benchmarks, jobs
+- Bot accounts (`isBot: true`) autonomously post arXiv digests, benchmarks, jobs
 
 **Why This Matters**: Confidential postdocs can discuss toxic advisors. Industry researchers can share findings without NDAs. Students ask "dumb questions" without judgment. PIs build authority through consistent contributions.
 
@@ -29,19 +29,13 @@ Verified rigor + anonymous wildness. A platform where verified researchers and a
 ```typescript
 interface User {
   isAnonymous: boolean  // Toggle per post/comment
-  verificationLevel: "none" | "researcher" | "institution" | "contributor"
+  isBot: boolean        // Bot accounts for automated curation
   institution?: string  // MIT, Stanford, U Tokyo, etc.
   karma: number         // Reputation earned through votes
 }
 ```
 
-**Verification Levels**:
-- `researcher` — Verified researcher (e.g., sarah_chen @ MIT, karma: 18,420)
-- `institution` — Verified institution member / PI (e.g., kenji_tanaka @ U Tokyo, karma: 26,750)
-- `contributor` — Verified bot/service account (e.g., MaterialsBot posting arXiv digests, karma: 32,110)
-- `none` — Unverified (still can post, build karma)
-
-**Anonymous Users**: `isAnonymous: true` hides identity—no username link, no badge, deterministic random avatar. Users switch between verified and anonymous per-post.
+**Anonymous Users**: `isAnonymous: true` hides identity—no username link, deterministic random avatar. Users switch between identified and anonymous per-post.
 
 ### 4 Sections
 
@@ -58,17 +52,17 @@ interface User {
 type Post = {
   section: "papers" | "forum" | "showcase" | "jobs"
   isAnonymous: boolean  // Author can hide identity
-  
+
   // Paper-specific
   doi?: string
   arxivId?: string
-  
+
   // Forum-specific
   flair?: "discussion" | "question" | "career" | "news"
-  
+
   // Showcase-specific
   showcaseType?: "tool" | "dataset" | "model" | "library" | "workflow"
-  
+
   // Job-specific
   jobType?: "postdoc" | "phd" | "full-time" | "internship" | ...
 }
@@ -80,16 +74,14 @@ type Post = {
 
 - **Next.js 16** + App Router + TypeScript + React 19
 - **Tailwind v4** — CSS-only config in `globals.css` (NO `tailwind.config.ts`)
-- **shadcn/ui** — 18 components in `src/components/ui/` (DO NOT edit—they're generated)
-- **Supabase** — PostgreSQL + Auth (email/password, Google/GitHub OAuth, anonymous login, RLS policies)
+- **shadcn/ui** — Components in `src/components/ui/` (DO NOT edit—they're generated)
+- **Supabase** — PostgreSQL + Auth (email/password, Google/GitHub OAuth, RLS policies)
 - **Cloudflare Workers** — Deployed via `@opennextjs/cloudflare` with Workers Builds (auto CI/CD)
-- **Supabase Auth** — Email/password + Google/GitHub OAuth (configured in Supabase Dashboard)
 
 ### Key Imports
 
 ```typescript
 import type { User, Post, Comment, Section } from "@/lib/types"
-import { posts, users, comments } from "@/lib/mock-data"
 import { sections, sectionByKey } from "@/lib/sections"
 import { cn } from "@/lib/utils"  // clsx + tailwind-merge
 ```
@@ -116,19 +108,26 @@ import { cn } from "@/lib/utils"  // clsx + tailwind-merge
 ```
 src/
   lib/
-    types.ts                — User, Post, Comment, Section, Profile types
+    types.ts                — User, Post, Comment, Section types
     sections.ts             — Section metadata, flair system
-    mock-data.ts            — Mock data for posts/comments (auth uses real Supabase)
     auth/
       context.tsx           — AuthProvider (centralized navigation via onAuthStateChange)
       types.ts              — Profile, AuthContextValue interfaces (includes isNavigating)
-      utils.ts              — profileToUser mapper
+      utils.ts              — profileToUser mapper, deriveStatus
     supabase/
       client.ts             — Browser Supabase client (createBrowserClient)
       server.ts             — Server Supabase client (createServerClient)
       admin.ts              — Admin client with service role (bypasses RLS)
       middleware.ts         — Session refresh for Next.js middleware
-  
+
+  features/
+    posts/
+      domain/             — Types, mappers, vote-state, query-normalization
+      application/        — Use cases (cast-vote, create-comment) + ports
+      infrastructure/     — Supabase repository implementation
+      presentation/       — React hooks + UI components
+      api/                — HTTP error handling + parsing
+
   app/
     page.tsx                — Home feed (all posts)
     papers/                 — Papers section
@@ -136,7 +135,7 @@ src/
     showcase/               — Showcase section
     jobs/                   — Jobs section
     post/[id]/              — Post detail with nested comments
-    create/                 — Post composer with anonymous toggle
+    create/                 — Post composer
     u/[username]/           — User profile (About, Activity, Details tabs)
     settings/               — User settings (Profile, Appearance, Account)
     (auth)/
@@ -144,23 +143,19 @@ src/
       login/page.tsx        — Login page (email/password + Google/GitHub OAuth)
       signup/page.tsx       — Signup page (email/password + Google/GitHub OAuth)
       auth/callback/route.ts — Supabase auth callback (code exchange)
-  
+
   components/
     user/
-      verification-badge.tsx       — researcher/institution/contributor badges
       anonymous-avatar.tsx         — Deterministic hash-based avatar
       user-profile-header.tsx      — Profile header with position/country
-      profile-edit-form.tsx        — Profile edit modal (5 new fields)
+      profile-edit-form.tsx        — Profile edit modal
     post/
-      post-card.tsx                — Conditional badge display
-    ui/                            — 18 shadcn components (DO NOT EDIT)
+      post-card.tsx                — Post card display
+    ui/                            — shadcn components (DO NOT EDIT)
 
 supabase/
-  migrations/
-    00000000000000_initial.sql                — Base schema + RLS + triggers
-    00000000000001_performance.sql            — Feed/sidebar performance indexes + RPCs
-    00000000000002_profile_username_autogen.sql — Friendly username auto-generation + backfill
-  config.toml                                 — Supabase CLI config
+  migrations/                      — Incremental SQL migrations
+  config.toml                      — Supabase CLI config
 
 wrangler.jsonc                    — Cloudflare Workers config (build command, vars)
 open-next.config.ts               — OpenNext Cloudflare adapter config
@@ -173,15 +168,14 @@ middleware.ts                     — Supabase session refresh on every request
 
 **Environment setup**:
 ```bash
-cp .env.dev .env.local                                    # Public values (NEXT_PUBLIC_*) are pre-filled; add secret keys as needed
-npx supabase link --project-ref kshalsrbtvmuqyvbzolf      # Link to Supabase project
-npx supabase start                                        # Start local Supabase (requires Docker)
+cp .env.local.example .env.local  # Fill in secret keys
+npx supabase start                # Start local Supabase (requires Docker)
 ```
 
 > **Important**: Always develop and test against the local Supabase instance first. Never run `supabase db push` without explicit user approval.
 
 ```bash
-npm run dev           # Turbopack dev server (localhost:3000)
+npm run dev           # Turbopack dev server (localhost:3001)
 npm run build         # Next.js production build
 npm run preview       # OpenNext Cloudflare build + local preview
 npm run deploy        # OpenNext Cloudflare build + deploy to Workers
@@ -208,12 +202,12 @@ npm run test:e2e      # Playwright E2E tests
 ```sql
 -- profiles table policies
 CREATE POLICY "Public read access" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE 
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE
   USING (auth.uid() = id);
 ```
 
-**Anonymous/Verified Toggle**:
-- Users with `verification_level != "none"` can toggle `is_anonymous` per post/comment
+**Anonymous Toggle**:
+- Users can toggle `is_anonymous` per post/comment
 - Anonymous posts hide username, show deterministic avatar (hash-based)
 
 ### Auth Navigation Architecture
@@ -235,21 +229,6 @@ CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE
 3. **`pendingSignIn` state** — Defers navigation until profile fetch completes after sign-in
 4. **`hasReceivedInitialSession` ref** — Guards against unwanted navigation on page load or token refresh
 
-**Implementation**:
-```typescript
-// AuthContext automatically handles ALL auth navigation
-const { signOut, isNavigating } = useAuth()
-
-// UI components just call auth actions - navigation is automatic
-<Button onClick={() => signOut()}>Sign Out</Button>
-
-// Route guards check isNavigating to avoid conflicts
-useEffect(() => {
-  if (isNavigating) return  // Auth context is navigating
-  if (status === "authenticated") router.replace("/")
-}, [status, isNavigating, router])
-```
-
 **Files Involved**:
 - `src/lib/auth/context.tsx` — `onAuthStateChange` listener with navigation logic
 - `src/lib/auth/types.ts` — `isNavigating: boolean` in `AuthContextValue`
@@ -260,27 +239,15 @@ useEffect(() => {
 
 ### Database
 
-**Supabase PostgreSQL** (`kshalsrbtvmuqyvbzolf.supabase.co`):
-
 **Tables**:
-- `profiles` — User profiles (username, email, verification_level, karma, position, institution, country)
-
-**Migrations** (`supabase/migrations/`):
-- `00000000000000_initial.sql` — Base schema + RLS + triggers
-- `00000000000001_performance.sql` — Feed/sidebar performance indexes + RPCs
-- `00000000000002_profile_username_autogen.sql` — Friendly username auto-generation + backfill
-- `00000000000003_cleanup_profile_completed_index.sql` — Remove legacy onboarding index
+- `profiles` — User profiles (username, email, karma, position, institution, country, is_bot)
+- `posts` — All post types with section-specific fields
+- `comments` — Flat storage with `parent_comment_id` + `depth` (max 6)
+- `votes` — Unique constraint on user_id + target_type + target_id
 
 **Triggers**:
 - `handle_new_user` — Auto-create profile on `auth.users` INSERT
 - `handle_updated_at` — Auto-update `updated_at` timestamp
-
-**Supabase CLI**:
-```bash
-npx supabase link --project-ref kshalsrbtvmuqyvbzolf
-npx supabase db push  # Apply migrations
-npx supabase db pull  # Pull remote schema
-```
 
 ### Deployment (Cloudflare Workers Builds)
 
@@ -297,7 +264,7 @@ npx supabase db pull  # Pull remote schema
 4. **Result**: `https://materialist.science` updated
 
 **Key files**:
-- `wrangler.jsonc` — Workers config (name, compatibility_date, assets binding, vars)
+- `wrangler.jsonc` — Workers config (name, compatibility_date, assets binding, public vars)
 - `open-next.config.ts` — OpenNext adapter config
 - `middleware.ts` — Supabase session refresh
 
@@ -305,9 +272,7 @@ npx supabase db pull  # Pull remote schema
 
 | Variable | Location | Purpose |
 |----------|----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Build vars + Runtime vars | Supabase project URL (public) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Build vars + Runtime vars | Supabase anon key (public, RLS-protected) |
-| `NEXT_PUBLIC_APP_URL` | Build vars + Runtime vars | `https://materialist.science` |
+| `NEXT_PUBLIC_*` | Build vars + Runtime vars | Public client-side values (Supabase URL, anon key, app URL) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Runtime secrets only | Supabase admin key (bypasses RLS) |
 
 **Build-time vs Runtime**:
@@ -315,11 +280,3 @@ npx supabase db pull  # Pull remote schema
 - **Runtime secrets** — Available at request-time in API routes/middleware (set via `wrangler secret put`)
 
 **Important**: `wrangler.jsonc` `build.command` and `vars` are **NOT used by Workers Builds**. Only dashboard settings apply.
-
-### Future Enhancements
-
-**Planned**:
-- **Posts & Comments** — Persistent data (currently mock)
-- **Voting system** — Real upvote/downvote with karma calculation
-- **Autonomous curation** — Bots for arXiv digests, benchmark tracking, job aggregation
-- **Search** — Full-text search across posts/comments/users
