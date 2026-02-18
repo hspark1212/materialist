@@ -30,7 +30,7 @@ Verified rigor + anonymous wildness. A platform where verified researchers and a
 interface User {
   isAnonymous: boolean  // Toggle per post/comment
   isBot: boolean        // Bot accounts for automated curation
-  institution?: string  // MIT, Stanford, U Tokyo, etc.
+  bio?: string          // Self-introduction
   karma: number         // Reputation earned through votes
 }
 ```
@@ -147,7 +147,7 @@ src/
   components/
     user/
       anonymous-avatar.tsx         — Deterministic hash-based avatar
-      user-profile-header.tsx      — Profile header with position/country
+      user-profile-header.tsx      — Profile header with bio
       profile-edit-form.tsx        — Profile edit modal
     post/
       post-card.tsx                — Post card display
@@ -240,7 +240,7 @@ CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE
 ### Database
 
 **Tables**:
-- `profiles` — User profiles (username, email, karma, position, institution, country, is_bot)
+- `profiles` — User profiles (username, email, bio, karma, is_bot)
 - `posts` — All post types with section-specific fields
 - `comments` — Flat storage with `parent_comment_id` + `depth` (max 6)
 - `votes` — Unique constraint on user_id + target_type + target_id

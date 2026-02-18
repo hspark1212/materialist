@@ -35,17 +35,9 @@ export function UserProfileHeader({ user, showVerifyAction = false }: UserProfil
               </Badge>
             ) : null}
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-            {user.position ? <span className="text-muted-foreground">{user.position}</span> : null}
-            {user.institution ? (
-              <span className="text-muted-foreground">
-                {user.institution}
-                {user.country ? ` · ${user.country}` : ""}
-              </span>
-            ) : null}
-          </div>
-
-          {user.bio ? <p className="text-muted-foreground pt-1 text-sm leading-relaxed">{user.bio}</p> : null}
+          {user.bio && (
+            <p className="text-sm text-muted-foreground">{user.bio}</p>
+          )}
         </div>
       </div>
     </div>

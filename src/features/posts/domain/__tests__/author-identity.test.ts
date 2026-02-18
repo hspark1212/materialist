@@ -11,17 +11,11 @@ const testUser: User = {
   generatedDisplayName: "CryptoChemist42",
   avatar: "https://example.com/avatar.jpg",
   email: "jane@example.com",
+  bio: undefined,
   isAnonymous: false,
   isBot: false,
-  institution: "MIT",
   karma: 150,
   joinDate: "2025-01-01T00:00:00Z",
-  bio: "Researcher in materials science",
-  position: "Postdoc",
-  department: "Chemistry",
-  country: "US",
-  websiteUrl: "https://janedoe.com",
-  researchInterests: ["catalysis", "polymers"],
   orcidId: "0000-0001-2345-6789",
   orcidName: "Jane Doe",
   orcidVerifiedAt: "2025-06-01T00:00:00Z",
@@ -65,26 +59,9 @@ describe("resolveAuthorIdentity", () => {
     expect(result.email).toBeUndefined()
   })
 
-  it("does not leak institution for anonymous content", () => {
-    const result = resolveAuthorIdentity(testUser, true)
-    expect(result.institution).toBeUndefined()
-  })
-
   it("does not leak bio for anonymous content", () => {
     const result = resolveAuthorIdentity(testUser, true)
     expect(result.bio).toBeUndefined()
-  })
-
-  it("does not leak position/department/country for anonymous content", () => {
-    const result = resolveAuthorIdentity(testUser, true)
-    expect(result.position).toBeUndefined()
-    expect(result.department).toBeUndefined()
-    expect(result.country).toBeUndefined()
-  })
-
-  it("does not leak websiteUrl for anonymous content", () => {
-    const result = resolveAuthorIdentity(testUser, true)
-    expect(result.websiteUrl).toBeUndefined()
   })
 
   it("does not leak ORCID fields for anonymous content", () => {
@@ -107,7 +84,6 @@ describe("resolveAuthorIdentity", () => {
       "isBot",
       "joinDate",
       "karma",
-      "researchInterests",
       "username",
     ])
   })

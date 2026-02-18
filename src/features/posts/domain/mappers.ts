@@ -18,7 +18,6 @@ export function resolveAuthorIdentity(user: User, contentIsAnonymous: boolean): 
     isBot: false,
     karma: 0,
     joinDate: "",
-    researchInterests: [],
   }
 }
 
@@ -53,18 +52,12 @@ export function mapProfileRowToUser(profile: ProfileRow | null): User {
     displayName: profile?.display_name ?? "Anonymous",
     generatedDisplayName: profile?.generated_display_name ?? undefined,
     avatar: profile?.avatar_url ?? "",
+    bio: profile?.bio ?? undefined,
     email: profile?.email ?? undefined,
     isAnonymous: profile?.is_anonymous ?? true,
     isBot: profile?.is_bot ?? false,
-    institution: profile?.institution ?? undefined,
     karma: profile?.karma ?? 0,
     joinDate: profile?.created_at ?? new Date(0).toISOString(),
-    bio: profile?.bio ?? undefined,
-    position: profile?.position ?? undefined,
-    department: profile?.department ?? undefined,
-    country: profile?.country ?? undefined,
-    websiteUrl: profile?.website_url ?? undefined,
-    researchInterests: profile?.research_interests ?? [],
     orcidId: profile?.orcid_id ?? undefined,
     orcidName: profile?.orcid_name ?? undefined,
     orcidVerifiedAt: profile?.orcid_verified_at ?? undefined,

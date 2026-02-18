@@ -11,7 +11,7 @@ import type {
 import type { ListPostsParams, PostsRepository } from "../application/ports"
 
 // Only fetch profile fields needed for post/comment rendering.
-// PII fields (institution, bio, orcid_id, etc.) are fetched separately
+// PII fields (bio, orcid_id, etc.) are fetched separately
 // by the profile page via select("*").
 const PROFILE_COLUMNS = [
   "id",
