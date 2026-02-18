@@ -3,11 +3,6 @@ type AnonymousAvatarProps = {
   size?: number
 }
 
-const COLORS = [
-  "#0969da", "#1a7f37", "#8250df", "#bf3989", "#fb8500",
-  "#f85149", "#3fb950", "#58a6ff", "#d2a8ff", "#f0883e",
-]
-
 const ELEMENTS = [
   "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
   "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca",
@@ -34,10 +29,25 @@ function getElement(seed: string): string {
   return ELEMENTS[hashString(seed) % ELEMENTS.length]
 }
 
+function hashToHSL(hash: number): [number, string] {
+  const h = hash % 360
+  const s = 55 + (((hash / 360) | 0) % 26)       // 55–80%
+  const l = 45 + (((hash / 9360) | 0) % 21)      // 45–65%
+  return [h, `hsl(${h}, ${s}%, ${l}%)`]
+}
+
 function getGradient(seed: string): [string, string, number] {
   const hash = hashString(seed)
-  const color1 = COLORS[hash % COLORS.length]
-  const color2 = COLORS[(hash * 7 + 3) % COLORS.length]
+  const [h1, color1] = hashToHSL(hash)
+  const hash2 = hash * 7 + 3
+  const [h2, color2Initial] = hashToHSL(hash2)
+  let color2 = color2Initial
+  if (Math.abs(h1 - h2) < 40 || Math.abs(h1 - h2) > 320) {
+    const adjustedH = (h2 + 120) % 360
+    const s = 55 + (((hash2 / 360) | 0) % 26)
+    const l = 45 + (((hash2 / 9360) | 0) % 21)
+    color2 = `hsl(${adjustedH}, ${s}%, ${l}%)`
+  }
   const angle = (hash * 13) % 360
   return [color1, color2, angle]
 }
