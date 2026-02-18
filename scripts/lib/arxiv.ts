@@ -95,9 +95,12 @@ const QUERY_MATERIALS_TO_AI = [
 const QUERY_AI_TO_MATERIALS = [
   "(cat:cs.LG OR cat:cs.AI)",
   'AND (abs:"materials science" OR abs:"materials discovery"',
-  'OR abs:"crystal structure" OR abs:"molecular dynamics"',
+  'OR abs:"crystal structure" OR abs:"crystal material"',
+  'OR abs:"crystallographic" OR abs:"space group"',
+  'OR abs:"molecular dynamics"',
   'OR abs:"density functional" OR abs:"electronic structure"',
-  'OR abs:"alloy" OR abs:"polymer" OR abs:"catalysis")',
+  'OR abs:"alloy" OR abs:"polymer" OR abs:"catalysis"',
+  'OR abs:"interatomic" OR abs:"force field")',
 ].join(" ")
 
 export const DEFAULT_CONFIG: ArxivSearchConfig = {
