@@ -13,7 +13,7 @@ import type {
   PersistedVoteDirection,
 } from "../domain/types"
 
-export type AuthorType = "all" | "human" | "bot"
+export type AuthorType = "human" | "bot"
 
 export type ListPostsParams = {
   section?: Section

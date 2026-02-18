@@ -1,19 +1,21 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import type { FeedViewMode } from "@/components/feed/feed-controls"
 
 const STORAGE_KEY = "feed-view-mode"
 
-function readStoredMode(fallback: FeedViewMode): FeedViewMode {
-  if (typeof window === "undefined") return fallback
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return stored === "card" || stored === "compact" ? stored : fallback
-}
-
 export function useFeedViewMode(defaultMode: FeedViewMode = "card") {
-  const [viewMode, setStoredViewMode] = useState<FeedViewMode>(() => readStoredMode(defaultMode))
+  // Start with default to match SSR, then sync with localStorage after hydration
+  const [viewMode, setStoredViewMode] = useState<FeedViewMode>(defaultMode)
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored === "card" || stored === "compact") {
+      setStoredViewMode(stored)
+    }
+  }, [])
 
   const setViewMode = useCallback((nextMode: FeedViewMode) => {
     setStoredViewMode(nextMode)

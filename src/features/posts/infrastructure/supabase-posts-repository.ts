@@ -144,7 +144,7 @@ export function createSupabasePostsRepository(
       p_section: params.section ?? null,
       p_author_id: params.authorId ?? null,
       p_tag: params.tag ?? null,
-      p_author_type: params.authorType && params.authorType !== "all" ? params.authorType : null,
+      p_author_type: params.authorType ?? null,
       p_sort: params.sort,
       p_limit: limit,
       p_offset: offset,
@@ -175,8 +175,8 @@ export function createSupabasePostsRepository(
         return listPostsBySearch(params, limit, offset)
       }
 
-      const useInnerJoin = params.authorType === "bot" || params.authorType === "human"
-      let query = supabase.from("posts").select(useInnerJoin ? POSTS_SELECT_LIST_INNER : POSTS_SELECT_LIST)
+      // Always use inner join since we always filter by author type (human or bot)
+      let query = supabase.from("posts").select(POSTS_SELECT_LIST_INNER)
 
       if (params.section) {
         query = query.eq("section", params.section)
@@ -190,9 +190,10 @@ export function createSupabasePostsRepository(
         query = query.contains("tags", [params.tag])
       }
 
+      // Always filter by author type (human is default)
       if (params.authorType === "bot") {
         query = query.eq("profiles.is_bot", true)
-      } else if (params.authorType === "human") {
+      } else {
         query = query.eq("profiles.is_bot", false)
       }
 
