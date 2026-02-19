@@ -10,7 +10,6 @@ import {
 import { usePathname } from "next/navigation"
 import {
   ChevronDown,
-  Lock,
   LogIn,
   LogOut,
   Menu,
@@ -71,7 +70,7 @@ export function Header() {
   const pathname = usePathname()
   const { status, user, signOut } = useAuth()
   const { activeQuery, submitSearch } = useSearchFilter()
-  const { isAnonymousMode, canUseVerifiedMode, activeUser, switchMode } = useIdentity()
+  const { isAnonymousMode, activeUser, switchMode } = useIdentity()
   const isHydrated = useIsHydrated()
 
   const avatarFallback = <User className="size-5 text-muted-foreground" />
@@ -139,7 +138,7 @@ export function Header() {
                 </>
               ) : (
                 <>
-                  {isHydrated && !canUseVerifiedMode ? <Lock className="size-3.5" /> : <Sun className="size-3.5" />}
+                  <Sun className="size-3.5" />
                   <span>V</span>
                 </>
               )}
@@ -151,8 +150,8 @@ export function Header() {
               value={isAnonymousMode ? "anonymous" : "verified"}
               onValueChange={(v) => switchMode(v as "verified" | "anonymous")}
             >
-              <DropdownMenuRadioItem value="verified" className={!canUseVerifiedMode ? "opacity-60" : ""}>
-                {canUseVerifiedMode ? <Sun className="size-4" /> : <Lock className="size-4" />}
+              <DropdownMenuRadioItem value="verified">
+                <Sun className="size-4" />
                 Verified
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="anonymous">
@@ -167,7 +166,6 @@ export function Header() {
         <div className="hidden md:contents">
           <IdentitySwitch
             isAnonymousMode={isAnonymousMode}
-            canUseVerifiedMode={canUseVerifiedMode}
             onSwitch={switchMode}
           />
         </div>

@@ -67,6 +67,17 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
     }
   }, [status, canUseVerifiedMode, setTheme])
 
+  // Auto-switch to verified mode when ORCID verification completes mid-session
+  const prevCanUseVerifiedRef = useRef(canUseVerifiedMode)
+  useEffect(() => {
+    const prev = prevCanUseVerifiedRef.current
+    prevCanUseVerifiedRef.current = canUseVerifiedMode
+
+    if (!prev && canUseVerifiedMode) {
+      setTheme("light")
+    }
+  }, [canUseVerifiedMode, setTheme])
+
   // Force dark mode for unverified users who somehow end up in light mode
   useEffect(() => {
     if (!canUseVerifiedMode && resolvedTheme === "light") {
