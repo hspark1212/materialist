@@ -5,6 +5,7 @@ import { format, formatDistanceToNow, isPast } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
 import { cn, type Post } from "@/lib"
+import { event } from "@/lib/analytics/gtag"
 import { AuthorName } from "@/components/user/author-name"
 import { BotBadge } from "@/components/user/bot-badge"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -32,10 +33,10 @@ export function PostCard({ post }: PostCardProps) {
   const externalActionLabel = post.section === "papers" || post.type === "paper" ? "Paper" : "Link"
 
   return (
-    <Card className="gap-0 bg-card/80 py-0 shadow-sm transition-shadow hover:border-primary/30 hover:shadow-md">
+    <Card className="group relative gap-0 bg-card/80 py-0 shadow-sm transition-shadow hover:border-primary/30 hover:shadow-md">
       <CardContent className="px-3 py-3 sm:px-5 sm:py-4">
         <div className="min-w-0 space-y-1.5 sm:space-y-2">
-          <div className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs">
+          <div className="text-muted-foreground relative z-[1] flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs">
             <Badge
               asChild
               variant="secondary"
@@ -65,7 +66,8 @@ export function PostCard({ post }: PostCardProps) {
 
           <Link
             href={`/post/${post.id}`}
-            className="block line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight hover:text-primary sm:line-clamp-none sm:text-lg"
+            className="block line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight hover:text-primary after:absolute after:inset-0 after:content-[''] sm:line-clamp-none sm:text-lg"
+            onClick={() => event("card_click", { post_id: post.id, section: post.section, card_type: "default" })}
           >
             <InlineLatex content={post.title} />
           </Link>
@@ -77,7 +79,7 @@ export function PostCard({ post }: PostCardProps) {
           ) : null}
 
           {(paperLinks.length > 0 || (post.tags && post.tags.length > 0)) ? (
-            <div className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs">
+            <div className="text-muted-foreground relative z-[1] flex flex-wrap items-center gap-1.5 text-xs">
               {paperLinks.map((link) => (
                 <a
                   key={link.key}
@@ -113,7 +115,7 @@ export function PostCard({ post }: PostCardProps) {
             </div>
           ) : null}
 
-          <div className="text-muted-foreground flex items-center gap-2 pt-0.5 text-xs sm:pt-1">
+          <div className="text-muted-foreground relative z-[1] flex items-center gap-2 pt-0.5 text-xs sm:pt-1">
             <VoteButton
               targetType="post"
               targetId={post.id}
