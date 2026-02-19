@@ -25,12 +25,40 @@ type PostDetailProps = {
   post: Post
 }
 
+const PAPER_CONTENT_SECTIONS: Array<{ heading: string; pattern: RegExp }> = [
+  {
+    heading: "Summary",
+    pattern: /(^|\n)\s*(?:\*\*|__)?summary(?:\*\*|__)?\s*:(?:\*\*|__)?\s*/gi,
+  },
+  {
+    heading: "Why this paper?",
+    pattern: /(^|\n)\s*(?:\*\*|__)?why\s+this\s+paper\??(?:\*\*|__)?\s*:(?:\*\*|__)?\s*/gi,
+  },
+  {
+    heading: "Abstract",
+    pattern: /(^|\n)\s*(?:\*\*|__)?abstract(?:\*\*|__)?\s*:(?:\*\*|__)?\s*/gi,
+  },
+]
+
+function normalizePaperDigestContent(content: string): string {
+  if (/(^|\n)\s{0,3}#{1,6}\s+\S/m.test(content)) return content
+
+  let normalized = content
+
+  for (const { heading, pattern } of PAPER_CONTENT_SECTIONS) {
+    normalized = normalized.replace(pattern, `$1## ${heading}\n\n`)
+  }
+
+  return normalized.replace(/\n{3,}/g, "\n\n").trim()
+}
+
 export function PostDetail({ post }: PostDetailProps) {
   const router = useRouter()
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const sectionColor = sectionByKey[post.section]?.color
   const primaryLink = getPostPrimaryLink(post)
   const paperMeta = getPaperMetaLinks(post)[0] ?? null
+  const renderedContent = post.section === "papers" ? normalizePaperDigestContent(post.content) : post.content
 
   const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000
   const isOwnPost = Boolean(post.isOwner)
@@ -55,9 +83,9 @@ export function PostDetail({ post }: PostDetailProps) {
 
   return (
     <Card className="gap-0 bg-card/80 py-0 shadow-sm">
-      <CardContent className="px-4 py-5 sm:px-6 sm:py-6">
-        <div className="min-w-0 space-y-4">
-          <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
+      <CardContent className="px-4 py-5 sm:px-8 sm:py-7">
+        <div className="mx-auto w-full max-w-[72ch] min-w-0 space-y-5">
+          <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
             <Badge
               asChild
               variant="secondary"
@@ -105,7 +133,9 @@ export function PostDetail({ post }: PostDetailProps) {
             ) : null}
           </div>
 
-          <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl"><InlineLatex content={post.title} /></h1>
+          <h1 className="text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+            <InlineLatex content={post.title} />
+          </h1>
 
           {post.tags && post.tags.length > 0 ? (
             <div className="flex flex-wrap gap-1.5 text-xs">
@@ -115,8 +145,8 @@ export function PostDetail({ post }: PostDetailProps) {
             </div>
           ) : null}
 
-          <div className="space-y-4 text-sm leading-relaxed sm:text-base">
-            <MarkdownRenderer content={post.content} />
+          <div className="space-y-5 text-[15px] leading-7 sm:text-[17px] sm:leading-8">
+            <MarkdownRenderer content={renderedContent} className="post-detail-prose" />
           </div>
 
           {post.url && post.section !== "papers" && post.section !== "showcase" && post.section !== "jobs" ? (

@@ -456,6 +456,55 @@
   font-size: 1.05em;
 }
 
+/* Readability variant for post detail page */
+.post-detail-prose p,
+.post-detail-prose ul,
+.post-detail-prose ol,
+.post-detail-prose li,
+.post-detail-prose blockquote,
+.post-detail-prose td {
+  color: color-mix(in srgb, var(--foreground) 88%, var(--muted-foreground));
+}
+
+.post-detail-prose p {
+  margin-bottom: 1rem;
+  line-height: 1.85;
+}
+
+.post-detail-prose h2 {
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  letter-spacing: -0.01em;
+}
+
+.post-detail-prose h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.625rem;
+  letter-spacing: -0.01em;
+}
+
+.post-detail-prose strong {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.post-detail-prose blockquote {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  border-left-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background-color: color-mix(in srgb, var(--muted) 70%, transparent);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .post-detail-prose p {
+    line-height: 1.95;
+  }
+}
+
 /* Compact variant for comments */
 .prose-compact h1 {
   font-size: 1.125rem;
