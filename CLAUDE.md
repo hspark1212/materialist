@@ -6,7 +6,7 @@
 2. **Simplicity first** — Only what's requested. No speculative features, no premature abstractions, no "while I'm here" cleanups. Three similar lines beat an unnecessary helper function.
 3. **Surgical changes** — Every changed line traces back to the request. Match existing style. Don't touch unrelated code, add unsolicited comments, or refactor things that work.
 4. **Goal-driven execution** — Define a verifiable goal before writing code. Reproduce bugs before fixing. State how to confirm the change works.
-5. **Keep docs current** — Before ending a session, update `CLAUDE.md` or `AGENTS.md` if new constraints, patterns, or architectural decisions were introduced.
+5. **Keep docs current** — After verification passes, review whether `CLAUDE.md` or `.claude/rules/` need updates for new constraints, patterns, or architectural decisions. Propose changes and wait for user approval before editing.
 
 ## Commands
 
@@ -63,7 +63,3 @@ Data flows: API route → use case → repository (via port) → Supabase → ma
 - **E2E tests** (Playwright): `tests/**/*.spec.ts` — 3 viewports (desktop 1440, tablet 768, mobile 375)
 - **Hydration errors**: Not caught by `lint`/`build` — must run `npm run dev` and check browser console. Time-based rendering (`formatDistanceToNow`) requires `suppressHydrationWarning`.
 - **After code changes**: Run `npm run lint && npx tsc --noEmit && npm run test`. Add `npm run test:e2e` when UI or navigation flows change.
-
-## See also
-
-- [AGENTS.md](AGENTS.md) — product context, auth flows, database, deployment, and full project structure
