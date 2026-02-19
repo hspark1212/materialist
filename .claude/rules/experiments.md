@@ -18,6 +18,9 @@
 - Keep params flat: `{ post_id, section, card_type }` — no nested objects.
 - Max 25 custom parameters per event (GA4 limit).
 
+## Automation
+- **`/experiment` skill** — Automates experiment doc lifecycle: `new` (create), `measure <NNN>` (guide result collection), `status` (list all). Defined in `.claude/skills/experiment/SKILL.md`.
+
 ## Tools
 - **GA4**: Page views, events, real-time, user engagement metrics
 - **Clarity**: Heatmaps, session recordings, dead clicks, rage clicks, scroll depth, Web Vitals
