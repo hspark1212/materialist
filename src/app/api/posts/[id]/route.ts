@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import type { Post } from "@/lib"
-import {
-  deletePostUseCase,
-  getPostDetailUseCase,
-  updatePostUseCase,
-} from "@/features/posts/application/use-cases"
+import { deletePostUseCase, getPostDetailUseCase, updatePostUseCase } from "@/features/posts/application/use-cases"
 import { handleApiError, parseCommentSort } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
 import { createClient } from "@/lib/supabase/server"
@@ -41,18 +37,23 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const commentSort = parseCommentSort(request.nextUrl.searchParams.get("commentSort"))
 
     const supabase = await createClient()
-    const { data: { user: authUser } } = await supabase.auth.getUser()
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser()
 
     const repository = createSupabasePostsRepository(supabase)
     const detail = await getPostDetailUseCase(repository, id, commentSort, authUser?.id)
     const userVote = authUser ? await resolvePostUserVote(supabase, authUser.id, id) : 0
     const post: Post = { ...detail.post, userVote }
 
-    return NextResponse.json({ ...detail, post }, {
-      headers: {
-        "Cache-Control": "no-store",
+    return NextResponse.json(
+      { ...detail, post },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
       },
-    })
+    )
   } catch (error) {
     return handleApiError(error)
   }

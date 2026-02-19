@@ -1,32 +1,30 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import Script from "next/script";
-import { GA_MEASUREMENT_ID, pageview } from "./gtag";
+import { useEffect } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
+import Script from "next/script"
+import { GA_MEASUREMENT_ID, pageview } from "./gtag"
 
-const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ?? "";
+const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ?? ""
 
 function PageviewTracker() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (!pathname) return;
-    const url = searchParams?.size
-      ? `${pathname}?${searchParams.toString()}`
-      : pathname;
-    pageview(url);
-  }, [pathname, searchParams]);
+    if (!pathname) return
+    const url = searchParams?.size ? `${pathname}?${searchParams.toString()}` : pathname
+    pageview(url)
+  }, [pathname, searchParams])
 
-  return null;
+  return null
 }
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
-  const hasGA = !!GA_MEASUREMENT_ID;
-  const hasClarity = !!CLARITY_PROJECT_ID;
+  const hasGA = !!GA_MEASUREMENT_ID
+  const hasClarity = !!CLARITY_PROJECT_ID
 
-  if (!hasGA && !hasClarity) return <>{children}</>;
+  if (!hasGA && !hasClarity) return <>{children}</>
 
   return (
     <>
@@ -49,5 +47,5 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
       )}
       {children}
     </>
-  );
+  )
 }

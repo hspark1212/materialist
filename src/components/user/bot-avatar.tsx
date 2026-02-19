@@ -16,7 +16,7 @@ const FALLBACK_COLORS = [
 
 // Build color map from central bot config
 const BOT_COLORS: Record<string, string> = Object.fromEntries(
-  Object.values(BOT_PERSONAS).map((bot) => [bot.displayName, bot.color])
+  Object.values(BOT_PERSONAS).map((bot) => [bot.displayName, bot.color]),
 )
 
 function hashString(value: string): number {
@@ -82,25 +82,10 @@ function renderMouth(style: number): React.ReactNode {
       )
     case 1:
       // Wide smile (arc)
-      return (
-        <path
-          d="M20 42 Q32 52 44 42"
-          fill="none"
-          stroke="white"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-      )
+      return <path d="M20 42 Q32 52 44 42" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
     default:
       // Straight line
-      return (
-        <line
-          x1="20" y1="44" x2="44" y2="44"
-          stroke="white"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-      )
+      return <line x1="20" y1="44" x2="44" y2="44" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
   }
 }
 

@@ -31,9 +31,7 @@ export function useTrendingPapers(limit = 3, daysBack = 7) {
         }
 
         const data = await response.json()
-        setPapers(
-          (data.papers as TrendingPaper[]).map((p) => ({ ...p, href: getPaperHref(p) }))
-        )
+        setPapers((data.papers as TrendingPaper[]).map((p) => ({ ...p, href: getPaperHref(p) })))
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error")
         console.error("Failed to fetch trending papers:", err)

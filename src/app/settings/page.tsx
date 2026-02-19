@@ -25,13 +25,11 @@ export default function SettingsPage() {
 
       <Card className="py-4">
         <CardContent className="space-y-3 px-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Profile
-          </h2>
+          <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Profile</h2>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">{user?.displayName ?? "Anonymous"}</p>
-              <p className="text-sm text-muted-foreground">u/{user?.username}</p>
+              <p className="text-muted-foreground text-sm">u/{user?.username}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               Edit Profile
@@ -40,20 +38,16 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card id="verification" className="py-4 scroll-mt-20">
+      <Card id="verification" className="scroll-mt-20 py-4">
         <CardContent className="space-y-3 px-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Verification
-          </h2>
+          <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Verification</h2>
           {user?.orcidId ? (
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <OrcidBadge orcidId={user.orcidId} />
-                {user.orcidName ? (
-                  <p className="text-sm text-muted-foreground">{user.orcidName}</p>
-                ) : null}
+                {user.orcidName ? <p className="text-muted-foreground text-sm">{user.orcidName}</p> : null}
                 {user.orcidVerifiedAt ? (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Verified {formatDistanceToNow(new Date(user.orcidVerifiedAt), { addSuffix: true })}
                   </p>
                 ) : null}
@@ -64,15 +58,9 @@ export default function SettingsPage() {
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Verify your researcher identity by linking your ORCID iD.
-              </p>
+              <p className="text-muted-foreground text-sm">Verify your researcher identity by linking your ORCID iD.</p>
               <Button variant="outline" size="sm" asChild>
-                <a
-                  href={buildOrcidAuthUrl()}
-                >
-                  Connect ORCID
-                </a>
+                <a href={buildOrcidAuthUrl()}>Connect ORCID</a>
               </Button>
             </div>
           )}
@@ -81,19 +69,15 @@ export default function SettingsPage() {
 
       <Card className="py-4">
         <CardContent className="space-y-3 px-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Account
-          </h2>
+          <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Account</h2>
           {profile?.email ? (
             <div className="flex items-center gap-3">
-              <Mail className="size-4 text-muted-foreground" />
+              <Mail className="text-muted-foreground size-4" />
               <p className="text-sm">{profile.email}</p>
             </div>
           ) : null}
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Sign out and return to anonymous mode
-            </p>
+            <p className="text-muted-foreground text-sm">Sign out and return to anonymous mode</p>
             <Button variant="outline" size="sm" onClick={() => signOut()}>
               <LogOut className="size-4" />
               Sign Out
@@ -104,15 +88,11 @@ export default function SettingsPage() {
 
       <Card className="border-destructive/50 py-4">
         <CardContent className="space-y-3 px-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-destructive">
-            Danger Zone
-          </h2>
+          <h2 className="text-destructive text-xs font-semibold tracking-wide uppercase">Danger Zone</h2>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">Delete Account</p>
-              <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data
-              </p>
+              <p className="text-muted-foreground text-sm">Permanently delete your account and all associated data</p>
             </div>
             <Button
               variant="outline"
@@ -129,12 +109,7 @@ export default function SettingsPage() {
 
       {profile ? (
         <>
-          <ProfileEditForm
-            profile={profile}
-            open={editOpen}
-            onOpenChange={setEditOpen}
-            onSaved={refreshProfile}
-          />
+          <ProfileEditForm profile={profile} open={editOpen} onOpenChange={setEditOpen} onSaved={refreshProfile} />
           <DeleteAccountDialog open={deleteOpen} onOpenChange={setDeleteOpen} />
           {user?.orcidId ? (
             <OrcidDisconnectDialog

@@ -21,9 +21,12 @@ export async function GET() {
     const repository = createSupabaseNotificationsRepository(supabase)
     const count = await getUnreadCountUseCase(repository, user.id)
 
-    return NextResponse.json({ count }, {
-      headers: { "Cache-Control": "private, no-store" },
-    })
+    return NextResponse.json(
+      { count },
+      {
+        headers: { "Cache-Control": "private, no-store" },
+      },
+    )
   } catch (error) {
     return handleApiError(error)
   }

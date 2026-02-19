@@ -44,14 +44,10 @@ function getButtonSizeClass({ compact, orientation }: VoteStyleParams) {
 
 function getContainerClass({ compact, orientation }: VoteStyleParams) {
   if (orientation === "horizontal") {
-    return compact
-      ? "flex-row gap-0.5 px-0 py-0 md:gap-1 md:px-1 md:py-0.5"
-      : "flex-row px-1 py-0.5"
+    return compact ? "flex-row gap-0.5 px-0 py-0 md:gap-1 md:px-1 md:py-0.5" : "flex-row px-1 py-0.5"
   }
 
-  return compact
-    ? "w-9 flex-col gap-0.5 py-0.5 md:w-12 md:gap-1.5 md:py-1"
-    : "w-12 flex-col py-1"
+  return compact ? "w-9 flex-col gap-0.5 py-0.5 md:w-12 md:gap-1.5 md:py-1" : "w-12 flex-col py-1"
 }
 
 export function VoteButton({
@@ -131,7 +127,7 @@ export function VoteButton({
         disabled={isSubmitting}
         onClick={() => handleVote(1)}
         className={cn(
-          "flex items-center justify-center text-muted-foreground transition-all hover:scale-110 hover:text-upvote active:scale-95 disabled:opacity-60 touch-manipulation",
+          "text-muted-foreground hover:text-upvote flex touch-manipulation items-center justify-center transition-all hover:scale-110 active:scale-95 disabled:opacity-60",
           buttonSizeClass,
         )}
         aria-label="Upvote"
@@ -145,7 +141,7 @@ export function VoteButton({
           countSize,
           userVote === 1 && "text-upvote",
           userVote === -1 && "text-downvote",
-          userVote === 0 && "text-muted-foreground"
+          userVote === 0 && "text-muted-foreground",
         )}
       >
         {displayCount}
@@ -155,7 +151,7 @@ export function VoteButton({
         disabled={isSubmitting}
         onClick={() => handleVote(-1)}
         className={cn(
-          "flex items-center justify-center text-muted-foreground transition-all hover:scale-110 hover:text-downvote active:scale-95 disabled:opacity-60 touch-manipulation",
+          "text-muted-foreground hover:text-downvote flex touch-manipulation items-center justify-center transition-all hover:scale-110 active:scale-95 disabled:opacity-60",
           buttonSizeClass,
         )}
         aria-label="Downvote"

@@ -86,31 +86,32 @@ export function useNotifications(enabled: boolean) {
     setPanelOpen(false)
   }, [])
 
-  const markAsRead = useCallback(async (ids: string[]) => {
-    const prevNotifications = notifications
-    const prevCount = unreadCount
+  const markAsRead = useCallback(
+    async (ids: string[]) => {
+      const prevNotifications = notifications
+      const prevCount = unreadCount
 
-    // Optimistic update
-    setNotifications((prev) =>
-      prev.map((n) => (ids.includes(n.id) ? { ...n, isRead: true } : n)),
-    )
-    setUnreadCount((prev) => Math.max(0, prev - ids.length))
+      // Optimistic update
+      setNotifications((prev) => prev.map((n) => (ids.includes(n.id) ? { ...n, isRead: true } : n)))
+      setUnreadCount((prev) => Math.max(0, prev - ids.length))
 
-    try {
-      const res = await fetch("/api/notifications/read", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
-      })
-      if (!res.ok) {
+      try {
+        const res = await fetch("/api/notifications/read", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        })
+        if (!res.ok) {
+          setNotifications(prevNotifications)
+          setUnreadCount(prevCount)
+        }
+      } catch {
         setNotifications(prevNotifications)
         setUnreadCount(prevCount)
       }
-    } catch {
-      setNotifications(prevNotifications)
-      setUnreadCount(prevCount)
-    }
-  }, [notifications, unreadCount])
+    },
+    [notifications, unreadCount],
+  )
 
   const markAllAsRead = useCallback(async () => {
     const prevNotifications = notifications

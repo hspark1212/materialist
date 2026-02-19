@@ -46,29 +46,24 @@ export function ProfileEditForm({ profile, open, onOpenChange, onSaved }: Profil
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
-          <DialogDescription>
-            Update your public profile information.
-          </DialogDescription>
+          <DialogDescription>Update your public profile information.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="edit-displayname" className="text-sm font-medium">Display Name</label>
-            <Input
-              id="edit-displayname"
-              value={profile.display_name}
-              disabled
-              placeholder="Your display name"
-            />
-            <p className="text-xs text-muted-foreground">
-              {isOrcidLinked
-                ? "Managed by ORCID."
-                : "Auto-generated. Link ORCID to use your real name."}
+            <label htmlFor="edit-displayname" className="text-sm font-medium">
+              Display Name
+            </label>
+            <Input id="edit-displayname" value={profile.display_name} disabled placeholder="Your display name" />
+            <p className="text-muted-foreground text-xs">
+              {isOrcidLinked ? "Managed by ORCID." : "Auto-generated. Link ORCID to use your real name."}
             </p>
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="edit-bio" className="text-sm font-medium">Bio</label>
+            <label htmlFor="edit-bio" className="text-sm font-medium">
+              Bio
+            </label>
             <Textarea
               id="edit-bio"
               value={bio}
@@ -77,11 +72,8 @@ export function ProfileEditForm({ profile, open, onOpenChange, onSaved }: Profil
               rows={3}
               maxLength={300}
             />
-            <p className="text-xs text-muted-foreground">
-              {bio.length}/300
-            </p>
+            <p className="text-muted-foreground text-xs">{bio.length}/300</p>
           </div>
-
         </div>
 
         <DialogFooter>

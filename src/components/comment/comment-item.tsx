@@ -101,7 +101,7 @@ export function CommentItem({ comment, children, onChanged }: CommentItemProps) 
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="hover:bg-accent/40 flex w-full items-center gap-2 rounded-md px-1 py-1 min-h-11 md:min-h-0 text-left"
+              className="hover:bg-accent/40 flex min-h-11 w-full items-center gap-2 rounded-md px-1 py-1 text-left md:min-h-0"
             >
               <UserAvatar user={comment.author} size="sm" />
               <AuthorName user={comment.author} className="text-sm" />
@@ -148,7 +148,13 @@ export function CommentItem({ comment, children, onChanged }: CommentItemProps) 
             )}
 
             <div className="flex items-center gap-1">
-              <VoteButton targetType="comment" targetId={comment.id} initialCount={comment.voteCount} orientation="horizontal" size="sm" />
+              <VoteButton
+                targetType="comment"
+                targetId={comment.id}
+                initialCount={comment.voteCount}
+                orientation="horizontal"
+                size="sm"
+              />
               <Button
                 type="button"
                 variant="ghost"
@@ -181,7 +187,7 @@ export function CommentItem({ comment, children, onChanged }: CommentItemProps) 
                     size="sm"
                     disabled={isDeleting}
                     onClick={() => setShowDeleteDialog(true)}
-                    className="h-7 min-h-11 px-2 text-xs text-destructive hover:text-destructive md:min-h-0"
+                    className="text-destructive hover:text-destructive h-7 min-h-11 px-2 text-xs md:min-h-0"
                   >
                     <Trash2 className="size-3.5" />
                     Delete

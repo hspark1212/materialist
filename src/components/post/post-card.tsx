@@ -33,7 +33,7 @@ export function PostCard({ post }: PostCardProps) {
   const externalActionLabel = post.section === "papers" || post.type === "paper" ? "Paper" : "Link"
 
   return (
-    <Card className="group relative gap-0 bg-card/80 py-0 shadow-sm transition-shadow hover:border-primary/30 hover:shadow-md">
+    <Card className="group bg-card/80 hover:border-primary/30 relative gap-0 py-0 shadow-sm transition-shadow hover:shadow-md">
       <CardContent className="px-3 py-3 sm:px-5 sm:py-4">
         <div className="min-w-0 space-y-1.5 sm:space-y-2">
           <div className="text-muted-foreground relative z-[1] flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs">
@@ -41,12 +41,20 @@ export function PostCard({ post }: PostCardProps) {
               asChild
               variant="secondary"
               className="border px-2 py-0.5 text-[11px]"
-              style={sectionColor ? { color: sectionColor, borderColor: sectionColor, backgroundColor: `color-mix(in srgb, ${sectionColor} 12%, transparent)` } : undefined}
+              style={
+                sectionColor
+                  ? {
+                      color: sectionColor,
+                      borderColor: sectionColor,
+                      backgroundColor: `color-mix(in srgb, ${sectionColor} 12%, transparent)`,
+                    }
+                  : undefined
+              }
             >
               <Link href={getSectionHref(post.section)}>{getSectionLabel(post.section)}</Link>
             </Badge>
             {post.flair && flairByKey[post.flair] ? (
-              <Badge className={`px-1.5 py-0 text-[11px] border-0 ${flairByKey[post.flair].className}`}>
+              <Badge className={`border-0 px-1.5 py-0 text-[11px] ${flairByKey[post.flair].className}`}>
                 {flairByKey[post.flair].label}
               </Badge>
             ) : null}
@@ -66,19 +74,17 @@ export function PostCard({ post }: PostCardProps) {
 
           <Link
             href={`/post/${post.id}`}
-            className="block line-clamp-2 text-[17px] font-semibold leading-snug tracking-tight hover:text-primary after:absolute after:inset-0 after:content-[''] sm:line-clamp-none sm:text-lg"
+            className="hover:text-primary line-clamp-2 block text-[17px] leading-snug font-semibold tracking-tight after:absolute after:inset-0 after:content-[''] sm:line-clamp-none sm:text-lg"
             onClick={() => event("card_click", { post_id: post.id, section: post.section, card_type: "default" })}
           >
             <InlineLatex content={post.title} />
           </Link>
 
           {previewText ? (
-            <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed sm:line-clamp-5">
-              {previewText}
-            </p>
+            <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed sm:line-clamp-5">{previewText}</p>
           ) : null}
 
-          {(paperLinks.length > 0 || (post.tags && post.tags.length > 0)) ? (
+          {paperLinks.length > 0 || (post.tags && post.tags.length > 0) ? (
             <div className="text-muted-foreground relative z-[1] flex flex-wrap items-center gap-1.5 text-xs">
               {paperLinks.map((link) => (
                 <a
@@ -86,7 +92,7 @@ export function PostCard({ post }: PostCardProps) {
                   href={link.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2 py-0.5 transition-colors hover:text-primary"
+                  className="border-border/70 bg-background/70 hover:text-primary inline-flex items-center gap-1 rounded-full border px-2 py-0.5 transition-colors"
                 >
                   {link.label}
                   <ExternalLink className="size-3" />
@@ -100,14 +106,18 @@ export function PostCard({ post }: PostCardProps) {
 
           {post.type === "job" && post.company ? (
             <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-foreground">{post.company}</span>
+              <span className="text-foreground font-medium">{post.company}</span>
               {post.location ? <span>· {post.location}</span> : null}
               {post.jobType ? (
-                <Badge variant="outline" className="text-[11px]">{jobTypeLabels[post.jobType]}</Badge>
+                <Badge variant="outline" className="text-[11px]">
+                  {jobTypeLabels[post.jobType]}
+                </Badge>
               ) : null}
               {post.deadline ? (
                 isPast(new Date(post.deadline)) ? (
-                  <Badge variant="secondary" className="text-[11px] bg-muted text-muted-foreground">Closed</Badge>
+                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-[11px]">
+                    Closed
+                  </Badge>
                 ) : (
                   <span>· Due: {format(new Date(post.deadline), "MMM d")}</span>
                 )
@@ -127,18 +137,19 @@ export function PostCard({ post }: PostCardProps) {
               countMode="net"
               className="h-7 min-h-11 px-1 md:min-h-0"
             />
-            <Button asChild variant="ghost" size="sm" className={cn("h-7 min-h-11 px-2 md:min-h-0", post.commentCount > 0 && "text-foreground")}>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className={cn("h-7 min-h-11 px-2 md:min-h-0", post.commentCount > 0 && "text-foreground")}
+            >
               <Link href={`/post/${post.id}#comments`}>
                 <MessageSquare className="size-3.5" />
                 <span className="sm:hidden">{post.commentCount}</span>
                 <span className="hidden sm:inline">{post.commentCount} Comments</span>
               </Link>
             </Button>
-            <ShareButton
-              postId={post.id}
-              className="h-7 min-h-11 px-2 md:min-h-0"
-              iconClassName="size-3.5"
-            />
+            <ShareButton postId={post.id} className="h-7 min-h-11 px-2 md:min-h-0" iconClassName="size-3.5" />
             {primaryLink ? (
               <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
                 <a href={primaryLink} target="_blank" rel="noreferrer">

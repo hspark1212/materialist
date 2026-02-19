@@ -52,15 +52,15 @@ export default function PostDetailPage() {
           </Link>
         </Button>
         <div className="text-muted-foreground flex min-w-0 items-center gap-1 overflow-x-auto text-xs sm:text-sm">
-          <Link href="/" className="hidden md:inline hover:text-primary">
+          <Link href="/" className="hover:text-primary hidden md:inline">
             Home
           </Link>
-          <ChevronRight className="hidden md:inline size-3.5 shrink-0" />
+          <ChevronRight className="hidden size-3.5 shrink-0 md:inline" />
           <Link href={getSectionHref(post.section)} className="hover:text-primary">
             {getSectionLabel(post.section)}
           </Link>
           <ChevronRight className="size-3.5 shrink-0" />
-          <span className="truncate text-foreground">{post.title}</span>
+          <span className="text-foreground truncate">{post.title}</span>
         </div>
       </div>
 

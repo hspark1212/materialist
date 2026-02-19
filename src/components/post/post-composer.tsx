@@ -14,13 +14,7 @@ import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -66,7 +60,8 @@ export function PostComposer({ initialPost }: PostComposerProps) {
       .filter(Boolean)
   }, [techStack])
 
-  const inputClassName = "bg-background/80 border-border/80 shadow-sm transition-[border-color,box-shadow,background-color] hover:bg-background focus-visible:border-ring focus-visible:bg-background dark:bg-background/50"
+  const inputClassName =
+    "bg-background/80 border-border/80 shadow-sm transition-[border-color,box-shadow,background-color] hover:bg-background focus-visible:border-ring focus-visible:bg-background dark:bg-background/50"
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -119,7 +114,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
         router.push(`/post/${payload.post.id}`)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : (isEditMode ? "Failed to update post" : "Failed to create post"))
+      setError(err instanceof Error ? err.message : isEditMode ? "Failed to update post" : "Failed to create post")
     } finally {
       setIsSubmitting(false)
     }
@@ -134,7 +129,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
         <form className="space-y-5" onSubmit={handleSubmit}>
-          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+          <div className="border-border/60 bg-muted/20 space-y-2 rounded-md border p-3">
             <p className="text-sm font-medium">Section</p>
             <ToggleGroup
               type="single"
@@ -164,7 +159,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
           </div>
 
           {section === "forum" ? (
-            <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+            <div className="border-border/60 bg-muted/20 space-y-2 rounded-md border p-3">
               <p className="text-sm font-medium">Flair</p>
               <Select value={flair} onValueChange={(value) => setFlair(value as ForumFlair)}>
                 <SelectTrigger className="w-full">
@@ -182,7 +177,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
           ) : null}
 
           {section === "showcase" ? (
-            <div className="grid gap-3 rounded-md border border-border/60 bg-muted/20 p-3 sm:grid-cols-2">
+            <div className="border-border/60 bg-muted/20 grid gap-3 rounded-md border p-3 sm:grid-cols-2">
               <div className="space-y-2 sm:col-span-2">
                 <p className="text-sm font-medium">Project URL</p>
                 <Input
@@ -223,7 +218,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
           ) : null}
 
           {section === "jobs" ? (
-            <div className="grid gap-3 rounded-md border border-border/60 bg-muted/20 p-3 sm:grid-cols-2">
+            <div className="border-border/60 bg-muted/20 grid gap-3 rounded-md border p-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <p className="text-sm font-medium">Company</p>
                 <Input
@@ -260,7 +255,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
               <div className="space-y-2 sm:col-span-2">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium">Application URL</p>
-                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                  <span className="text-muted-foreground border-border/60 rounded-full border px-2 py-0.5 text-[10px] tracking-wide uppercase">
                     Optional
                   </span>
                 </div>
@@ -274,7 +269,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium">Application Deadline</p>
-                  <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                  <span className="text-muted-foreground border-border/60 rounded-full border px-2 py-0.5 text-[10px] tracking-wide uppercase">
                     Optional
                   </span>
                 </div>
@@ -288,7 +283,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
             </div>
           ) : null}
 
-          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+          <div className="border-border/60 bg-muted/20 space-y-2 rounded-md border p-3">
             <p className="text-sm font-medium">Title</p>
             <Input
               className={inputClassName}
@@ -298,35 +293,35 @@ export function PostComposer({ initialPost }: PostComposerProps) {
             />
           </div>
 
-          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+          <div className="border-border/60 bg-muted/20 space-y-2 rounded-md border p-3">
             <p className="text-sm font-medium">Content</p>
             <Tabs defaultValue="write" className="w-full">
-            <TabsList className="bg-muted/40 p-1">
-              <TabsTrigger
-                value="write"
-                className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
-              >
-                Write
-              </TabsTrigger>
-              <TabsTrigger
-                value="preview"
-                className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
-              >
-                Preview
-              </TabsTrigger>
-            </TabsList>
+              <TabsList className="bg-muted/40 p-1">
+                <TabsTrigger
+                  value="write"
+                  className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                >
+                  Write
+                </TabsTrigger>
+                <TabsTrigger
+                  value="preview"
+                  className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
+                >
+                  Preview
+                </TabsTrigger>
+              </TabsList>
               <TabsContent value="write" className="mt-2 space-y-2">
                 <Textarea
                   ref={textareaRef}
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
-                  className="min-h-[220px] resize-y rounded-lg border border-border/80 bg-background/70 font-mono shadow-sm transition-[border-color,box-shadow,background-color] hover:bg-background focus-visible:border-ring focus-visible:bg-background"
+                  className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-[220px] resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
                   placeholder="Share context, methods, and what feedback you need"
                 />
                 <MarkdownToolbar textareaRef={textareaRef} value={content} onValueChange={setContent} variant="full" />
               </TabsContent>
               <TabsContent value="preview" className="mt-2 space-y-2">
-                <div className="min-h-[220px] rounded-md border border-border/80 bg-background/70 px-3 py-2 text-sm shadow-sm dark:bg-background/50">
+                <div className="border-border/80 bg-background/70 dark:bg-background/50 min-h-[220px] rounded-md border px-3 py-2 text-sm shadow-sm">
                   {content.trim() ? (
                     <MarkdownRenderer content={content} />
                   ) : (
@@ -338,10 +333,10 @@ export function PostComposer({ initialPost }: PostComposerProps) {
           </div>
 
           {section !== "showcase" && section !== "jobs" ? (
-            <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+            <div className="border-border/60 bg-muted/20 space-y-2 rounded-md border p-3">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">{section === "papers" ? "Paper URL" : "Link URL"}</p>
-                <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                <span className="text-muted-foreground border-border/60 rounded-full border px-2 py-0.5 text-[10px] tracking-wide uppercase">
                   Optional
                 </span>
               </div>
@@ -354,10 +349,10 @@ export function PostComposer({ initialPost }: PostComposerProps) {
             </div>
           ) : null}
 
-          <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-3">
+          <div className="border-border/60 bg-muted/20 space-y-2 rounded-md border p-3">
             <div className="flex items-center gap-2">
               <p className="text-sm font-medium">Tags</p>
-              <span className="text-muted-foreground rounded-full border border-border/60 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+              <span className="text-muted-foreground border-border/60 rounded-full border px-2 py-0.5 text-[10px] tracking-wide uppercase">
                 Optional
               </span>
             </div>
@@ -369,10 +364,10 @@ export function PostComposer({ initialPost }: PostComposerProps) {
             />
             {parsedTags.length ? (
               <div className="text-muted-foreground flex flex-wrap gap-2 text-xs">
-                <span className="uppercase tracking-wide">Tags</span>
+                <span className="tracking-wide uppercase">Tags</span>
                 <span className="flex flex-wrap gap-1.5">
                   {parsedTags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-border/60 bg-background/70 px-2 py-0.5">
+                    <span key={tag} className="border-border/60 bg-background/70 rounded-full border px-2 py-0.5">
                       #{tag}
                     </span>
                   ))}
@@ -381,12 +376,13 @@ export function PostComposer({ initialPost }: PostComposerProps) {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 p-3">
-            {activeUser ? (
-              <UserAvatar user={activeUser} size="md" />
-            ) : null}
-            <p className="text-sm text-muted-foreground" suppressHydrationWarning>
-              Posting as <span className="font-medium text-foreground" suppressHydrationWarning>{displayName}</span>
+          <div className="border-border/60 bg-muted/20 flex items-center gap-2 rounded-md border p-3">
+            {activeUser ? <UserAvatar user={activeUser} size="md" /> : null}
+            <p className="text-muted-foreground text-sm" suppressHydrationWarning>
+              Posting as{" "}
+              <span className="text-foreground font-medium" suppressHydrationWarning>
+                {displayName}
+              </span>
               {isAnonymousMode ? " · anonymous mode" : null}
             </p>
           </div>
@@ -398,7 +394,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
             className="w-full sm:w-auto"
             disabled={!title.trim() || !content.trim() || isSubmitting}
           >
-            {isSubmitting ? (isEditMode ? "Saving..." : "Submitting...") : (isEditMode ? "Save Changes" : "Submit Post")}
+            {isSubmitting ? (isEditMode ? "Saving..." : "Submitting...") : isEditMode ? "Save Changes" : "Submit Post"}
           </Button>
         </form>
       </CardContent>

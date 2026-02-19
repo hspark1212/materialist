@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import {
-  createCommentUseCase,
-  listCommentsByPostUseCase,
-} from "@/features/posts/application/use-cases"
+import { createCommentUseCase, listCommentsByPostUseCase } from "@/features/posts/application/use-cases"
 import { handleApiError, parseCommentSort } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
 import { createClient } from "@/lib/supabase/server"

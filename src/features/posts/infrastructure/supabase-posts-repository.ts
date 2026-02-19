@@ -107,11 +107,7 @@ type SearchPostIdRow = {
   vote_count: number
 }
 
-function normalizePositiveInteger(
-  value: number | undefined,
-  fallback: number,
-  max: number,
-): number {
+function normalizePositiveInteger(value: number | undefined, fallback: number, max: number): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return fallback
   const normalized = Math.floor(value)
   if (normalized < 0) return fallback
@@ -128,9 +124,7 @@ function throwIfError(error: { message: string } | null, context: string): void 
   }
 }
 
-export function createSupabasePostsRepository(
-  supabase: SupabaseClient,
-): PostsRepository {
+export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRepository {
   async function listPostsBySearch(
     params: ListPostsParams,
     limit: number,
@@ -191,9 +185,10 @@ export function createSupabasePostsRepository(
       }
 
       // Use inner join when filtering by author type (human or bot)
-      let query = params.authorType === "all"
-        ? supabase.from("posts").select(POSTS_SELECT_LIST)
-        : supabase.from("posts").select(POSTS_SELECT_LIST_INNER)
+      let query =
+        params.authorType === "all"
+          ? supabase.from("posts").select(POSTS_SELECT_LIST)
+          : supabase.from("posts").select(POSTS_SELECT_LIST_INNER)
 
       if (params.section) {
         query = query.eq("section", params.section)
@@ -243,11 +238,7 @@ export function createSupabasePostsRepository(
     },
 
     async getPostById(postId: string): Promise<PostWithAuthorRow | null> {
-      const { data, error } = await supabase
-        .from("posts")
-        .select(POSTS_SELECT_DETAIL)
-        .eq("id", postId)
-        .maybeSingle()
+      const { data, error } = await supabase.from("posts").select(POSTS_SELECT_DETAIL).eq("id", postId).maybeSingle()
 
       throwIfError(error, "Failed to load post")
 
@@ -255,11 +246,7 @@ export function createSupabasePostsRepository(
     },
 
     async createPost(payload) {
-      const { data, error } = await supabase
-        .from("posts")
-        .insert(payload)
-        .select(POSTS_SELECT_DETAIL)
-        .single()
+      const { data, error } = await supabase.from("posts").insert(payload).select(POSTS_SELECT_DETAIL).single()
 
       throwIfError(error, "Failed to create post")
       return data as unknown as PostWithAuthorRow
@@ -292,10 +279,7 @@ export function createSupabasePostsRepository(
 
     async listCommentsByPostId(postId: string, sort: CommentSort, limit = 300): Promise<CommentWithAuthorRow[]> {
       const normalizedLimit = Math.max(1, normalizePositiveInteger(limit, 300, 500))
-      let query = supabase
-        .from("comments")
-        .select(COMMENTS_SELECT)
-        .eq("post_id", postId)
+      let query = supabase.from("comments").select(COMMENTS_SELECT).eq("post_id", postId)
 
       // Sort at DB level to ensure we get the right subset before limiting
       if (sort === "best") {
@@ -311,22 +295,14 @@ export function createSupabasePostsRepository(
     },
 
     async getCommentById(commentId: string): Promise<CommentWithAuthorRow | null> {
-      const { data, error } = await supabase
-        .from("comments")
-        .select(COMMENTS_SELECT)
-        .eq("id", commentId)
-        .maybeSingle()
+      const { data, error } = await supabase.from("comments").select(COMMENTS_SELECT).eq("id", commentId).maybeSingle()
 
       throwIfError(error, "Failed to load comment")
       return (data as unknown as CommentWithAuthorRow | null) ?? null
     },
 
     async createComment(payload) {
-      const { data, error } = await supabase
-        .from("comments")
-        .insert(payload)
-        .select(COMMENTS_SELECT)
-        .single()
+      const { data, error } = await supabase.from("comments").insert(payload).select(COMMENTS_SELECT).single()
 
       throwIfError(error, "Failed to create comment")
       return data as unknown as CommentWithAuthorRow
@@ -359,11 +335,7 @@ export function createSupabasePostsRepository(
 
     async targetExists(targetType: VoteTargetType, targetId: string): Promise<boolean> {
       const table = getTargetTable(targetType)
-      const { data, error } = await supabase
-        .from(table)
-        .select("id")
-        .eq("id", targetId)
-        .maybeSingle()
+      const { data, error } = await supabase.from(table).select("id").eq("id", targetId).maybeSingle()
 
       throwIfError(error, "Failed to validate vote target")
       return Boolean(data)
@@ -386,30 +358,18 @@ export function createSupabasePostsRepository(
       return (data?.vote_direction as unknown as PersistedVoteDirection | undefined) ?? 0
     },
 
-    async insertVote(
-      userId: string,
-      targetType: VoteTargetType,
-      targetId: string,
-      direction: VoteDirection,
-    ) {
-      const { error } = await supabase
-        .from("votes")
-        .insert({
-          user_id: userId,
-          target_type: targetType,
-          target_id: targetId,
-          vote_direction: direction,
-        })
+    async insertVote(userId: string, targetType: VoteTargetType, targetId: string, direction: VoteDirection) {
+      const { error } = await supabase.from("votes").insert({
+        user_id: userId,
+        target_type: targetType,
+        target_id: targetId,
+        vote_direction: direction,
+      })
 
       throwIfError(error, "Failed to insert vote")
     },
 
-    async updateVoteDirection(
-      userId: string,
-      targetType: VoteTargetType,
-      targetId: string,
-      direction: VoteDirection,
-    ) {
+    async updateVoteDirection(userId: string, targetType: VoteTargetType, targetId: string, direction: VoteDirection) {
       const { error } = await supabase
         .from("votes")
         .update({ vote_direction: direction })
@@ -433,11 +393,7 @@ export function createSupabasePostsRepository(
 
     async getTargetVoteCount(targetType: VoteTargetType, targetId: string): Promise<number> {
       const table = getTargetTable(targetType)
-      const { data, error } = await supabase
-        .from(table)
-        .select("vote_count")
-        .eq("id", targetId)
-        .single()
+      const { data, error } = await supabase.from(table).select("vote_count").eq("id", targetId).single()
 
       throwIfError(error, "Failed to load vote count")
       return (data as { vote_count: number }).vote_count

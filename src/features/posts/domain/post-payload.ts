@@ -1,12 +1,7 @@
 import type { PostType, Section } from "@/lib"
 import { sanitizeUrl } from "@/lib/url"
 
-import type {
-  CreatePostInput,
-  PostInsertPayload,
-  PostUpdatePayload,
-  UpdatePostInput,
-} from "./types"
+import type { CreatePostInput, PostInsertPayload, PostUpdatePayload, UpdatePostInput } from "./types"
 
 function cleanOptional(value?: string): string | null {
   const next = value?.trim()
@@ -58,14 +53,15 @@ export function buildCreatePostInsert(authorId: string, input: CreatePostInput):
     doi: cleanOptional(input.doi),
     arxiv_id: cleanOptional(input.arxivId),
     url,
-    flair: input.section === "forum" ? input.flair ?? null : null,
+    flair: input.section === "forum" ? (input.flair ?? null) : null,
     project_url: input.section === "showcase" ? validateUrl(cleanOptional(input.projectUrl), "Project URL") : null,
     tech_stack: input.section === "showcase" ? cleanArray(input.techStack) : [],
-    showcase_type: input.section === "showcase" ? input.showcaseType ?? null : null,
+    showcase_type: input.section === "showcase" ? (input.showcaseType ?? null) : null,
     company: input.section === "jobs" ? cleanOptional(input.company) : null,
     location: input.section === "jobs" ? cleanOptional(input.location) : null,
-    job_type: input.section === "jobs" ? input.jobType ?? null : null,
-    application_url: input.section === "jobs" ? validateUrl(cleanOptional(input.applicationUrl), "Application URL") : null,
+    job_type: input.section === "jobs" ? (input.jobType ?? null) : null,
+    application_url:
+      input.section === "jobs" ? validateUrl(cleanOptional(input.applicationUrl), "Application URL") : null,
     deadline: input.section === "jobs" ? cleanOptional(input.deadline) : null,
   }
 }
@@ -102,7 +98,7 @@ export function buildUpdatePostPatch(
   if (input.url !== undefined) patch.url = nextUrl
 
   if (input.flair !== undefined) {
-    patch.flair = nextSection === "forum" ? input.flair ?? null : null
+    patch.flair = nextSection === "forum" ? (input.flair ?? null) : null
   } else if (input.section === "forum") {
     patch.flair = null
   }
@@ -116,7 +112,7 @@ export function buildUpdatePostPatch(
   }
 
   if (input.showcaseType !== undefined) {
-    patch.showcase_type = nextSection === "showcase" ? input.showcaseType ?? null : null
+    patch.showcase_type = nextSection === "showcase" ? (input.showcaseType ?? null) : null
   }
 
   if (input.company !== undefined) {
@@ -128,11 +124,12 @@ export function buildUpdatePostPatch(
   }
 
   if (input.jobType !== undefined) {
-    patch.job_type = nextSection === "jobs" ? input.jobType ?? null : null
+    patch.job_type = nextSection === "jobs" ? (input.jobType ?? null) : null
   }
 
   if (input.applicationUrl !== undefined) {
-    patch.application_url = nextSection === "jobs" ? validateUrl(cleanOptional(input.applicationUrl), "Application URL") : null
+    patch.application_url =
+      nextSection === "jobs" ? validateUrl(cleanOptional(input.applicationUrl), "Application URL") : null
   }
 
   if (input.deadline !== undefined) {

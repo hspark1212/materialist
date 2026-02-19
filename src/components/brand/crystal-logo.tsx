@@ -17,12 +17,7 @@ interface CrystalLogoProps {
  */
 export function CrystalLogo({ size = "md", className }: CrystalLogoProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn(sizes[size], className)}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" className={cn(sizes[size], className)} aria-hidden="true">
       {/* Bonds (edges of the unit cell) */}
       <path
         d="M12 5L18 8.5L18 15.5L12 19L6 15.5L6 8.5Z M12 12L12 19 M12 12L6 8.5"

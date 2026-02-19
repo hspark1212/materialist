@@ -26,16 +26,16 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
         if (!notification.isRead) onRead(notification.id)
       }}
       className={cn(
-        "group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/50",
+        "group hover:bg-accent/50 flex items-start gap-3 px-4 py-3 transition-colors",
         !notification.isRead && "bg-primary/[0.04]",
       )}
     >
       {/* Unread indicator + Avatar */}
       <div className="relative mt-0.5 shrink-0">
         {!notification.isRead && (
-          <div className="absolute -left-2.5 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-primary" />
+          <div className="bg-primary absolute top-1/2 -left-2.5 size-1.5 -translate-y-1/2 rounded-full" />
         )}
-        <div className="overflow-hidden rounded-full ring-2 ring-border/50">
+        <div className="ring-border/50 overflow-hidden rounded-full ring-2">
           <AnonymousAvatar
             seed={notification.actorIsAnonymous ? "anonymous" : notification.actorDisplayName}
             size={36}
@@ -48,24 +48,22 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
         <p className="text-[13px] leading-relaxed">
           <span className={cn("font-semibold", !notification.isRead && "text-foreground")}>
             {notification.actorDisplayName}
-          </span>
-          {" "}
-          <span className="text-muted-foreground">{actionText}</span>
-          {" "}
+          </span>{" "}
+          <span className="text-muted-foreground">{actionText}</span>{" "}
           <span className={cn("font-semibold", !notification.isRead && "text-foreground")}>
             {notification.postTitle}
           </span>
         </p>
 
         {notification.commentSnippet && (
-          <div className="rounded-md border border-border/60 bg-muted/40 px-2.5 py-1.5">
-            <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+          <div className="border-border/60 bg-muted/40 rounded-md border px-2.5 py-1.5">
+            <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
               &ldquo;{notification.commentSnippet}&rdquo;
             </p>
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
+        <div className="text-muted-foreground/70 flex items-center gap-1.5 text-[11px]">
           <Icon className="size-3" />
           <span suppressHydrationWarning>{timeAgo}</span>
         </div>

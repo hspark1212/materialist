@@ -18,9 +18,9 @@ export function TagLink({ tag, size = "md", className }: TagLinkProps) {
     <Link
       href={`/?tag=${encodeURIComponent(tag)}`}
       className={cn(
-        "inline-flex rounded-full border border-border/70 bg-background/70 py-0.5 transition-colors hover:text-primary",
+        "border-border/70 bg-background/70 hover:text-primary inline-flex rounded-full border py-0.5 transition-colors",
         sizeStyles[size],
-        className
+        className,
       )}
     >
       #{tag}

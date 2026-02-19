@@ -23,15 +23,16 @@ export function VerificationRequiredDialog() {
   const isLoggedIn = status === "authenticated" || status === "verified"
 
   return (
-    <Dialog open={isVerificationDialogOpen} onOpenChange={(open) => { if (!open) closeVerificationDialog() }}>
+    <Dialog
+      open={isVerificationDialogOpen}
+      onOpenChange={(open) => {
+        if (!open) closeVerificationDialog()
+      }}
+    >
       <DialogContent>
         <DialogHeader>
-          <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-primary/10">
-            {isLoggedIn ? (
-              <ShieldCheck className="size-6 text-primary" />
-            ) : (
-              <Lock className="size-6 text-primary" />
-            )}
+          <div className="bg-primary/10 mx-auto mb-2 flex size-12 items-center justify-center rounded-full">
+            {isLoggedIn ? <ShieldCheck className="text-primary size-6" /> : <Lock className="text-primary size-6" />}
           </div>
           <DialogTitle className="text-center">
             {isLoggedIn ? "Researcher Verification Required" : "Sign In Required"}
@@ -39,14 +40,11 @@ export function VerificationRequiredDialog() {
           <DialogDescription className="text-center">
             {isLoggedIn ? (
               <>
-                Verified mode is available to researchers who have linked their
-                ORCID iD. This helps maintain trust and credibility in the community.
+                Verified mode is available to researchers who have linked their ORCID iD. This helps maintain trust and
+                credibility in the community.
               </>
             ) : (
-              <>
-                Sign in to access identity features. Verified mode requires ORCID
-                verification after signing in.
-              </>
+              <>Sign in to access identity features. Verified mode requires ORCID verification after signing in.</>
             )}
           </DialogDescription>
         </DialogHeader>

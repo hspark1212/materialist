@@ -7,7 +7,14 @@ import { Pencil, Trash2, ExternalLink, MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import type { Post } from "@/lib"
-import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, showcaseTypeLabels, sectionByKey } from "@/lib/sections"
+import {
+  getSectionLabel,
+  getSectionHref,
+  flairByKey,
+  jobTypeLabels,
+  showcaseTypeLabels,
+  sectionByKey,
+} from "@/lib/sections"
 import { InlineLatex } from "@/components/markdown/inline-latex"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { getPaperMetaLinks, getPostPrimaryLink } from "@/components/post/post-feed-utils"
@@ -82,7 +89,7 @@ export function PostDetail({ post }: PostDetailProps) {
   }
 
   return (
-    <Card className="gap-0 bg-card/80 py-0 shadow-sm">
+    <Card className="bg-card/80 gap-0 py-0 shadow-sm">
       <CardContent className="px-4 py-5 sm:px-8 sm:py-7">
         <div className="mx-auto w-full max-w-[72ch] min-w-0 space-y-5">
           <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
@@ -90,12 +97,20 @@ export function PostDetail({ post }: PostDetailProps) {
               asChild
               variant="secondary"
               className="border px-2.5 py-0.5 text-[11px]"
-              style={sectionColor ? { color: sectionColor, borderColor: sectionColor, backgroundColor: `color-mix(in srgb, ${sectionColor} 12%, transparent)` } : undefined}
+              style={
+                sectionColor
+                  ? {
+                      color: sectionColor,
+                      borderColor: sectionColor,
+                      backgroundColor: `color-mix(in srgb, ${sectionColor} 12%, transparent)`,
+                    }
+                  : undefined
+              }
             >
               <Link href={getSectionHref(post.section)}>{getSectionLabel(post.section)}</Link>
             </Badge>
             {post.flair && flairByKey[post.flair] ? (
-              <Badge className={`px-1.5 py-0 text-[11px] border-0 ${flairByKey[post.flair].className}`}>
+              <Badge className={`border-0 px-1.5 py-0 text-[11px] ${flairByKey[post.flair].className}`}>
                 {flairByKey[post.flair].label}
               </Badge>
             ) : null}
@@ -110,22 +125,13 @@ export function PostDetail({ post }: PostDetailProps) {
 
             {isOwnPost ? (
               <div className="ml-auto flex items-center gap-1">
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="xs"
-                >
+                <Button asChild variant="ghost" size="xs">
                   <Link href={`/post/${post.id}/edit`}>
                     <Pencil className="size-3" />
                     Edit
                   </Link>
                 </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => setShowDeleteDialog(true)}
-                >
+                <Button type="button" variant="ghost" size="xs" onClick={() => setShowDeleteDialog(true)}>
                   <Trash2 className="size-3" />
                   Delete
                 </Button>
@@ -133,7 +139,7 @@ export function PostDetail({ post }: PostDetailProps) {
             ) : null}
           </div>
 
-          <h1 className="text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+          <h1 className="text-2xl leading-tight font-bold tracking-tight text-balance sm:text-3xl">
             <InlineLatex content={post.title} />
           </h1>
 
@@ -205,7 +211,9 @@ export function PostDetail({ post }: PostDetailProps) {
                 {post.techStack && post.techStack.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {post.techStack.map((tech) => (
-                      <Badge key={tech} variant="secondary" className="text-[11px]">{tech}</Badge>
+                      <Badge key={tech} variant="secondary" className="text-[11px]">
+                        {tech}
+                      </Badge>
                     ))}
                   </div>
                 ) : null}
@@ -222,12 +230,20 @@ export function PostDetail({ post }: PostDetailProps) {
                     {post.company ? <p className="text-muted-foreground text-xs">{post.company}</p> : null}
                     {post.location ? <p className="text-muted-foreground text-xs">{post.location}</p> : null}
                     <div className="flex flex-wrap gap-1.5">
-                      {post.jobType ? <Badge variant="outline" className="text-[11px]">{jobTypeLabels[post.jobType]}</Badge> : null}
+                      {post.jobType ? (
+                        <Badge variant="outline" className="text-[11px]">
+                          {jobTypeLabels[post.jobType]}
+                        </Badge>
+                      ) : null}
                       {post.deadline ? (
                         isPast(new Date(post.deadline)) ? (
-                          <Badge variant="secondary" className="text-[11px] bg-muted text-muted-foreground">Closed</Badge>
+                          <Badge variant="secondary" className="bg-muted text-muted-foreground text-[11px]">
+                            Closed
+                          </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[11px]">Due: {format(new Date(post.deadline), "MMM d, yyyy")}</Badge>
+                          <Badge variant="outline" className="text-[11px]">
+                            Due: {format(new Date(post.deadline), "MMM d, yyyy")}
+                          </Badge>
                         )
                       ) : null}
                     </div>
@@ -236,7 +252,12 @@ export function PostDetail({ post }: PostDetailProps) {
                     ) : null}
                   </div>
                   {post.applicationUrl ? (
-                    <Button asChild variant="default" size="sm" disabled={Boolean(post.deadline && isPast(new Date(post.deadline)))}>
+                    <Button
+                      asChild
+                      variant="default"
+                      size="sm"
+                      disabled={Boolean(post.deadline && isPast(new Date(post.deadline)))}
+                    >
                       <a href={post.applicationUrl} target="_blank" rel="noreferrer">
                         Apply Now
                       </a>
@@ -247,7 +268,7 @@ export function PostDetail({ post }: PostDetailProps) {
             </Card>
           ) : null}
 
-          <div className="text-muted-foreground flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 text-sm">
+          <div className="text-muted-foreground border-border/60 flex flex-wrap items-center gap-2 border-t pt-3 text-sm">
             <VoteButton
               targetType="post"
               targetId={post.id}
@@ -264,11 +285,7 @@ export function PostDetail({ post }: PostDetailProps) {
               <span className="sm:hidden">{post.commentCount}</span>
               <span className="hidden sm:inline">{post.commentCount} Comments</span>
             </Button>
-            <ShareButton
-              postId={post.id}
-              className="h-8 min-h-11 px-2.5 md:min-h-0"
-              iconClassName="size-4"
-            />
+            <ShareButton postId={post.id} className="h-8 min-h-11 px-2.5 md:min-h-0" iconClassName="size-4" />
           </div>
         </div>
       </CardContent>

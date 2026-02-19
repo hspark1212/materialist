@@ -115,7 +115,16 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
       requestVerification,
       closeVerificationDialog,
     }),
-    [mode, isAnonymousMode, activeUser, canUseVerifiedMode, isVerificationDialogOpen, switchMode, requestVerification, closeVerificationDialog],
+    [
+      mode,
+      isAnonymousMode,
+      activeUser,
+      canUseVerifiedMode,
+      isVerificationDialogOpen,
+      switchMode,
+      requestVerification,
+      closeVerificationDialog,
+    ],
   )
 
   return <IdentityContext value={value}>{children}</IdentityContext>

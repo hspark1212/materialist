@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { castVoteUseCase } from "@/features/posts/application/use-cases"
-import {
-  handleApiError,
-  parseVoteDirection,
-  parseVoteTargetType,
-} from "@/features/posts/api/http"
+import { handleApiError, parseVoteDirection, parseVoteTargetType } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
 import { createClient } from "@/lib/supabase/server"
 

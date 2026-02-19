@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
-    console.error('OAuth callback failed:', {
+    console.error("OAuth callback failed:", {
       message: error.message,
       status: error.status,
       code: error.code,
@@ -38,11 +38,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}${returnTo}`)
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .maybeSingle()
+    const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle()
 
     if (process.env.NODE_ENV === "development" && profile) {
       console.log("Profile after OAuth:", profile)

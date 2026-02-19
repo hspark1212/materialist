@@ -32,18 +32,12 @@ export async function POST() {
 
     if (deleteError) {
       console.error("Failed to delete user:", deleteError)
-      return NextResponse.json(
-        { error: "Failed to delete account. Please try again." },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: "Failed to delete account. Please try again." }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Unexpected error during account deletion:", error)
-    return NextResponse.json(
-      { error: "An unexpected error occurred. Please try again." },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "An unexpected error occurred. Please try again." }, { status: 500 })
   }
 }

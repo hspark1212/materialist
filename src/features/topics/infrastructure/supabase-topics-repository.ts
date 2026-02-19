@@ -3,9 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import type { TopicsRepository } from "../application/ports"
 import type { TrendingTopic } from "../domain/types"
 
-export function createSupabaseTopicsRepository(
-  supabase: SupabaseClient,
-): TopicsRepository {
+export function createSupabaseTopicsRepository(supabase: SupabaseClient): TopicsRepository {
   return {
     async getTrendingTopics(limit: number, daysBack: number): Promise<TrendingTopic[]> {
       const { data, error } = await supabase.rpc("get_trending_topics", {

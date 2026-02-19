@@ -1,27 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import {
-  Component,
-  type ErrorInfo,
-  type FormEvent,
-  type ReactNode,
-} from "react"
+import { Component, type ErrorInfo, type FormEvent, type ReactNode } from "react"
 import { usePathname } from "next/navigation"
-import {
-  ChevronDown,
-  LogIn,
-  LogOut,
-  Menu,
-  Moon,
-  Plus,
-  Search,
-  Settings,
-  ShieldCheck,
-  Sun,
-  User,
-  X,
-} from "lucide-react"
+import { ChevronDown, LogIn, LogOut, Menu, Moon, Plus, Search, Settings, ShieldCheck, Sun, User, X } from "lucide-react"
 
 import { cn } from "@/lib"
 import { useAuth } from "@/lib/auth"
@@ -50,10 +32,7 @@ import { useIsHydrated } from "@/hooks/use-is-hydrated"
 import { useSearchFilter } from "@/features/posts/presentation/use-search-filter"
 
 // Error boundary to prevent avatar crashes from hiding the entire profile menu
-class AvatarErrorBoundary extends Component<
-  { fallback: ReactNode; children: ReactNode },
-  { hasError: boolean }
-> {
+class AvatarErrorBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false }
   static getDerivedStateFromError() {
     return { hasError: true }
@@ -74,11 +53,10 @@ export function Header() {
   const { isAnonymousMode, activeUser, switchMode } = useIdentity()
   const isHydrated = useIsHydrated()
 
-  const avatarFallback = <User className="size-5 text-muted-foreground" />
+  const avatarFallback = <User className="text-muted-foreground size-5" />
   const effectiveStatus = isHydrated ? status : "loading"
   const isLoading = effectiveStatus === "loading"
-  const showSignedInMenu =
-    effectiveStatus === "authenticated" || effectiveStatus === "verified"
+  const showSignedInMenu = effectiveStatus === "authenticated" || effectiveStatus === "verified"
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -87,7 +65,7 @@ export function Header() {
   }
 
   return (
-    <header className="bg-card fixed inset-x-0 top-0 z-50 h-[var(--header-height)] border-b border-border">
+    <header className="bg-card border-border fixed inset-x-0 top-0 z-50 h-[var(--header-height)] border-b">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-3 md:px-4">
         <Sheet>
           <SheetTrigger asChild>
@@ -98,14 +76,9 @@ export function Header() {
           <SheetContent side="left" className="w-[85vw] p-0" showCloseButton={false}>
             <SheetTitle className="sr-only">Navigation menu</SheetTitle>
             <div className="flex h-full min-h-0 flex-col">
-              <div className="flex items-center justify-end border-b border-border px-2 py-2">
+              <div className="border-border flex items-center justify-end border-b px-2 py-2">
                 <SheetClose asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="min-h-11 min-w-11"
-                    aria-label="Close menu"
-                  >
+                  <Button variant="ghost" size="icon-sm" className="min-h-11 min-w-11" aria-label="Close menu">
                     <X className="size-5" />
                   </Button>
                 </SheetClose>
@@ -128,8 +101,8 @@ export function Header() {
             <button
               type="button"
               className={cn(
-                "flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium",
-                "min-h-8 transition-colors hover:bg-muted md:hidden"
+                "border-border bg-muted/60 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+                "hover:bg-muted min-h-8 transition-colors md:hidden",
               )}
             >
               {isHydrated && isAnonymousMode ? (
@@ -143,7 +116,7 @@ export function Header() {
                   <span>V</span>
                 </>
               )}
-              <ChevronDown className="size-3 text-muted-foreground" />
+              <ChevronDown className="text-muted-foreground size-3" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -165,10 +138,7 @@ export function Header() {
 
         {/* Desktop IdentitySwitch */}
         <div className="hidden md:contents">
-          <IdentitySwitch
-            isAnonymousMode={isAnonymousMode}
-            onSwitch={switchMode}
-          />
+          <IdentitySwitch isAnonymousMode={isAnonymousMode} onSwitch={switchMode} />
         </div>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -183,7 +153,7 @@ export function Header() {
                   "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                   isActive
                     ? "bg-accent text-primary"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                 )}
               >
                 <Icon className="size-4" />
@@ -223,8 +193,8 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="size-9 rounded-full p-0" aria-label="User menu">
                 {isLoading ? (
-                  <div className="size-8 animate-pulse rounded-full bg-muted" />
-                ) : (activeUser || user) ? (
+                  <div className="bg-muted size-8 animate-pulse rounded-full" />
+                ) : activeUser || user ? (
                   <AvatarErrorBoundary fallback={avatarFallback}>
                     <UserAvatar user={(activeUser || user)!} size="md" />
                   </AvatarErrorBoundary>
@@ -237,7 +207,7 @@ export function Header() {
               {showSignedInMenu ? (
                 <>
                   <div className="px-2 py-1.5">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {isAnonymousMode ? "Anonymous mode" : "Verified mode"}
                     </p>
                   </div>
@@ -283,7 +253,6 @@ export function Header() {
           </DropdownMenu>
         </div>
       </div>
-
     </header>
   )
 }

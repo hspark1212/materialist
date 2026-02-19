@@ -13,9 +13,7 @@ export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
 
   if (!code) {
-    return NextResponse.redirect(
-      `${baseUrl}?orcid_error=${encodeURIComponent("Missing authorization code")}`,
-    )
+    return NextResponse.redirect(`${baseUrl}?orcid_error=${encodeURIComponent("Missing authorization code")}`)
   }
 
   // Validate CSRF state parameter
@@ -88,11 +86,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 4. Fetch the user's profile to get the username for redirect
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .single()
+    const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single()
 
     const username = profile?.username
 
@@ -118,9 +112,7 @@ export async function GET(request: NextRequest) {
 
     // 6. Redirect to the user's profile About tab with success message
     const redirectPath = username ? `/u/${username}` : "/"
-    const response = NextResponse.redirect(
-      `${baseUrl}${redirectPath}?tab=about&orcid_success=true`,
-    )
+    const response = NextResponse.redirect(`${baseUrl}${redirectPath}?tab=about&orcid_success=true`)
     response.cookies.delete("orcid_state")
     return response
   } catch (error) {

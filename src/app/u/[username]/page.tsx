@@ -21,14 +21,16 @@ import { Button } from "@/components/ui/button"
 
 export default function UserPage() {
   return (
-    <Suspense fallback={
-      <div className="mx-auto w-full max-w-4xl py-10">
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 rounded-lg bg-muted" />
-          <div className="h-10 w-48 rounded bg-muted" />
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-4xl py-10">
+          <div className="animate-pulse space-y-4">
+            <div className="bg-muted h-32 rounded-lg" />
+            <div className="bg-muted h-10 w-48 rounded" />
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <UserPageContent />
     </Suspense>
   )
@@ -65,11 +67,7 @@ function UserPageContent() {
 
       // Try to fetch from Supabase first
       const supabase = createClient()
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("username", params.username)
-        .maybeSingle()
+      const { data } = await supabase.from("profiles").select("*").eq("username", params.username).maybeSingle()
 
       if (data) {
         setPageUser(profileToUser(data as Profile))
@@ -85,11 +83,7 @@ function UserPageContent() {
 
   const refreshPageUser = async () => {
     const supabase = createClient()
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("username", params.username)
-      .maybeSingle()
+    const { data } = await supabase.from("profiles").select("*").eq("username", params.username).maybeSingle()
     if (data) setPageUser(profileToUser(data as Profile))
   }
 
@@ -108,7 +102,11 @@ function UserPageContent() {
     enabled: Boolean(pageUser),
   })
 
-  const { comments: userComments, loading: commentsLoading, error: commentsError } = useUserComments({
+  const {
+    comments: userComments,
+    loading: commentsLoading,
+    error: commentsError,
+  } = useUserComments({
     authorId: pageUser?.id,
     filterAnonymous: profileAnonymousFilter,
     enabled: Boolean(pageUser),
@@ -118,8 +116,8 @@ function UserPageContent() {
     return (
       <div className="mx-auto w-full max-w-4xl py-10">
         <div className="animate-pulse space-y-4">
-          <div className="h-32 rounded-lg bg-muted" />
-          <div className="h-10 w-48 rounded bg-muted" />
+          <div className="bg-muted h-32 rounded-lg" />
+          <div className="bg-muted h-10 w-48 rounded" />
         </div>
       </div>
     )
@@ -133,7 +131,7 @@ function UserPageContent() {
     )
   }
 
-  const profileHeaderUser = (isOwnProfile && activeUser) ? activeUser : pageUser
+  const profileHeaderUser = isOwnProfile && activeUser ? activeUser : pageUser
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4">
@@ -143,15 +141,12 @@ function UserPageContent() {
         </div>
       ) : null}
       {orcidError ? (
-        <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="border-destructive/20 bg-destructive/5 text-destructive rounded-md border px-4 py-3 text-sm">
           {orcidError}
         </div>
       ) : null}
 
-      <UserProfileHeader
-        user={profileHeaderUser}
-        showVerifyAction={isOwnProfile && !myProfile?.orcid_id}
-      />
+      <UserProfileHeader user={profileHeaderUser} showVerifyAction={isOwnProfile && !myProfile?.orcid_id} />
 
       {isOwnProfile ? (
         <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
@@ -170,7 +165,9 @@ function UserPageContent() {
           {postsLoading ? <p className="text-muted-foreground text-sm">Loading posts...</p> : null}
           {!postsLoading && userPosts.length ? (
             <>
-              {userPosts.map((post) => <PostCardCompact key={post.id} post={post} />)}
+              {userPosts.map((post) => (
+                <PostCardCompact key={post.id} post={post} />
+              ))}
               {postsHasMore ? (
                 <div className="flex justify-center py-4">
                   <Button variant="outline" size="sm" onClick={loadMorePosts} disabled={postsLoadingMore}>
@@ -196,7 +193,7 @@ function UserPageContent() {
               <Card key={id} className="py-3">
                 <CardContent className="space-y-2 px-4">
                   <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-xs">
-                    <Link href={`/post/${postId}`} className="font-medium text-foreground hover:text-primary">
+                    <Link href={`/post/${postId}`} className="text-foreground hover:text-primary font-medium">
                       {postTitle}
                     </Link>
                     <span>&bull;</span>
@@ -214,7 +211,6 @@ function UserPageContent() {
             </p>
           ) : null}
         </TabsContent>
-
       </Tabs>
 
       {isOwnProfile && myProfile ? (

@@ -6,9 +6,7 @@ export async function updateSession(request: NextRequest) {
 
   // Skip Supabase client creation entirely if no auth cookie exists
   const authCookiePattern = /^sb-.*-auth-token/
-  const hasAuthCookie = request.cookies.getAll().some(
-    cookie => authCookiePattern.test(cookie.name)
-  )
+  const hasAuthCookie = request.cookies.getAll().some((cookie) => authCookiePattern.test(cookie.name))
 
   if (!hasAuthCookie) {
     // No auth cookie → no API call needed, return immediately
@@ -39,17 +37,12 @@ export async function updateSession(request: NextRequest) {
 
   try {
     // Limit timeout to 3 seconds (Cloudflare Workers CPU protection)
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Auth timeout')), 3000)
-    )
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Auth timeout")), 3000))
 
-    await Promise.race([
-      supabase.auth.getUser(),
-      timeoutPromise
-    ])
+    await Promise.race([supabase.auth.getUser(), timeoutPromise])
   } catch (error) {
     // Continue request even if error occurs (client-side AuthProvider handles fallback)
-    console.error('Supabase auth check failed in middleware:', error)
+    console.error("Supabase auth check failed in middleware:", error)
   }
 
   return supabaseResponse

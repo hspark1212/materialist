@@ -20,12 +20,7 @@ type OrcidDisconnectDialogProps = {
   onDisconnected: () => Promise<void>
 }
 
-export function OrcidDisconnectDialog({
-  open,
-  onOpenChange,
-  orcidId,
-  onDisconnected,
-}: OrcidDisconnectDialogProps) {
+export function OrcidDisconnectDialog({ open, onOpenChange, orcidId, onDisconnected }: OrcidDisconnectDialogProps) {
   const { profile } = useAuth()
   const [disconnecting, setDisconnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -61,16 +56,11 @@ export function OrcidDisconnectDialog({
         <DialogHeader>
           <DialogTitle>Disconnect ORCID</DialogTitle>
           <DialogDescription>
-            Are you sure you want to disconnect your ORCID iD ({orcidId})?
-            You can re-verify at any time.
+            Are you sure you want to disconnect your ORCID iD ({orcidId})? You can re-verify at any time.
           </DialogDescription>
         </DialogHeader>
 
-        {error ? (
-          <div className="rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive">
-            {error}
-          </div>
-        ) : null}
+        {error ? <div className="bg-destructive/15 text-destructive rounded-md px-3 py-2 text-sm">{error}</div> : null}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={disconnecting}>

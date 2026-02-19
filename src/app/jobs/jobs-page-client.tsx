@@ -16,7 +16,7 @@ export function JobsPageClient({ initialFeed }: JobsPageClientProps) {
     <FeedPageClient
       section="jobs"
       initialFeed={initialFeed}
-      header={(
+      header={
         <Card className="overflow-hidden border-[var(--section-jobs)]/20 py-0">
           <CardContent
             className="px-4 py-5 sm:px-6"
@@ -34,7 +34,7 @@ export function JobsPageClient({ initialFeed }: JobsPageClientProps) {
             </div>
           </CardContent>
         </Card>
-      )}
+      }
     />
   )
 }

@@ -1,11 +1,7 @@
 import type { NotificationWithContextRow } from "../domain/types"
 
 export interface NotificationsRepository {
-  listNotifications(
-    recipientId: string,
-    limit: number,
-    offset: number,
-  ): Promise<NotificationWithContextRow[]>
+  listNotifications(recipientId: string, limit: number, offset: number): Promise<NotificationWithContextRow[]>
 
   getUnreadCount(recipientId: string): Promise<number>
 

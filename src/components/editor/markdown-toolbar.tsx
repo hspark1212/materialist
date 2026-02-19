@@ -1,19 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import {
-  Bold,
-  Italic,
-  Heading2,
-  Code,
-  SquareCode,
-  Link2,
-  Image,
-  List,
-  ListOrdered,
-  Quote,
-  Sigma,
-} from "lucide-react"
+import { Bold, Italic, Heading2, Code, SquareCode, Link2, Image, List, ListOrdered, Quote, Sigma } from "lucide-react"
 
 import { useMarkdownFormat } from "@/hooks/use-markdown-format"
 import type { FormatType } from "@/hooks/use-markdown-format"
@@ -88,7 +76,7 @@ export function MarkdownToolbar({ textareaRef, value, onValueChange, variant = "
     <TooltipProvider>
       <div
         data-testid="markdown-toolbar"
-        className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-border p-1 md:flex-wrap md:overflow-visible"
+        className="scrollbar-hide border-border flex gap-1 overflow-x-auto border-b p-1 md:flex-wrap md:overflow-visible"
       >
         {buttons.map(({ format, icon: Icon, label, shortcut, testId }) => (
           <Tooltip key={format}>
@@ -98,7 +86,7 @@ export function MarkdownToolbar({ textareaRef, value, onValueChange, variant = "
                 variant="ghost"
                 size="sm"
                 onClick={() => applyFormat(format)}
-                className="min-w-11 min-h-11 md:min-w-auto"
+                className="min-h-11 min-w-11 md:min-w-auto"
                 data-testid={testId}
                 aria-label={label}
               >

@@ -3,14 +3,9 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import type { NotificationWithContextRow } from "../domain/types"
 import type { NotificationsRepository } from "../application/ports"
 
-const PROFILE_COLUMNS = [
-  "id",
-  "display_name",
-  "generated_display_name",
-  "avatar_url",
-  "is_anonymous",
-  "is_bot",
-].join(",")
+const PROFILE_COLUMNS = ["id", "display_name", "generated_display_name", "avatar_url", "is_anonymous", "is_bot"].join(
+  ",",
+)
 
 const NOTIFICATIONS_SELECT = [
   "id",
@@ -31,15 +26,9 @@ function throwIfError(error: { message: string } | null, context: string): void 
   }
 }
 
-export function createSupabaseNotificationsRepository(
-  supabase: SupabaseClient,
-): NotificationsRepository {
+export function createSupabaseNotificationsRepository(supabase: SupabaseClient): NotificationsRepository {
   return {
-    async listNotifications(
-      recipientId: string,
-      limit: number,
-      offset: number,
-    ): Promise<NotificationWithContextRow[]> {
+    async listNotifications(recipientId: string, limit: number, offset: number): Promise<NotificationWithContextRow[]> {
       const { data, error } = await supabase
         .from("notifications")
         .select(NOTIFICATIONS_WITH_CONTEXT)
@@ -62,10 +51,7 @@ export function createSupabaseNotificationsRepository(
       return count ?? 0
     },
 
-    async markAsRead(
-      recipientId: string,
-      notificationIds: string[],
-    ): Promise<number> {
+    async markAsRead(recipientId: string, notificationIds: string[]): Promise<number> {
       const { data, error } = await supabase
         .from("notifications")
         .update({ is_read: true })
