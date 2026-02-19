@@ -30,35 +30,38 @@ export function useUserComments({ authorId, filterAnonymous, enabled = true }: U
     return params.toString()
   }, [authorId])
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    if (!authorId) return
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!authorId) return
 
-    setLoading(true)
-    setError(null)
+      setLoading(true)
+      setError(null)
 
-    try {
-      const response = await fetch(`/api/comments?${queryString}`, {
-        method: "GET",
-        signal,
-      })
+      try {
+        const response = await fetch(`/api/comments?${queryString}`, {
+          method: "GET",
+          signal,
+        })
 
-      const payload = await response.json()
+        const payload = await response.json()
 
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Failed to load comments")
+        if (!response.ok) {
+          throw new Error(payload.error ?? "Failed to load comments")
+        }
+
+        setComments(payload.comments as UserCommentActivity[])
+      } catch (err) {
+        if (signal?.aborted) return
+        setError(err instanceof Error ? err.message : "Failed to load comments")
+        setComments([])
+      } finally {
+        if (!signal?.aborted) {
+          setLoading(false)
+        }
       }
-
-      setComments(payload.comments as UserCommentActivity[])
-    } catch (err) {
-      if (signal?.aborted) return
-      setError(err instanceof Error ? err.message : "Failed to load comments")
-      setComments([])
-    } finally {
-      if (!signal?.aborted) {
-        setLoading(false)
-      }
-    }
-  }, [authorId, queryString])
+    },
+    [authorId, queryString],
+  )
 
   const filteredComments = useMemo(() => {
     if (filterAnonymous === undefined) return comments

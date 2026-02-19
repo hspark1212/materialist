@@ -2,7 +2,7 @@ import { cn } from "@/lib"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded bg-muted ${className}`} />
+  return <div className={`bg-muted animate-pulse rounded ${className}`} />
 }
 
 function SkeletonCard({ rows = 3 }: { rows?: number }) {
@@ -10,7 +10,7 @@ function SkeletonCard({ rows = 3 }: { rows?: number }) {
     <Card className="relative gap-3 overflow-hidden py-4">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-muted to-muted-foreground/20"
+        className="from-muted to-muted-foreground/20 pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r"
       />
       <CardHeader className="px-4 pb-2">
         <div className="flex items-center gap-2">
@@ -35,18 +35,12 @@ type RightSidebarSkeletonProps = {
 
 export function RightSidebarSkeleton({ sticky = true, className }: RightSidebarSkeletonProps = {}) {
   return (
-    <aside
-      className={cn(
-        "space-y-3 py-4",
-        sticky ? "sticky top-[var(--header-height)]" : "",
-        className,
-      )}
-    >
+    <aside className={cn("space-y-3 py-4", sticky ? "sticky top-[var(--header-height)]" : "", className)}>
       {/* About Materialist - Stats grid */}
       <Card className="relative gap-3 overflow-hidden py-4">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-muted to-muted-foreground/20"
+          className="from-muted to-muted-foreground/20 pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r"
         />
         <CardHeader className="px-4 pb-2">
           <div className="flex items-center gap-2">

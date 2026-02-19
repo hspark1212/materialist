@@ -19,7 +19,12 @@ type CommentComposerProps = {
   autoFocus?: boolean
 }
 
-export function CommentComposer({ postId, parentCommentId = null, onSubmitted, autoFocus = false }: CommentComposerProps) {
+export function CommentComposer({
+  postId,
+  parentCommentId = null,
+  onSubmitted,
+  autoFocus = false,
+}: CommentComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { status } = useAuth()
   const { activeUser, isAnonymousMode } = useIdentity()
@@ -75,7 +80,7 @@ export function CommentComposer({ postId, parentCommentId = null, onSubmitted, a
     <Card className="bg-card/80 py-3" data-testid="comment-composer">
       <CardContent className="space-y-3 px-4">
         <Tabs defaultValue="write" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/40 p-1">
+          <TabsList className="bg-muted/40 grid w-full grid-cols-2 p-1">
             <TabsTrigger
               value="write"
               className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
@@ -98,12 +103,15 @@ export function CommentComposer({ postId, parentCommentId = null, onSubmitted, a
               value={content}
               onChange={(event) => setContent(event.target.value)}
               placeholder="Add your perspective to the discussion"
-              className="min-h-24 resize-y rounded-lg border border-border/80 bg-background/70 font-mono shadow-sm transition-[border-color,box-shadow,background-color] hover:bg-background focus-visible:border-ring focus-visible:bg-background"
+              className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-24 resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
             />
             <p className="text-muted-foreground text-xs">Markdown & LaTeX supported</p>
           </TabsContent>
 
-          <TabsContent value="preview" className="min-h-24 rounded-md border border-border/80 bg-background/70 px-3 py-2 text-sm shadow-sm dark:bg-background/50">
+          <TabsContent
+            value="preview"
+            className="border-border/80 bg-background/70 dark:bg-background/50 min-h-24 rounded-md border px-3 py-2 text-sm shadow-sm"
+          >
             {content.trim() ? (
               <MarkdownRenderer content={content} compact />
             ) : (
@@ -113,8 +121,8 @@ export function CommentComposer({ postId, parentCommentId = null, onSubmitted, a
         </Tabs>
 
         <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-muted-foreground sm:text-sm">
-            Posting as <span className="font-medium text-foreground">{displayName}</span>
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            Posting as <span className="text-foreground font-medium">{displayName}</span>
             {isAnonymousMode ? " · anonymous mode" : null}
           </p>
 

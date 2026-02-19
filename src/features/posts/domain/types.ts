@@ -1,10 +1,4 @@
-import type {
-  ForumFlair,
-  JobType,
-  PostType,
-  Section,
-  ShowcaseType,
-} from "@/lib"
+import type { ForumFlair, JobType, PostType, Section, ShowcaseType } from "@/lib"
 
 export type PostSort = "hot" | "new" | "top"
 export type CommentSort = "best" | "new"

@@ -102,16 +102,20 @@ export function getPaperMetaLinks(post: Post): PostMetaLink[] {
 
   const arxivId = extractArxivIdFromUrl(paperUrl)
   if (arxivId) {
-    return [{
-      key: `arxiv:${arxivId}`,
-      label: `arXiv ${arxivId}`,
-      href: `https://arxiv.org/abs/${arxivId}`,
-    }]
+    return [
+      {
+        key: `arxiv:${arxivId}`,
+        label: `arXiv ${arxivId}`,
+        href: `https://arxiv.org/abs/${arxivId}`,
+      },
+    ]
   }
 
-  return [{
-    key: `paper:${paperUrl}`,
-    label: truncate(paperUrl, 42),
-    href: paperUrl,
-  }]
+  return [
+    {
+      key: `paper:${paperUrl}`,
+      label: truncate(paperUrl, 42),
+      href: paperUrl,
+    },
+  ]
 }

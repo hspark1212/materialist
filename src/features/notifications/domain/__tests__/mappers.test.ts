@@ -88,9 +88,7 @@ describe("mapNotificationRowToNotification", () => {
   })
 
   it("handles null comment gracefully", () => {
-    const result = mapNotificationRowToNotification(
-      makeRow({ comments: null, comment_id: null }),
-    )
+    const result = mapNotificationRowToNotification(makeRow({ comments: null, comment_id: null }))
 
     expect(result.commentSnippet).toBeNull()
     // Without a comment to check is_anonymous, actor shows real identity
@@ -98,18 +96,14 @@ describe("mapNotificationRowToNotification", () => {
   })
 
   it("handles null profile gracefully", () => {
-    const result = mapNotificationRowToNotification(
-      makeRow({ profiles: null }),
-    )
+    const result = mapNotificationRowToNotification(makeRow({ profiles: null }))
 
     expect(result.actorDisplayName).toBe("Unknown")
     expect(result.actorAvatar).toBe("")
   })
 
   it("handles null post gracefully", () => {
-    const result = mapNotificationRowToNotification(
-      makeRow({ posts: null }),
-    )
+    const result = mapNotificationRowToNotification(makeRow({ posts: null }))
 
     expect(result.postTitle).toBe("Deleted post")
   })
@@ -143,9 +137,7 @@ describe("mapNotificationRowToNotification", () => {
   })
 
   it("maps reply_to_comment type", () => {
-    const result = mapNotificationRowToNotification(
-      makeRow({ type: "reply_to_comment" }),
-    )
+    const result = mapNotificationRowToNotification(makeRow({ type: "reply_to_comment" }))
 
     expect(result.type).toBe("reply_to_comment")
   })

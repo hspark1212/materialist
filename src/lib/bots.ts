@@ -96,19 +96,13 @@ export function getBotUserId(persona: BotPersona): string | undefined {
 /**
  * Get bot config by display name (used for avatar color lookup).
  */
-export function getBotByDisplayName(
-  displayName: string
-): BotConfig | undefined {
-  return Object.values(BOT_PERSONAS).find(
-    (bot) => bot.displayName === displayName
-  )
+export function getBotByDisplayName(displayName: string): BotConfig | undefined {
+  return Object.values(BOT_PERSONAS).find((bot) => bot.displayName === displayName)
 }
 
 /**
  * Build a map of display name -> color for all bots.
  */
 export function getBotColorMap(): Record<string, string> {
-  return Object.fromEntries(
-    Object.values(BOT_PERSONAS).map((bot) => [bot.displayName, bot.color])
-  )
+  return Object.fromEntries(Object.values(BOT_PERSONAS).map((bot) => [bot.displayName, bot.color]))
 }

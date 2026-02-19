@@ -20,7 +20,7 @@ export function CommentThread({ comments, onChanged }: CommentThreadProps) {
         return (
           <CommentItem key={comment.id} comment={comment} onChanged={onChanged}>
             {hasReplies && hasMoreDepth ? (
-              <Link href={`/post/${comment.postId}#${comment.id}`} className="text-xs text-primary hover:underline">
+              <Link href={`/post/${comment.postId}#${comment.id}`} className="text-primary text-xs hover:underline">
                 Continue this thread →
               </Link>
             ) : hasReplies ? (

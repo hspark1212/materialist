@@ -16,7 +16,7 @@ export function PapersPageClient({ initialFeed }: PapersPageClientProps) {
     <FeedPageClient
       section="papers"
       initialFeed={initialFeed}
-      header={(
+      header={
         <Card className="overflow-hidden border-[var(--section-papers)]/20 py-0">
           <CardContent
             className="px-4 py-5 sm:px-6"
@@ -34,7 +34,7 @@ export function PapersPageClient({ initialFeed }: PapersPageClientProps) {
             </div>
           </CardContent>
         </Card>
-      )}
+      }
     />
   )
 }

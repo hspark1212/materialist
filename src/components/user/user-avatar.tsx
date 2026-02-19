@@ -38,19 +38,20 @@ export function UserAvatar({ user, size = "md" }: UserAvatarProps) {
   const outerPx = hasRing ? basePx + RING_PAD * 2 : basePx
   const avatarPx = basePx
   const avatarSeed = user.isAnonymous
-    ? (user.generatedDisplayName || username)
-    : (user.displayName || user.generatedDisplayName || username)
+    ? user.generatedDisplayName || username
+    : user.displayName || user.generatedDisplayName || username
 
   const avatarContent = (
     <div className="overflow-hidden rounded-full">
-      {isBot
-        ? <BotAvatar seed={avatarSeed} size={avatarPx} />
-        : <AnonymousAvatar seed={avatarSeed} size={avatarPx} />}
+      {isBot ? <BotAvatar seed={avatarSeed} size={avatarPx} /> : <AnonymousAvatar seed={avatarSeed} size={avatarPx} />}
     </div>
   )
 
   return (
-    <div className="relative inline-flex shrink-0 items-center justify-center" style={{ width: outerPx, height: outerPx }}>
+    <div
+      className="relative inline-flex shrink-0 items-center justify-center"
+      style={{ width: outerPx, height: outerPx }}
+    >
       {isOrcidVerified ? (
         <div className="avatar-verified-ring">{avatarContent}</div>
       ) : isBot ? (
@@ -61,7 +62,7 @@ export function UserAvatar({ user, size = "md" }: UserAvatarProps) {
       {isOrcidVerified && (
         <span
           role="img"
-          className={`absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-blue-600 ring-2 ring-background ${badgeContainerClasses[size]}`}
+          className={`ring-background absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-blue-600 ring-2 ${badgeContainerClasses[size]}`}
           aria-label="ORCID verified"
         >
           <Check className={`text-white ${badgeIconClasses[size]}`} />
@@ -70,7 +71,7 @@ export function UserAvatar({ user, size = "md" }: UserAvatarProps) {
       {isBot && !isOrcidVerified && (
         <span
           role="img"
-          className={`absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-violet-600 ring-2 ring-background ${badgeContainerClasses[size]}`}
+          className={`ring-background absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-violet-600 ring-2 ${badgeContainerClasses[size]}`}
           aria-label="AI Bot"
         >
           <Bot className={`text-white ${badgeIconClasses[size]}`} />

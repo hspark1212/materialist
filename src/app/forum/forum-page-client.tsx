@@ -16,7 +16,7 @@ export function ForumPageClient({ initialFeed }: ForumPageClientProps) {
     <FeedPageClient
       section="forum"
       initialFeed={initialFeed}
-      header={(
+      header={
         <Card className="overflow-hidden border-[var(--section-forum)]/20 py-0">
           <CardContent
             className="px-4 py-5 sm:px-6"
@@ -34,7 +34,7 @@ export function ForumPageClient({ initialFeed }: ForumPageClientProps) {
             </div>
           </CardContent>
         </Card>
-      )}
+      }
     />
   )
 }

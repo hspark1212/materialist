@@ -1,15 +1,6 @@
 import { cache, type ReactNode } from "react"
 import Link from "next/link"
-import {
-  ArrowUpRight,
-  Bot,
-  EyeOff,
-  Github,
-  ShieldCheck,
-  Sparkles,
-  Trophy,
-  User as UserIcon,
-} from "lucide-react"
+import { ArrowUpRight, Bot, EyeOff, Github, ShieldCheck, Sparkles, Trophy, User as UserIcon } from "lucide-react"
 
 import { cn, formatNumber, type User as AppUser } from "@/lib"
 import { isMobileRequest } from "@/lib/request/is-mobile-request"
@@ -129,10 +120,7 @@ function SidebarSectionCard({
 }: SidebarSectionCardProps) {
   return (
     <Card className="relative gap-3 overflow-hidden py-4">
-      <div
-        aria-hidden
-        className={`pointer-events-none absolute inset-x-0 top-0 h-[2px] ${gradientClassName}`}
-      />
+      <div aria-hidden className={`pointer-events-none absolute inset-x-0 top-0 h-[2px] ${gradientClassName}`} />
       <CardHeader className="px-4 pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <span
@@ -151,7 +139,7 @@ function SidebarSectionCard({
 
 function StatTile({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-lg border border-border/70 bg-background/70 px-2 py-2">
+    <div className="border-border/70 bg-background/70 rounded-lg border px-2 py-2">
       <p className="text-base font-semibold tabular-nums">{value}</p>
       <p className="text-muted-foreground text-xs">{label}</p>
     </div>
@@ -159,11 +147,7 @@ function StatTile({ value, label }: { value: string; label: string }) {
 }
 
 function EmptyState({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-lg border border-dashed border-border/80 bg-background/70 p-3">
-      {children}
-    </div>
-  )
+  return <div className="border-border/80 bg-background/70 rounded-lg border border-dashed p-3">{children}</div>
 }
 
 async function fetchTopDevelopers(): Promise<FetchTopDevelopersResult> {
@@ -252,9 +236,7 @@ async function fetchTopDevelopers(): Promise<FetchTopDevelopersResult> {
   }
 }
 
-async function fetchCommunityStats(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<CommunityStats> {
+async function fetchCommunityStats(supabase: Awaited<ReturnType<typeof createClient>>): Promise<CommunityStats> {
   const [membersResult, postsResult, commentsResult] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("posts").select("id", { count: "exact", head: true }),
@@ -321,9 +303,7 @@ type BotUser = {
   postCount: number
 }
 
-async function fetchBotUsers(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<BotUser[]> {
+async function fetchBotUsers(supabase: Awaited<ReturnType<typeof createClient>>): Promise<BotUser[]> {
   const { data, error } = await supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url, posts(count)")
@@ -358,12 +338,8 @@ const getRightSidebarData = cache(async () => {
   return { stats, materialistsResult, botUsers, developersResult }
 })
 
-export async function RightSidebar({
-  sticky = true,
-  className,
-  hideOnMobile = false,
-}: RightSidebarProps = {}) {
-  if (hideOnMobile && await isMobileRequest()) {
+export async function RightSidebar({ sticky = true, className, hideOnMobile = false }: RightSidebarProps = {}) {
+  if (hideOnMobile && (await isMobileRequest())) {
     return null
   }
 
@@ -372,13 +348,7 @@ export async function RightSidebar({
   const { developers, reason: developersReason, detail: developersDetail } = developersResult
 
   return (
-    <aside
-      className={cn(
-        "space-y-3 py-4",
-        sticky ? "sticky top-[var(--header-height)]" : "",
-        className,
-      )}
-    >
+    <aside className={cn("space-y-3 py-4", sticky ? "sticky top-[var(--header-height)]" : "", className)}>
       <SidebarSectionCard
         title="About Materialist"
         description="Materials science × AI community."
@@ -401,7 +371,7 @@ export async function RightSidebar({
         iconColorClassName="text-[var(--section-forum)]"
         icon={<Sparkles className="size-4" />}
       >
-        <div className="rounded-lg border border-border/70 bg-background/70 p-2.5">
+        <div className="border-border/70 bg-background/70 rounded-lg border p-2.5">
           <p className="text-muted-foreground text-[11px] font-medium">Hybrid Anonymous</p>
           <div className="mt-1 flex items-center text-sm font-semibold">
             <span className="inline-flex items-center gap-1.5 leading-tight">
@@ -410,13 +380,13 @@ export async function RightSidebar({
             </span>
             <span className="text-muted-foreground mx-0.5">+</span>
             <span className="inline-flex items-center gap-1.5 leading-tight">
-              <EyeOff className="size-4 shrink-0 text-muted-foreground" />
+              <EyeOff className="text-muted-foreground size-4 shrink-0" />
               Anonymous
             </span>
           </div>
         </div>
 
-        <div className="rounded-lg border border-border/70 bg-background/70 p-2.5">
+        <div className="border-border/70 bg-background/70 rounded-lg border p-2.5">
           <p className="text-muted-foreground text-[11px] font-medium">Hybrid Human/AI Bots</p>
           <div className="mt-1 flex items-center text-sm font-semibold">
             <span className="inline-flex items-center gap-1.5 leading-tight">
@@ -425,7 +395,7 @@ export async function RightSidebar({
             </span>
             <span className="text-muted-foreground mx-0.5">+</span>
             <span className="inline-flex items-center gap-1.5 leading-tight">
-              <Bot className="size-4 shrink-0 text-primary" />
+              <Bot className="text-primary size-4 shrink-0" />
               AI Bot
             </span>
           </div>
@@ -452,10 +422,10 @@ export async function RightSidebar({
           materialists.map((materialist, index) => (
             <div
               key={materialist.id}
-              className="flex items-center rounded-lg border border-border/70 bg-background/70 p-2.5"
+              className="border-border/70 bg-background/70 flex items-center rounded-lg border p-2.5"
             >
               <div className="flex min-w-0 items-center gap-2.5">
-                <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-muted-foreground">
+                <span className="bg-accent text-muted-foreground inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
                   {index + 1}
                 </span>
                 <UserAvatar
@@ -489,10 +459,10 @@ export async function RightSidebar({
             <Link
               key={bot.id}
               href={`/u/${bot.username}`}
-              className="group flex items-center rounded-lg border border-border/70 bg-background/70 p-2.5 transition-colors hover:border-primary/40 hover:bg-accent/35"
+              className="group border-border/70 bg-background/70 hover:border-primary/40 hover:bg-accent/35 flex items-center rounded-lg border p-2.5 transition-colors"
             >
               <div className="flex min-w-0 items-center gap-2.5">
-                <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-muted-foreground">
+                <span className="bg-accent text-muted-foreground inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
                   {index + 1}
                 </span>
                 <UserAvatar
@@ -568,7 +538,7 @@ export async function RightSidebar({
               href={developer.profileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center justify-between rounded-lg border border-border/70 bg-background/70 p-2.5 transition-colors hover:border-primary/40 hover:bg-accent/35"
+              className="group border-border/70 bg-background/70 hover:border-primary/40 hover:bg-accent/35 flex items-center justify-between rounded-lg border p-2.5 transition-colors"
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <UserAvatar
@@ -585,7 +555,7 @@ export async function RightSidebar({
                   <p className="text-muted-foreground text-[11px]">GitHub contributor</p>
                 </div>
               </div>
-              <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+              <ArrowUpRight className="text-muted-foreground group-hover:text-primary size-3.5 shrink-0 transition-colors" />
             </Link>
           ))
         )}

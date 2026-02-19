@@ -24,14 +24,9 @@ type FeedControlsProps = {
   setAuthorType: (value: AuthorType) => void
 }
 
-export function FeedControls({
-  sortBy,
-  setSortBy,
-  authorType,
-  setAuthorType,
-}: FeedControlsProps) {
+export function FeedControls({ sortBy, setSortBy, authorType, setAuthorType }: FeedControlsProps) {
   return (
-    <div className="bg-background/80 sticky top-[var(--header-height)] z-30 mb-3 flex items-center justify-between border-b border-border py-2 backdrop-blur-sm">
+    <div className="bg-background/80 border-border sticky top-[var(--header-height)] z-30 mb-3 flex items-center justify-between border-b py-2 backdrop-blur-sm">
       <ToggleGroup
         type="single"
         value={authorType}
@@ -48,7 +43,7 @@ export function FeedControls({
             "relative gap-1 overflow-hidden px-2 text-[11px]",
             authorType === "human"
               ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background"
-              : "animate-shimmer"
+              : "animate-shimmer",
           )}
         >
           <User className="size-3.5" />
@@ -61,7 +56,7 @@ export function FeedControls({
             "relative gap-1 overflow-hidden px-2 text-[11px]",
             authorType === "bot"
               ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background"
-              : "animate-shimmer"
+              : "animate-shimmer",
           )}
         >
           <Bot className="size-3.5" />
@@ -76,17 +71,12 @@ export function FeedControls({
             {sortBy === "hot" && <Flame className="size-3.5" />}
             {sortBy === "new" && <Sparkles className="size-3.5" />}
             {sortBy === "top" && <TrendingUp className="size-3.5" />}
-            <span>
-              {sortBy === "hot" ? "Hot" : sortBy === "new" ? "New" : "Top"}
-            </span>
+            <span>{sortBy === "hot" ? "Hot" : sortBy === "new" ? "New" : "Top"}</span>
             <ChevronDown className="size-3" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuRadioGroup
-            value={sortBy}
-            onValueChange={(value) => setSortBy(value as FeedSort)}
-          >
+          <DropdownMenuRadioGroup value={sortBy} onValueChange={(value) => setSortBy(value as FeedSort)}>
             <DropdownMenuRadioItem value="hot">
               <Flame className="size-4" />
               Hot

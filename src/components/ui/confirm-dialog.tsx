@@ -1,13 +1,6 @@
 "use client"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./dialog"
 import { Button } from "./button"
 
 type ConfirmDialogProps = {
@@ -37,11 +30,7 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
           <Button

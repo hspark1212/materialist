@@ -1,10 +1,6 @@
 import type { Comment, Post, User } from "@/lib"
 
-import type {
-  CommentWithAuthorRow,
-  PostWithAuthorRow,
-  ProfileRow,
-} from "./types"
+import type { CommentWithAuthorRow, PostWithAuthorRow, ProfileRow } from "./types"
 
 export function resolveAuthorIdentity(user: User, contentIsAnonymous: boolean): User {
   if (!contentIsAnonymous) return user

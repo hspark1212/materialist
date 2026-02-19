@@ -11,11 +11,7 @@ function compare<
     vote_count: number
     created_at: string
   },
->(
-  sort: CommentSort,
-  left: TreeNode<Row>,
-  right: TreeNode<Row>,
-): number {
+>(sort: CommentSort, left: TreeNode<Row>, right: TreeNode<Row>): number {
   if (sort === "new") {
     return new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
   }

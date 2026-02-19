@@ -12,10 +12,7 @@ export async function listNotificationsUseCase(
   return rows.map(mapNotificationRowToNotification)
 }
 
-export async function getUnreadCountUseCase(
-  repository: NotificationsRepository,
-  recipientId: string,
-): Promise<number> {
+export async function getUnreadCountUseCase(repository: NotificationsRepository, recipientId: string): Promise<number> {
   return repository.getUnreadCount(recipientId)
 }
 

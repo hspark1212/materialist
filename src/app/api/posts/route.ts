@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import type { Post } from "@/lib"
-import {
-  createPostUseCase,
-  listPostsUseCase,
-} from "@/features/posts/application/use-cases"
+import { createPostUseCase, listPostsUseCase } from "@/features/posts/application/use-cases"
 import {
   handleApiError,
   parseAuthorType,
@@ -133,9 +130,7 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          "Cache-Control": authenticated
-            ? "private, no-store"
-            : "public, s-maxage=30, stale-while-revalidate=60",
+          "Cache-Control": authenticated ? "private, no-store" : "public, s-maxage=30, stale-while-revalidate=60",
         },
       },
     )

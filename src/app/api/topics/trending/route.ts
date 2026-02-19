@@ -26,9 +26,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ topics })
   } catch (error) {
     console.error("[API] Failed to fetch trending topics:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { listNotificationsUseCase } from "@/features/notifications/application/use-cases"
-import {
-  handleApiError,
-  parseNotificationsLimit,
-  parseNotificationsOffset,
-} from "@/features/notifications/api/http"
+import { handleApiError, parseNotificationsLimit, parseNotificationsOffset } from "@/features/notifications/api/http"
 import { createSupabaseNotificationsRepository } from "@/features/notifications/infrastructure/supabase-notifications-repository"
 import { createClient } from "@/lib/supabase/server"
 
@@ -27,9 +23,12 @@ export async function GET(request: NextRequest) {
     const repository = createSupabaseNotificationsRepository(supabase)
     const notifications = await listNotificationsUseCase(repository, user.id, limit, offset)
 
-    return NextResponse.json({ notifications }, {
-      headers: { "Cache-Control": "private, no-store" },
-    })
+    return NextResponse.json(
+      { notifications },
+      {
+        headers: { "Cache-Control": "private, no-store" },
+      },
+    )
   } catch (error) {
     return handleApiError(error)
   }

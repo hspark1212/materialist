@@ -100,12 +100,7 @@ export function FeedPageClient({ section, initialFeed, header, todaysPosts }: Fe
       ) : null}
       {activeQuery ? <ActiveSearchBadge query={activeQuery} onClear={clearQuery} /> : null}
       {activeTag ? <ActiveTagBadge tag={activeTag} onClear={clearTag} /> : null}
-      <FeedControls
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        authorType={authorType}
-        setAuthorType={setAuthorType}
-      />
+      <FeedControls sortBy={sortBy} setSortBy={setSortBy} authorType={authorType} setAuthorType={setAuthorType} />
       {error ? <p className="text-destructive py-2 text-sm">{error}</p> : null}
       {!error && loading ? <p className="text-muted-foreground py-2 text-sm">Loading posts...</p> : null}
       {!error && !loading ? (
@@ -113,9 +108,7 @@ export function FeedPageClient({ section, initialFeed, header, todaysPosts }: Fe
           <FeedList posts={posts} />
           {hasMore ? (
             <div ref={sentinelRef} className="flex justify-center py-6">
-              {loadingMore ? (
-                <p className="text-muted-foreground text-sm">Loading more...</p>
-              ) : null}
+              {loadingMore ? <p className="text-muted-foreground text-sm">Loading more...</p> : null}
             </div>
           ) : null}
         </>
@@ -147,9 +140,7 @@ function DiscoverySection({
           aria-label="Today's posts"
           className={cn(
             "gap-1 px-2 text-[11px]",
-            chip === "today"
-              ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background"
-              : ""
+            chip === "today" ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background" : "",
           )}
         >
           <CalendarDays className="size-3.5" />
@@ -160,9 +151,7 @@ function DiscoverySection({
           aria-label="Trending posts"
           className={cn(
             "gap-1 px-2 text-[11px]",
-            chip === "trending"
-              ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background"
-              : ""
+            chip === "trending" ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background" : "",
           )}
         >
           <TrendingUp className="size-3.5" />
@@ -175,13 +164,7 @@ function DiscoverySection({
   )
 }
 
-function DiscoveryStrip({
-  chip,
-  todaysPosts,
-}: {
-  chip: DiscoveryChip | null
-  todaysPosts: Post[]
-}) {
+function DiscoveryStrip({ chip, todaysPosts }: { chip: DiscoveryChip | null; todaysPosts: Post[] }) {
   const { posts: trendingPosts } = useTrendingPosts(5, 30)
 
   if (chip === "today" && todaysPosts.length > 0) {
@@ -261,7 +244,9 @@ function ScrollStrip({ children }: { children: ReactNode }) {
       if (Math.abs(dx) > 3) s.moved = true
       el.scrollLeft = s.scrollLeft - dx
     }
-    const onMouseUp = () => { dragState.current.active = false }
+    const onMouseUp = () => {
+      dragState.current.active = false
+    }
     document.addEventListener("mousemove", onMouseMove)
     document.addEventListener("mouseup", onMouseUp)
     return () => {
@@ -284,14 +269,14 @@ function ScrollStrip({ children }: { children: ReactNode }) {
         onScroll={updateScroll}
         onMouseDown={onMouseDown}
         onClickCapture={onClickCapture}
-        className="flex cursor-grab gap-3 overflow-x-auto scrollbar-hide pb-1.5 active:cursor-grabbing"
+        className="scrollbar-hide flex cursor-grab gap-3 overflow-x-auto pb-1.5 active:cursor-grabbing"
       >
         {children}
       </div>
       {thumbRatio < 1 && (
-        <div className="mt-1.5 h-0.5 rounded-full bg-border/40">
+        <div className="bg-border/40 mt-1.5 h-0.5 rounded-full">
           <div
-            className="h-full rounded-full bg-muted-foreground/40 transition-[margin-left] duration-100"
+            className="bg-muted-foreground/40 h-full rounded-full transition-[margin-left] duration-100"
             style={{
               width: `${thumbRatio * 100}%`,
               marginLeft: `${scrollProgress * (1 - thumbRatio) * 100}%`,
@@ -320,22 +305,15 @@ function DiscoveryCard({
   return (
     <Link
       href={href}
-      className="flex w-64 shrink-0 flex-col gap-1.5 rounded-xl border border-border/70 bg-background/70 p-3 transition-colors hover:border-primary/30 sm:w-72 sm:p-3.5"
+      className="border-border/70 bg-background/70 hover:border-primary/30 flex w-64 shrink-0 flex-col gap-1.5 rounded-xl border p-3 transition-colors sm:w-72 sm:p-3.5"
     >
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span
-          className="inline-block size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: meta?.color }}
-        />
+      <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ backgroundColor: meta?.color }} />
         {meta?.label}
-        {voteCount != null && (
-          <span className="ml-auto">{voteCount} votes</span>
-        )}
+        {voteCount != null && <span className="ml-auto">{voteCount} votes</span>}
       </span>
-      <span className="line-clamp-2 text-sm font-medium leading-snug">{title}</span>
-      {preview ? (
-        <span className="text-muted-foreground line-clamp-1 text-xs leading-relaxed">{preview}</span>
-      ) : null}
+      <span className="line-clamp-2 text-sm leading-snug font-medium">{title}</span>
+      {preview ? <span className="text-muted-foreground line-clamp-1 text-xs leading-relaxed">{preview}</span> : null}
     </Link>
   )
 }

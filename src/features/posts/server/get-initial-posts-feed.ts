@@ -29,9 +29,7 @@ function firstValue(value: string | string[] | undefined): string | undefined {
   return value
 }
 
-export async function resolvePageSearchParams(
-  searchParams: AwaitablePageSearchParams,
-): Promise<PageSearchParams> {
+export async function resolvePageSearchParams(searchParams: AwaitablePageSearchParams): Promise<PageSearchParams> {
   return (await searchParams) ?? {}
 }
 
@@ -87,8 +85,8 @@ export async function getInitialPostsFeed({
   const jobType = normalizeJobType(firstValue(searchParams?.jobType))
   const location = normalizeLocationFilter(firstValue(searchParams?.location))
   const rawAuthorType = firstValue(searchParams?.authorType)
-  const resolvedAuthorType = authorType
-    ?? (rawAuthorType === "human" ? "human" : rawAuthorType === "bot" ? "bot" : "all")
+  const resolvedAuthorType =
+    authorType ?? (rawAuthorType === "human" ? "human" : rawAuthorType === "bot" ? "bot" : "all")
 
   try {
     const supabase = await createClient()
@@ -128,9 +126,7 @@ export async function getInitialPostsFeed({
             .in("target_id", postIds)
 
           if (votes && votes.length > 0) {
-            const voteMap = new Map(
-              votes.map((v) => [v.target_id, v.vote_direction]),
-            )
+            const voteMap = new Map(votes.map((v) => [v.target_id, v.vote_direction]))
             postsWithVotes = posts.map((p) => ({
               ...p,
               userVote: (voteMap.get(p.id) ?? 0) as -1 | 0 | 1,

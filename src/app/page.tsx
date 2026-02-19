@@ -34,7 +34,9 @@ async function getCommunityStats() {
 export default async function Home({ searchParams }: HomePageProps) {
   const resolvedSearchParams = await resolvePageSearchParams(searchParams)
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const [initialFeed, stats, todaysPosts] = await Promise.all([
     getInitialPostsFeed({ searchParams: resolvedSearchParams }),

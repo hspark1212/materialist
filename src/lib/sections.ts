@@ -1,10 +1,4 @@
-import {
-  FileText,
-  MessageSquare,
-  Rocket,
-  Briefcase,
-  type LucideIcon,
-} from "lucide-react"
+import { FileText, MessageSquare, Rocket, Briefcase, type LucideIcon } from "lucide-react"
 
 import type { ForumFlair, JobType, Section, ShowcaseType } from "./types"
 
@@ -24,8 +18,7 @@ export const sections: SectionMeta[] = [
     href: "/papers",
     icon: FileText,
     color: "var(--section-papers)",
-    description:
-      "Paper discussions, source links, AI summaries, and citations",
+    description: "Paper discussions, source links, AI summaries, and citations",
   },
   {
     key: "forum",
@@ -33,8 +26,7 @@ export const sections: SectionMeta[] = [
     href: "/forum",
     icon: MessageSquare,
     color: "var(--section-forum)",
-    description:
-      "Free discussion — questions, career advice, news, and community topics",
+    description: "Free discussion — questions, career advice, news, and community topics",
   },
   {
     key: "showcase",
@@ -42,8 +34,7 @@ export const sections: SectionMeta[] = [
     href: "/showcase",
     icon: Rocket,
     color: "var(--section-showcase)",
-    description:
-      "Show Materialist — share your tools, datasets, models, and projects",
+    description: "Show Materialist — share your tools, datasets, models, and projects",
   },
   {
     key: "jobs",
@@ -51,14 +42,14 @@ export const sections: SectionMeta[] = [
     href: "/jobs",
     icon: Briefcase,
     color: "var(--section-jobs)",
-    description:
-      "Job postings — postdoc, PhD, industry, and internship opportunities",
+    description: "Job postings — postdoc, PhD, industry, and internship opportunities",
   },
 ]
 
-export const sectionByKey: Record<Section, SectionMeta> = Object.fromEntries(
-  sections.map((s) => [s.key, s])
-) as Record<Section, SectionMeta>
+export const sectionByKey: Record<Section, SectionMeta> = Object.fromEntries(sections.map((s) => [s.key, s])) as Record<
+  Section,
+  SectionMeta
+>
 
 export function getSectionLabel(section: Section): string {
   return sectionByKey[section]?.label ?? section
@@ -78,8 +69,7 @@ export const forumFlairs: FlairMeta[] = [
   {
     key: "discussion",
     label: "Discussion",
-    className:
-      "bg-[var(--flair-discussion)]/20 text-[var(--flair-discussion)]",
+    className: "bg-[var(--flair-discussion)]/20 text-[var(--flair-discussion)]",
   },
   {
     key: "question",
@@ -99,7 +89,7 @@ export const forumFlairs: FlairMeta[] = [
 ]
 
 export const flairByKey: Record<ForumFlair, FlairMeta> = Object.fromEntries(
-  forumFlairs.map((f) => [f.key, f])
+  forumFlairs.map((f) => [f.key, f]),
 ) as Record<ForumFlair, FlairMeta>
 
 export const jobTypeLabels: Record<JobType, string> = {
@@ -120,12 +110,6 @@ export const showcaseTypeLabels: Record<ShowcaseType, string> = {
   workflow: "Workflow",
 }
 
-export const showcaseTypeFilters: ShowcaseType[] = [
-  "tool",
-  "dataset",
-  "model",
-  "library",
-  "workflow",
-]
+export const showcaseTypeFilters: ShowcaseType[] = ["tool", "dataset", "model", "library", "workflow"]
 
 export const jobLocationFilters = ["Remote", "USA", "Europe", "Asia", "Global"]

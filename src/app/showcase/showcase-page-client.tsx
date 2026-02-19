@@ -16,7 +16,7 @@ export function ShowcasePageClient({ initialFeed }: ShowcasePageClientProps) {
     <FeedPageClient
       section="showcase"
       initialFeed={initialFeed}
-      header={(
+      header={
         <Card className="overflow-hidden border-[var(--section-showcase)]/20 py-0">
           <CardContent
             className="px-4 py-5 sm:px-6"
@@ -34,7 +34,7 @@ export function ShowcasePageClient({ initialFeed }: ShowcasePageClientProps) {
             </div>
           </CardContent>
         </Card>
-      )}
+      }
     />
   )
 }

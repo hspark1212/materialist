@@ -9,8 +9,7 @@ const AUTH_ROUTES = ["/login", "/signup", "/auth"]
 export function isValidReturnTo(path: string): boolean {
   if (!path || !path.startsWith("/")) return false
   if (path.startsWith("//")) return false
-  if (AUTH_ROUTES.some((r) => path === r || path.startsWith(r + "/")))
-    return false
+  if (AUTH_ROUTES.some((r) => path === r || path.startsWith(r + "/"))) return false
   try {
     decodeURIComponent(path)
   } catch {
@@ -38,10 +37,7 @@ export function profileToUser(profile: Profile): User {
   }
 }
 
-export function deriveStatus(
-  session: Session | null,
-  profile: Profile | null,
-): AuthStatus {
+export function deriveStatus(session: Session | null, profile: Profile | null): AuthStatus {
   if (!session) return "anonymous"
   if (profile) return "verified"
   return "authenticated"

@@ -1,11 +1,7 @@
 import type { Comment, Post } from "@/lib"
 
 import { buildCommentTree } from "../domain/comment-tree"
-import {
-  mapCommentRowToComment,
-  mapCommentTreeToComments,
-  mapPostRowToPost,
-} from "../domain/mappers"
+import { mapCommentRowToComment, mapCommentTreeToComments, mapPostRowToPost } from "../domain/mappers"
 import { buildCreatePostInsert, buildUpdatePostPatch } from "../domain/post-payload"
 import { resolveVoteMutation } from "../domain/vote-state"
 import type {
@@ -19,10 +15,7 @@ import type {
 import { ApplicationError } from "./errors"
 import type { ListPostsParams, PostsRepository } from "./ports"
 
-export async function listPostsUseCase(
-  repository: PostsRepository,
-  params: ListPostsParams,
-): Promise<Post[]> {
+export async function listPostsUseCase(repository: PostsRepository, params: ListPostsParams): Promise<Post[]> {
   const rows = await repository.listPosts(params)
   return rows.map(mapPostRowToPost)
 }
@@ -53,11 +46,7 @@ export async function getPostDetailUseCase(
   return { post, comments }
 }
 
-function setCommentOwnership(
-  comments: Comment[],
-  authorMap: Map<string, string>,
-  userId: string,
-) {
+function setCommentOwnership(comments: Comment[], authorMap: Map<string, string>, userId: string) {
   for (const comment of comments) {
     comment.isOwner = authorMap.get(comment.id) === userId
     setCommentOwnership(comment.replies, authorMap, userId)
@@ -100,11 +89,7 @@ export async function updatePostUseCase(
   return mapPostRowToPost(updated)
 }
 
-export async function deletePostUseCase(
-  repository: PostsRepository,
-  userId: string,
-  postId: string,
-): Promise<void> {
+export async function deletePostUseCase(repository: PostsRepository, userId: string, postId: string): Promise<void> {
   const current = await repository.getPostById(postId)
 
   if (!current) {

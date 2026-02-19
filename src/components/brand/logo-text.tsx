@@ -24,13 +24,7 @@ export function LogoText({ size = "md", className }: LogoTextProps) {
   }, [])
 
   return (
-    <span
-      className={cn(
-        "logo-text whitespace-nowrap font-mono font-bold text-primary",
-        sizeClasses[size],
-        className
-      )}
-    >
+    <span className={cn("logo-text text-primary font-mono font-bold whitespace-nowrap", sizeClasses[size], className)}>
       Mater
       <span className={cn("logo-ia", hasAnimated && "logo-ia-animated")}>
         <span className="logo-ia-front">ia</span>

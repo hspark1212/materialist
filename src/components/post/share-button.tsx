@@ -75,22 +75,10 @@ export function ShareButton({
   }
 
   return (
-    <Button
-      type="button"
-      variant={variant}
-      size={size}
-      className={className}
-      onClick={handleShare}
-    >
-      {copied ? (
-        <Check className={cn("text-primary", iconClassName)} />
-      ) : (
-        <Share2 className={iconClassName} />
-      )}
+    <Button type="button" variant={variant} size={size} className={className} onClick={handleShare}>
+      {copied ? <Check className={cn("text-primary", iconClassName)} /> : <Share2 className={iconClassName} />}
       <span className={labelClassName}>{copied ? "Copied" : "Share"}</span>
-      {copied ? (
-        <span className="text-[11px] text-muted-foreground sm:hidden">Copied</span>
-      ) : null}
+      {copied ? <span className="text-muted-foreground text-[11px] sm:hidden">Copied</span> : null}
       <span className="sr-only" role="status" aria-live="polite">
         {copied ? "Link copied" : ""}
       </span>

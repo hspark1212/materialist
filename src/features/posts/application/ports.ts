@@ -47,7 +47,12 @@ export interface PostsRepository {
   targetExists(targetType: VoteTargetType, targetId: string): Promise<boolean>
   getVoteDirection(userId: string, targetType: VoteTargetType, targetId: string): Promise<PersistedVoteDirection>
   insertVote(userId: string, targetType: VoteTargetType, targetId: string, direction: VoteDirection): Promise<void>
-  updateVoteDirection(userId: string, targetType: VoteTargetType, targetId: string, direction: VoteDirection): Promise<void>
+  updateVoteDirection(
+    userId: string,
+    targetType: VoteTargetType,
+    targetId: string,
+    direction: VoteDirection,
+  ): Promise<void>
   deleteVote(userId: string, targetType: VoteTargetType, targetId: string): Promise<void>
   getTargetVoteCount(targetType: VoteTargetType, targetId: string): Promise<number>
 }

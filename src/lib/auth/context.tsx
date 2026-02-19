@@ -1,14 +1,6 @@
 "use client"
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Session, AuthChangeEvent } from "@supabase/supabase-js"
 
@@ -21,11 +13,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 async function fetchProfile(userId: string): Promise<Profile | null> {
   try {
     const supabase = createClient()
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle()
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle()
     if (error) {
       console.warn("fetchProfile error:", error.message)
       return null
@@ -50,7 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     try {
-      const { data: { session: current } } = await supabase.auth.getSession()
+      const {
+        data: { session: current },
+      } = await supabase.auth.getSession()
       if (current?.user) {
         const p = await fetchProfile(current.user.id)
         setProfile(p)
@@ -63,7 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const init = async () => {
       try {
-        const { data: { session: current } } = await supabase.auth.getSession()
+        const {
+          data: { session: current },
+        } = await supabase.auth.getSession()
 
         if (current) {
           setSession(current)
@@ -81,33 +73,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase])
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, newSession) => {
-        if (event === 'INITIAL_SESSION') {
-          hasReceivedInitialSession.current = true
-          return
-        }
+    const { data } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, newSession) => {
+      if (event === "INITIAL_SESSION") {
+        hasReceivedInitialSession.current = true
+        return
+      }
 
-        setSession(newSession)
+      setSession(newSession)
 
-        if (event === 'SIGNED_OUT') {
-          hasProcessedSignIn.current = false
-          setProfile(null)
-          setPendingSignIn(false)
-          router.push('/')
-          return
-        }
+      if (event === "SIGNED_OUT") {
+        hasProcessedSignIn.current = false
+        setProfile(null)
+        setPendingSignIn(false)
+        router.push("/")
+        return
+      }
 
-        if (event === 'SIGNED_IN') {
-          if (!hasReceivedInitialSession.current) return
-          if (hasProcessedSignIn.current) return
-          hasProcessedSignIn.current = true
-          setProfile(null)
-          setPendingSignIn(true)
-          return
-        }
-      },
-    )
+      if (event === "SIGNED_IN") {
+        if (!hasReceivedInitialSession.current) return
+        if (hasProcessedSignIn.current) return
+        hasProcessedSignIn.current = true
+        setProfile(null)
+        setPendingSignIn(true)
+        return
+      }
+    })
 
     return () => data.subscription.unsubscribe()
   }, [supabase, router])
@@ -127,7 +117,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setPendingSignIn(false)
       })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [pendingSignIn, session?.user?.id])
 
   const signInWithEmail = useCallback(
@@ -193,20 +185,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn("signOut error:", err)
       setSession(null)
       setProfile(null)
-      router.push('/')
+      router.push("/")
     }
   }, [supabase, router])
 
   const deleteAccount = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/delete-account', {
-        method: 'POST',
+      const response = await fetch("/api/auth/delete-account", {
+        method: "POST",
       })
 
       const data = await response.json()
 
       if (!response.ok || data.error) {
-        return { error: data.error || 'Failed to delete account' }
+        return { error: data.error || "Failed to delete account" }
       }
 
       // Sign out locally so SIGNED_OUT event fires and redirects to /
@@ -215,13 +207,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return {}
     } catch (err) {
       console.error("deleteAccount error:", err)
-      return { error: 'An unexpected error occurred' }
+      return { error: "An unexpected error occurred" }
     }
   }, [supabase])
 
-  const status: AuthStatus = !initialized
-    ? "loading"
-    : deriveStatus(session, profile)
+  const status: AuthStatus = !initialized ? "loading" : deriveStatus(session, profile)
 
   let user = null
   if (profile) {
@@ -260,7 +250,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshProfile,
       updateProfile,
     }),
-    [status, profile, user, isNavigating, signInWithEmail, signUpWithEmail, signInWithOAuth, resetPassword, updatePassword, signOut, deleteAccount, refreshProfile, updateProfile],
+    [
+      status,
+      profile,
+      user,
+      isNavigating,
+      signInWithEmail,
+      signUpWithEmail,
+      signInWithOAuth,
+      resetPassword,
+      updatePassword,
+      signOut,
+      deleteAccount,
+      refreshProfile,
+      updateProfile,
+    ],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

@@ -49,7 +49,9 @@ function ResetPasswordForm() {
         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
         if (cancelled) return
         if (exchangeError) {
-          const { data: { session: existingSession } } = await supabase.auth.getSession()
+          const {
+            data: { session: existingSession },
+          } = await supabase.auth.getSession()
           if (cancelled) return
           if (!existingSession) {
             setError("This reset link is invalid or has expired. Request a new one.")
@@ -60,7 +62,9 @@ function ResetPasswordForm() {
         window.history.replaceState({}, "", "/reset-password")
       }
 
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (cancelled) return
 
       if (session) {
@@ -109,22 +113,18 @@ function ResetPasswordForm() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Set a new password</CardTitle>
-        <CardDescription>
-          Choose a strong password for your Materialist account.
-        </CardDescription>
+        <CardDescription>Choose a strong password for your Materialist account.</CardDescription>
       </CardHeader>
       <CardContent>
         {success ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Password updated successfully.
-            </p>
+            <p className="text-muted-foreground text-sm">Password updated successfully.</p>
             <Button className="w-full" asChild>
               <Link href="/">Continue</Link>
             </Button>
           </div>
         ) : checkingRecovery ? (
-          <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
+          <p className="text-muted-foreground text-sm">Verifying your reset link...</p>
         ) : isRecoveryReady ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -137,7 +137,7 @@ function ResetPasswordForm() {
                 required
                 autoComplete="new-password"
               />
-              <p className="text-xs text-muted-foreground">At least 6 characters</p>
+              <p className="text-muted-foreground text-xs">At least 6 characters</p>
             </div>
 
             <div className="space-y-2">
@@ -152,7 +152,7 @@ function ResetPasswordForm() {
               />
             </div>
 
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Updating password..." : "Update password"}
@@ -160,7 +160,7 @@ function ResetPasswordForm() {
           </form>
         ) : (
           <div className="space-y-4">
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            {error ? <p className="text-destructive text-sm">{error}</p> : null}
             <Button variant="outline" className="w-full" asChild>
               <Link href="/forgot-password">Request new reset link</Link>
             </Button>

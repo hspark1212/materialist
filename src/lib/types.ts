@@ -52,7 +52,7 @@ export interface Post {
   location?: string
   jobType?: JobType
   applicationUrl?: string
-  deadline?: string  // ISO date string
+  deadline?: string // ISO date string
   isOwner?: boolean
 }
 

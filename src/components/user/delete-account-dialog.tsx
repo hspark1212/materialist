@@ -44,16 +44,12 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
         <DialogHeader>
           <DialogTitle>Delete Account</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete your account? This action cannot be undone.
-            All your posts, comments, and profile data will be permanently deleted.
+            Are you sure you want to delete your account? This action cannot be undone. All your posts, comments, and
+            profile data will be permanently deleted.
           </DialogDescription>
         </DialogHeader>
 
-        {error ? (
-          <div className="rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive">
-            {error}
-          </div>
-        ) : null}
+        {error ? <div className="bg-destructive/15 text-destructive rounded-md px-3 py-2 text-sm">{error}</div> : null}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={deleting}>

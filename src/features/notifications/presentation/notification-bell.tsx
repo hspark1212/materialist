@@ -13,16 +13,8 @@ type NotificationBellProps = {
 }
 
 export function NotificationBell({ enabled }: NotificationBellProps) {
-  const {
-    unreadCount,
-    notifications,
-    loading,
-    panelOpen,
-    openPanel,
-    closePanel,
-    markAsRead,
-    markAllAsRead,
-  } = useNotifications(enabled)
+  const { unreadCount, notifications, loading, panelOpen, openPanel, closePanel, markAsRead, markAllAsRead } =
+    useNotifications(enabled)
 
   return (
     <Popover
@@ -36,15 +28,12 @@ export function NotificationBell({ enabled }: NotificationBellProps) {
         <Button
           variant="ghost"
           size="icon"
-          className={cn(
-            "relative rounded-full min-h-11 min-w-11 md:min-h-9 md:min-w-9",
-            panelOpen && "bg-accent",
-          )}
+          className={cn("relative min-h-11 min-w-11 rounded-full md:min-h-9 md:min-w-9", panelOpen && "bg-accent")}
           aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : "Notifications"}
         >
           <Bell className="size-[21px] md:size-5" strokeWidth={2} />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-[18px] text-destructive-foreground">
+            <span className="bg-destructive text-destructive-foreground absolute -top-0.5 -right-0.5 flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] leading-[18px] font-bold">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
@@ -52,7 +41,7 @@ export function NotificationBell({ enabled }: NotificationBellProps) {
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-auto overflow-hidden rounded-xl border border-border/80 p-0 shadow-lg"
+        className="border-border/80 w-auto overflow-hidden rounded-xl border p-0 shadow-lg"
         sideOffset={8}
       >
         <NotificationPanel

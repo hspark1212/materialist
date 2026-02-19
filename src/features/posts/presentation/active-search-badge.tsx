@@ -13,7 +13,7 @@ export function ActiveSearchBadge({ query, onClear }: ActiveSearchBadgeProps) {
       <Badge variant="secondary" className="text-xs">
         Search: {query}
       </Badge>
-      <button type="button" onClick={onClear} className="text-muted-foreground text-xs hover:text-foreground">
+      <button type="button" onClick={onClear} className="text-muted-foreground hover:text-foreground text-xs">
         x Clear search
       </button>
     </div>

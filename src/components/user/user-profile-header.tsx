@@ -12,8 +12,8 @@ type UserProfileHeaderProps = {
 
 export function UserProfileHeader({ user, showVerifyAction = false }: UserProfileHeaderProps) {
   return (
-    <div className="rounded-lg border border-border bg-card/70 p-4 sm:p-6">
-      <div className="flex flex-col items-center text-center gap-4">
+    <div className="border-border bg-card/70 rounded-lg border p-4 sm:p-6">
+      <div className="flex flex-col items-center gap-4 text-center">
         <UserAvatar user={user} size="lg" />
 
         <div className="space-y-1.5">
@@ -35,9 +35,7 @@ export function UserProfileHeader({ user, showVerifyAction = false }: UserProfil
               </Badge>
             ) : null}
           </div>
-          {user.bio && (
-            <p className="text-sm text-muted-foreground">{user.bio}</p>
-          )}
+          {user.bio && <p className="text-muted-foreground text-sm">{user.bio}</p>}
         </div>
       </div>
     </div>

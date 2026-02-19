@@ -5,12 +5,7 @@ import { Clock, Search, TrendingUp, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useSearchFilter } from "@/features/posts/presentation/use-search-filter"
 
 const recentSearches = [
@@ -50,23 +45,14 @@ export function MobileSearch() {
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="min-h-11 min-w-11 md:hidden"
-          aria-label="Search"
-        >
+        <Button variant="ghost" size="icon-sm" className="min-h-11 min-w-11 md:hidden" aria-label="Search">
           <Search className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="top"
-        className="h-[100dvh] p-0 pt-safe"
-        showCloseButton={false}
-      >
+      <SheetContent side="top" className="pt-safe h-[100dvh] p-0" showCloseButton={false}>
         <SheetTitle className="sr-only">Search Materialist</SheetTitle>
 
-        <form className="flex items-center gap-2 border-b border-border px-3 py-2" onSubmit={handleSubmit}>
+        <form className="border-border flex items-center gap-2 border-b px-3 py-2" onSubmit={handleSubmit}>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -92,7 +78,7 @@ export function MobileSearch() {
           {!query.trim() ? (
             <div className="space-y-6">
               <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                   Recent Searches
                 </h3>
                 <ul className="space-y-0.5">
@@ -100,13 +86,13 @@ export function MobileSearch() {
                     <li key={term}>
                       <button
                         type="button"
-                        className="flex min-h-11 w-full items-center gap-3 rounded-md px-2 text-sm text-foreground transition-colors hover:bg-accent touch-manipulation"
+                        className="text-foreground hover:bg-accent flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-md px-2 text-sm transition-colors"
                         onClick={() => {
                           submitSearch(term)
                           setOpen(false)
                         }}
                       >
-                        <Clock className="size-4 shrink-0 text-muted-foreground" />
+                        <Clock className="text-muted-foreground size-4 shrink-0" />
                         {term}
                       </button>
                     </li>
@@ -115,21 +101,19 @@ export function MobileSearch() {
               </section>
 
               <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Trending
-                </h3>
+                <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Trending</h3>
                 <ul className="space-y-0.5">
                   {trendingSearches.map((term) => (
                     <li key={term}>
                       <button
                         type="button"
-                        className="flex min-h-11 w-full items-center gap-3 rounded-md px-2 text-sm text-foreground transition-colors hover:bg-accent touch-manipulation"
+                        className="text-foreground hover:bg-accent flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-md px-2 text-sm transition-colors"
                         onClick={() => {
                           submitSearch(term)
                           setOpen(false)
                         }}
                       >
-                        <TrendingUp className="size-4 shrink-0 text-muted-foreground" />
+                        <TrendingUp className="text-muted-foreground size-4 shrink-0" />
                         {term}
                       </button>
                     </li>

@@ -19,7 +19,7 @@ export type ShortcutMap = Record<string, FormatType>
 export function useMarkdownFormat(
   textareaRef: React.RefObject<HTMLTextAreaElement | null>,
   value: string,
-  onChange: (value: string) => void
+  onChange: (value: string) => void,
 ) {
   const shortcutMap = useMemo<ShortcutMap>(
     () => ({
@@ -29,7 +29,7 @@ export function useMarkdownFormat(
       "mod+shift+m": "inlineMath",
       "mod+e": "code",
     }),
-    []
+    [],
   )
 
   const applyFormat = useCallback(
@@ -169,7 +169,7 @@ export function useMarkdownFormat(
         }
       })
     },
-    [textareaRef, value, onChange]
+    [textareaRef, value, onChange],
   )
 
   return { applyFormat, shortcutMap }

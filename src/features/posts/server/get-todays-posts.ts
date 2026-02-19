@@ -7,9 +7,7 @@ import { createSupabasePostsRepository } from "../infrastructure/supabase-posts-
 
 function getStartOfTodayUTC(): string {
   const now = new Date()
-  const utcMidnight = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  )
+  const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   return utcMidnight.toISOString()
 }
 

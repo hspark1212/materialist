@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import {
-  deleteCommentUseCase,
-  updateCommentUseCase,
-} from "@/features/posts/application/use-cases"
+import { deleteCommentUseCase, updateCommentUseCase } from "@/features/posts/application/use-cases"
 import { handleApiError } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
 import { createClient } from "@/lib/supabase/server"

@@ -22,7 +22,7 @@ function decodeXmlEntities(value: string): string {
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
+    .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
 }
 
@@ -31,10 +31,9 @@ async function fetchArxivTitle(arxivId: string): Promise<string | null> {
   if (!cleanId) return null
 
   try {
-    const response = await fetch(
-      `https://export.arxiv.org/api/query?id_list=${encodeURIComponent(cleanId)}`,
-      { next: { revalidate: 60 * 60 * 24 } },
-    )
+    const response = await fetch(`https://export.arxiv.org/api/query?id_list=${encodeURIComponent(cleanId)}`, {
+      next: { revalidate: 60 * 60 * 24 },
+    })
     if (!response.ok) return null
 
     const xml = await response.text()
@@ -70,13 +69,10 @@ async function fetchDoiTitle(doi: string): Promise<string | null> {
   if (!cleanDoi) return null
 
   try {
-    const crossref = await fetch(
-      `https://api.crossref.org/works/${encodeURIComponent(cleanDoi)}`,
-      {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60 * 60 * 24 },
-      },
-    )
+    const crossref = await fetch(`https://api.crossref.org/works/${encodeURIComponent(cleanDoi)}`, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 60 * 60 * 24 },
+    })
     if (crossref.ok) {
       const payload = await crossref.json()
       const title = extractCrossrefTitle(payload)
@@ -147,9 +143,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ papers })
   } catch (error) {
     console.error("[API] Failed to fetch trending papers:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

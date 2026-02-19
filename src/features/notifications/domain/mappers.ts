@@ -11,9 +11,7 @@ function truncate(text: string, maxLength: number): string {
   return text.slice(0, maxLength).trimEnd() + "..."
 }
 
-export function mapNotificationRowToNotification(
-  row: NotificationWithContextRow,
-): Notification {
+export function mapNotificationRowToNotification(row: NotificationWithContextRow): Notification {
   const profile = unwrapSingle(row.profiles)
   const post = unwrapSingle(row.posts)
   const comment = unwrapSingle(row.comments)
@@ -24,9 +22,7 @@ export function mapNotificationRowToNotification(
   return {
     id: row.id,
     type: row.type,
-    actorDisplayName: isAnonymousComment
-      ? "Anonymous"
-      : (profile?.display_name ?? "Unknown"),
+    actorDisplayName: isAnonymousComment ? "Anonymous" : (profile?.display_name ?? "Unknown"),
     actorAvatar: isAnonymousComment ? "" : (profile?.avatar_url ?? ""),
     actorIsAnonymous: isAnonymousComment,
     postId: row.post_id,
