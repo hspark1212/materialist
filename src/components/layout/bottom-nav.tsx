@@ -14,7 +14,7 @@ export function BottomNav() {
   const { profile } = useAuth()
   const [sectionsOpenOnPath, setSectionsOpenOnPath] = useState<string | null>(null)
 
-  const profileHref = profile ? `/u/${profile.username}` : "/u/me"
+  const profileHref = profile ? `/u/${profile.username}` : "/login"
   const isSectionsOpen = sectionsOpenOnPath === pathname
   const closeSections = () => setSectionsOpenOnPath(null)
   const isPathActive = (href: string) =>
