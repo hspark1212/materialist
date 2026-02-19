@@ -4,19 +4,27 @@ import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { cn } from "@/lib"
+import type { JobType } from "@/lib"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useTrendingPapers } from "@/features/topics/presentation/use-trending-papers"
+import { useTrendingPosts } from "@/features/topics/presentation/use-trending-posts"
 import { useTrendingTopics } from "@/features/topics/presentation/use-trending-topics"
 import {
-  sections,
+  normalizeForumFlair,
+  normalizeJobType,
+  normalizeLocationFilter,
+  normalizeShowcaseType,
+  normalizeTag,
+} from "@/features/posts/domain/query-normalization"
+import {
   forumFlairs,
+  jobLocationFilters,
+  jobTypeLabels,
+  sections,
+  sectionByKey,
   showcaseTypeFilters,
   showcaseTypeLabels,
-  jobTypeLabels,
-  jobLocationFilters,
 } from "@/lib/sections"
-import type { JobType } from "@/lib"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 type LeftSidebarProps = {
   inSheet?: boolean
@@ -27,6 +35,8 @@ type TrendingPaperSource = {
   detail: string | null
   badgeClassName: string
 }
+
+type SidebarQueryParam = "tag" | "flair" | "showcaseType" | "jobType" | "location"
 
 function getActiveSection(pathname: string): string | null {
   for (const section of sections) {
@@ -84,55 +94,158 @@ function getPaperSourceMeta(paper: { arxiv_id: string | null; doi: string | null
   }
 }
 
+function LoadingRows({ rows = 3 }: { rows?: number }) {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: rows }).map((_, index) => (
+        <div
+          key={index}
+          className="rounded-lg border border-border/40 bg-background/40 px-2.5 py-2"
+        >
+          <div className="mb-1.5 h-2 w-20 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-full animate-pulse rounded bg-muted" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        "inline-flex max-w-full cursor-pointer items-center rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors",
+        active
+          ? "border-primary/40 bg-primary/10 text-primary"
+          : "border-border/70 bg-secondary/60 text-secondary-foreground hover:bg-accent",
+      )}
+    >
+      <span className="truncate">{label}</span>
+    </button>
+  )
+}
+
 export function LeftSidebar({ inSheet = false }: LeftSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const activeTag = searchParams.get("tag")
   const activeSection = getActiveSection(pathname)
+  const activeTag = normalizeTag(searchParams.get("tag"))
+  const activeFlair = normalizeForumFlair(searchParams.get("flair"))
+  const activeShowcaseType = normalizeShowcaseType(searchParams.get("showcaseType"))
+  const activeJobType = normalizeJobType(searchParams.get("jobType"))
+  const activeLocation = normalizeLocationFilter(searchParams.get("location"))
   const { topics: trendingTopics, loading: topicsLoading, error: topicsError } = useTrendingTopics(8, 7)
   const { papers: trendingPapers, loading: papersLoading, error: papersError } = useTrendingPapers(3, 30)
-  const blockClassName = "space-y-2.5 rounded-lg border border-border/70 bg-background/70 p-3"
-  const headingClassName = "text-muted-foreground text-[11px] font-semibold tracking-wide uppercase"
-  const scrollAreaClassName = inSheet ? "h-full border-r border-border bg-card/80" : "h-full bg-card/50"
+  const { posts: trendingPosts, loading: postsLoading, error: postsError } = useTrendingPosts(3, 30)
+
+  const navCardClassName = "space-y-3 rounded-xl border border-border/70 bg-transparent p-3"
+  const panelCardClassName = "space-y-2.5 rounded-xl border border-border/60 bg-transparent p-3"
+  const headingClassName = "text-[12px] font-semibold tracking-[0.02em] text-foreground/90"
+  const descriptionClassName = "text-[11px] leading-relaxed text-muted-foreground"
+  const sheetScrollAreaClassName = "h-full border-r border-border"
+
+  const updateParam = (key: SidebarQueryParam, value?: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value) {
+      params.set(key, value)
+    } else {
+      params.delete(key)
+    }
+    const queryString = params.toString()
+    router.push(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false })
+  }
 
   const content = (
-    <ScrollArea className={scrollAreaClassName}>
-      <div className="space-y-3 px-4 pb-4 pt-1">
-        <section className={blockClassName}>
-          <h2 className={headingClassName}>
-            Sections
-          </h2>
+    <div className="space-y-3.5 px-3 py-4 md:px-4">
+        <section className={navCardClassName}>
           <div className="space-y-1">
-            {sections.map((s) => {
-              const isActive = activeSection === s.key
-              const Icon = s.icon
+            <h2 className={headingClassName}>Browse Sections</h2>
+            <p className={descriptionClassName}>Move between papers, discussions, showcases, and jobs.</p>
+          </div>
+          <div className="space-y-1">
+            {sections.map((section) => {
+              const isActive = activeSection === section.key
+              const Icon = section.icon
               return (
                 <Link
-                  key={s.key}
-                  href={s.href}
+                  key={section.key}
+                  href={section.href}
                   className={cn(
-                    "flex items-center gap-2 rounded-md px-2.5 py-2 text-sm transition-colors",
+                    "group flex items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-sm transition-colors",
                     isActive
-                      ? "bg-accent/80 text-foreground font-medium"
-                      : "text-foreground/90 hover:bg-accent/50"
+                      ? "border-border bg-background/85 text-foreground shadow-sm"
+                      : "border-transparent text-foreground/90 hover:border-border/70 hover:bg-background/70",
                   )}
                 >
-                  <Icon className={cn("size-4", isActive ? "text-primary" : "text-muted-foreground")} />
-                  {s.label}
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Icon className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
+                    <span className="truncate">{section.label}</span>
+                  </span>
+                  <span
+                    className="inline-block size-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: section.color }}
+                  />
                 </Link>
               )
             })}
           </div>
         </section>
 
-        {activeSection === null || activeSection === "papers" ? (
-          <section className={blockClassName}>
-            <h2 className={headingClassName}>
-              Trending Papers
-            </h2>
+        {activeSection === null ? (
+          <section className={panelCardClassName}>
+            <h2 className={headingClassName}>Trending Posts</h2>
+            {postsLoading ? (
+              <LoadingRows />
+            ) : postsError ? (
+              <p className="text-destructive text-xs">Failed to load posts</p>
+            ) : trendingPosts.length > 0 ? (
+              <ul className="space-y-1.5">
+                {trendingPosts.map((post) => (
+                  <li key={post.id} className="list-none">
+                    <Link
+                      href={`/post/${post.id}`}
+                      className="group block rounded-lg border border-transparent px-2.5 py-2 transition-colors hover:border-border/80 hover:bg-accent/40"
+                    >
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span
+                            className="inline-block size-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: sectionByKey[post.section].color }}
+                          />
+                          {sectionByKey[post.section].label}
+                        </span>
+                        <span className="text-muted-foreground shrink-0 text-[11px]">
+                          {post.vote_count} votes
+                        </span>
+                      </div>
+                      <p className="line-clamp-2 text-sm leading-snug transition-colors group-hover:text-primary">
+                        {post.title}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground text-xs">No trending posts yet</p>
+            )}
+          </section>
+        ) : activeSection === "papers" ? (
+          <section className={panelCardClassName}>
+            <h2 className={headingClassName}>Trending Papers</h2>
             {papersLoading ? (
-              <p className="text-muted-foreground text-xs">Loading...</p>
+              <LoadingRows />
             ) : papersError ? (
               <p className="text-destructive text-xs">Failed to load papers</p>
             ) : trendingPapers.length > 0 ? (
@@ -147,7 +260,7 @@ export function LeftSidebar({ inSheet = false }: LeftSidebarProps) {
                         href={paper.href}
                         target={isExternal ? "_blank" : undefined}
                         rel={isExternal ? "noreferrer" : undefined}
-                        className="group block rounded-md border border-transparent px-2 py-2 transition-colors hover:border-border/80 hover:bg-accent/45"
+                        className="group block rounded-lg border border-transparent px-2.5 py-2 transition-colors hover:border-border/80 hover:bg-accent/40"
                       >
                         <div className="mb-1 flex items-center justify-between gap-2">
                           <span
@@ -162,7 +275,7 @@ export function LeftSidebar({ inSheet = false }: LeftSidebarProps) {
                             {paper.vote_count} votes
                           </span>
                         </div>
-                        <p className="line-clamp-3 text-sm leading-snug transition-colors group-hover:text-primary">
+                        <p className="line-clamp-2 text-sm leading-snug transition-colors group-hover:text-primary">
                           {paper.title}
                         </p>
                         {source.detail ? (
@@ -182,20 +295,35 @@ export function LeftSidebar({ inSheet = false }: LeftSidebarProps) {
         ) : null}
 
         {activeSection === "forum" ? (
-          <section className={blockClassName}>
-            <h2 className={headingClassName}>
-              Flairs
-            </h2>
-            <div className="space-y-1">
+          <section className={panelCardClassName}>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className={headingClassName}>Flairs</h2>
+              {activeFlair ? (
+                <button
+                  type="button"
+                  onClick={() => updateParam("flair", undefined)}
+                  className="text-muted-foreground text-[11px] transition-colors hover:text-foreground"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </div>
+            <div className="flex min-w-0 flex-wrap gap-2">
               {forumFlairs.map((flair) => (
                 <button
                   key={flair.key}
                   type="button"
-                  className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-accent/50"
+                  aria-pressed={activeFlair === flair.key}
+                  onClick={() => updateParam("flair", activeFlair === flair.key ? undefined : flair.key)}
+                  className={cn(
+                    "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors",
+                    flair.className,
+                    activeFlair === flair.key
+                      ? "border-primary/40 ring-1 ring-primary/30"
+                      : "border-transparent opacity-85 hover:opacity-100",
+                  )}
                 >
-                  <Badge className={`h-5 border-0 px-2 text-[11px] ${flair.className}`}>
-                    {flair.label}
-                  </Badge>
+                  {flair.label}
                 </button>
               ))}
             </div>
@@ -203,94 +331,134 @@ export function LeftSidebar({ inSheet = false }: LeftSidebarProps) {
         ) : null}
 
         {activeSection === "showcase" ? (
-          <section className={blockClassName}>
-            <h2 className={headingClassName}>
-              Type
-            </h2>
-            <div className="flex flex-wrap gap-2">
+          <section className={panelCardClassName}>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className={headingClassName}>Type</h2>
+              {activeShowcaseType ? (
+                <button
+                  type="button"
+                  onClick={() => updateParam("showcaseType", undefined)}
+                  className="text-muted-foreground text-[11px] transition-colors hover:text-foreground"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </div>
+            <div className="flex min-w-0 flex-wrap gap-2">
               {showcaseTypeFilters.map((type) => (
-                <Badge key={type} variant="secondary" className="cursor-pointer text-[11px] hover:bg-accent/70">
-                  {showcaseTypeLabels[type]}
-                </Badge>
+                <FilterChip
+                  key={type}
+                  label={showcaseTypeLabels[type]}
+                  active={activeShowcaseType === type}
+                  onClick={() => updateParam("showcaseType", activeShowcaseType === type ? undefined : type)}
+                />
               ))}
             </div>
           </section>
         ) : null}
 
         {activeSection === "jobs" ? (
-          <section className={blockClassName}>
-            <h2 className={headingClassName}>
-              Job Type
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {(["postdoc", "phd", "full-time", "internship", "remote"] as JobType[]).map((type) => (
-                <Badge key={type} variant="secondary" className="cursor-pointer text-[11px] hover:bg-accent/70">
-                  {jobTypeLabels[type]}
-                </Badge>
-              ))}
+          <section className={panelCardClassName}>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className={headingClassName}>Job Type</h2>
+                {activeJobType ? (
+                  <button
+                    type="button"
+                    onClick={() => updateParam("jobType", undefined)}
+                    className="text-muted-foreground text-[11px] transition-colors hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex min-w-0 flex-wrap gap-2">
+                {(["postdoc", "phd", "full-time", "internship", "remote"] as JobType[]).map((type) => (
+                  <FilterChip
+                    key={type}
+                    label={jobTypeLabels[type]}
+                    active={activeJobType === type}
+                    onClick={() => updateParam("jobType", activeJobType === type ? undefined : type)}
+                  />
+                ))}
+              </div>
             </div>
-            <h2 className={headingClassName}>
-              Location
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {jobLocationFilters.map((loc) => (
-                <Badge key={loc} variant="secondary" className="cursor-pointer text-[11px] hover:bg-accent/70">
-                  {loc}
-                </Badge>
-              ))}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className={headingClassName}>Location</h2>
+                {activeLocation ? (
+                  <button
+                    type="button"
+                    onClick={() => updateParam("location", undefined)}
+                    className="text-muted-foreground text-[11px] transition-colors hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex min-w-0 flex-wrap gap-2">
+                {jobLocationFilters.map((location) => (
+                  <FilterChip
+                    key={location}
+                    label={location}
+                    active={activeLocation === location}
+                    onClick={() => updateParam("location", activeLocation === location ? undefined : location)}
+                  />
+                ))}
+              </div>
             </div>
           </section>
         ) : null}
 
-        <section className={blockClassName}>
-          <h2 className={headingClassName}>
-            Trending Topics
-          </h2>
+        <section className={panelCardClassName}>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className={headingClassName}>Trending Topics</h2>
+            {activeTag ? (
+              <button
+                type="button"
+                onClick={() => updateParam("tag", undefined)}
+                className="text-muted-foreground text-[11px] transition-colors hover:text-foreground"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
           {topicsLoading ? (
-            <p className="text-muted-foreground text-xs">Loading...</p>
+            <LoadingRows rows={4} />
           ) : topicsError ? (
             <p className="text-destructive text-xs">Failed to load topics</p>
+          ) : trendingTopics.length === 0 ? (
+            <p className="text-muted-foreground text-xs">No trending topics yet</p>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex min-w-0 flex-wrap gap-2">
               {trendingTopics.map((topic) => {
                 const rawTag = topic.tag.replace(/^#/, "")
                 const isActive = activeTag === rawTag
                 return (
-                  <Badge
+                  <FilterChip
                     key={topic.tag}
-                    variant={isActive ? "default" : "secondary"}
-                    className={cn(
-                      "cursor-pointer font-mono text-[11px] transition-colors",
-                      isActive ? "" : "hover:bg-accent/70"
-                    )}
-                    onClick={() => {
-                      const params = new URLSearchParams(searchParams.toString())
-                      if (isActive) {
-                        params.delete("tag")
-                      } else {
-                        params.set("tag", rawTag)
-                      }
-                      const qs = params.toString()
-                      router.push(`${pathname}${qs ? `?${qs}` : ""}`)
-                    }}
-                  >
-                    {topic.tag}
-                  </Badge>
+                    label={topic.tag}
+                    active={isActive}
+                    onClick={() => updateParam("tag", isActive ? undefined : rawTag)}
+                  />
                 )
               })}
             </div>
           )}
         </section>
-      </div>
-    </ScrollArea>
+    </div>
   )
 
   if (inSheet) {
-    return content
+    return (
+      <ScrollArea className={sheetScrollAreaClassName}>
+        {content}
+      </ScrollArea>
+    )
   }
 
   return (
-    <div className="sticky top-[var(--header-height)] h-[calc(100vh-var(--header-height))]">
+    <div className="sticky top-[calc(var(--header-height)+0.25rem)]">
       {content}
     </div>
   )

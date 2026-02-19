@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server"
 
 import { ApplicationError } from "../application/errors"
+import type { ForumFlair, JobType, ShowcaseType } from "@/lib"
 import type { AuthorType } from "../application/ports"
 import type { CommentSort, PostSort, VoteDirection, VoteTargetType } from "../domain/types"
-import { normalizeSearchQuery, normalizeTag } from "../domain/query-normalization"
+import {
+  normalizeForumFlair,
+  normalizeJobType,
+  normalizeLocationFilter,
+  normalizeSearchQuery,
+  normalizeShowcaseType,
+  normalizeTag,
+} from "../domain/query-normalization"
 
 const validSections = new Set(["papers", "forum", "showcase", "jobs"])
 
@@ -18,7 +26,7 @@ export function parsePostSort(value: string | null): PostSort {
   if (value === "new" || value === "top" || value === "hot") {
     return value
   }
-  return "hot"
+  return "new"
 }
 
 export function parseCommentSort(value: string | null): CommentSort {
@@ -53,10 +61,26 @@ export function parseTag(value: string | null): string | undefined {
   return normalizeTag(value)
 }
 
+export function parseForumFlair(value: string | null): ForumFlair | undefined {
+  return normalizeForumFlair(value)
+}
+
+export function parseShowcaseType(value: string | null): ShowcaseType | undefined {
+  return normalizeShowcaseType(value)
+}
+
+export function parseJobType(value: string | null): JobType | undefined {
+  return normalizeJobType(value)
+}
+
+export function parseLocation(value: string | null): string | undefined {
+  return normalizeLocationFilter(value)
+}
+
 export function parseAuthorType(value: string | null): AuthorType {
-  // Default to "human", also handles legacy "all"
+  if (value === "human") return "human"
   if (value === "bot") return "bot"
-  return "human"
+  return "all"
 }
 
 export function parseVoteTargetType(value: unknown): VoteTargetType {

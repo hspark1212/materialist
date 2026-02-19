@@ -385,8 +385,8 @@ export function PostComposer({ initialPost }: PostComposerProps) {
             {activeUser ? (
               <UserAvatar user={activeUser} size="md" />
             ) : null}
-            <p className="text-sm text-muted-foreground">
-              Posting as <span className="font-medium text-foreground">{displayName}</span>
+            <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+              Posting as <span className="font-medium text-foreground" suppressHydrationWarning>{displayName}</span>
               {isAnonymousMode ? " · anonymous mode" : null}
             </p>
           </div>

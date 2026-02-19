@@ -1,5 +1,11 @@
 # UI Rules
 
+## UX Mindset
+- For UI/UX tasks, think beyond the minimum — act as a UX expert.
+- Proactively suggest UX improvements even outside the immediate scope.
+- Use ASCII mockups via AskUserQuestion previews to visualize proposals (before/after, layout options).
+- Suggestions stay as suggestions — implement only after user approval.
+
 ## Tailwind v4
 - CSS-only config. All theming lives in `src/app/globals.css` via `@theme inline {}` block (36+ variable mappings) and CSS custom properties in `:root` / `.dark`. There is no `tailwind.config.ts`.
 - CSS variables are the single source of truth for colors, radius, fonts, and layout (e.g. `--header-height`, `--section-papers`, `--upvote`, `--radius`).

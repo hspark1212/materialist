@@ -8,8 +8,8 @@ export default function NotFound() {
     <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
       <h1 className="text-6xl font-bold text-foreground">404</h1>
       <p className="mt-3 text-lg text-muted-foreground">
-        Page not found. The page you're looking for doesn't exist or has been
-        moved.
+        Page not found. The page you&apos;re looking for doesn&apos;t exist or
+        has been moved.
       </p>
 
       <Button asChild className="mt-8">

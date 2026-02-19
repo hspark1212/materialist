@@ -15,10 +15,10 @@
 
 ## Key Triggers
 - `handle_new_user()` — auto-creates profile with generated display name + avatar on signup
-- `handle_updated_at()` — auto-updates timestamps on posts, comments, profiles
+- `handle_updated_at()` — auto-updates timestamps on posts, comments, profiles. **Column-scoped**: triggers use `BEFORE UPDATE OF <content_columns>` to exclude denormalized counters (`vote_count`, `comment_count`, `karma`) and `search_document`. New columns must be added to the trigger's column list if they should affect `updated_at`.
 - `handle_post_vote_count()` / `handle_comment_vote_count()` — denormalized vote counts
 - `handle_comment_count()` — denormalized comment count on posts
-- `on_post_search_document` — maintains tsvector for full-text search
+- `on_post_search_document` — maintains tsvector for full-text search (also column-scoped: `title`, `content`, `tags`, `doi`, `arxiv_id`, `company`)
 
 ## Search
 - Full-text search via `search_post_ids()` RPC (tsvector weighted A/B/C + trigram fallback).

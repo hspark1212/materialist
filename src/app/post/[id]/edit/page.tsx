@@ -6,14 +6,12 @@ import { ArrowLeft } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 
 import type { Post } from "@/lib"
-import { useAuth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { PostComposer } from "@/components/post/post-composer"
 
 export default function PostEditPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
-  const { user, status } = useAuth()
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +47,13 @@ export default function PostEditPage() {
     return () => controller.abort()
   }, [params.id])
 
-  if (loading || status === "loading") {
+  useEffect(() => {
+    if (!loading && post && !post.isOwner) {
+      router.replace(`/post/${params.id}`)
+    }
+  }, [loading, post, router, params.id])
+
+  if (loading) {
     return (
       <div className="mx-auto w-full max-w-4xl py-10">
         <p className="text-muted-foreground text-sm">Loading...</p>
@@ -66,8 +70,7 @@ export default function PostEditPage() {
     )
   }
 
-  if (!user || user.id !== post.author.id) {
-    router.replace(`/post/${params.id}`)
+  if (!post.isOwner) {
     return null
   }
 

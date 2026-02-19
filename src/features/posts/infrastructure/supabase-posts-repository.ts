@@ -155,7 +155,22 @@ export function createSupabasePostsRepository(
     const ids = ((searchRows ?? []) as SearchPostIdRow[]).map((row) => row.post_id)
     if (!ids.length) return []
 
-    const { data, error } = await supabase.from("posts").select(POSTS_SELECT_LIST).in("id", ids)
+    let postsQuery = supabase.from("posts").select(POSTS_SELECT_LIST).in("id", ids)
+
+    if (params.flair) {
+      postsQuery = postsQuery.eq("flair", params.flair)
+    }
+    if (params.showcaseType) {
+      postsQuery = postsQuery.eq("showcase_type", params.showcaseType)
+    }
+    if (params.jobType) {
+      postsQuery = postsQuery.eq("job_type", params.jobType)
+    }
+    if (params.location) {
+      postsQuery = postsQuery.ilike("location", `%${params.location}%`)
+    }
+
+    const { data, error } = await postsQuery
     throwIfError(error, "Failed to load search results")
 
     const orderById = new Map(ids.map((id, index) => [id, index]))
@@ -175,8 +190,10 @@ export function createSupabasePostsRepository(
         return listPostsBySearch(params, limit, offset)
       }
 
-      // Always use inner join since we always filter by author type (human or bot)
-      let query = supabase.from("posts").select(POSTS_SELECT_LIST_INNER)
+      // Use inner join when filtering by author type (human or bot)
+      let query = params.authorType === "all"
+        ? supabase.from("posts").select(POSTS_SELECT_LIST)
+        : supabase.from("posts").select(POSTS_SELECT_LIST_INNER)
 
       if (params.section) {
         query = query.eq("section", params.section)
@@ -189,12 +206,28 @@ export function createSupabasePostsRepository(
       if (params.tag) {
         query = query.contains("tags", [params.tag])
       }
+      if (params.flair) {
+        query = query.eq("flair", params.flair)
+      }
+      if (params.showcaseType) {
+        query = query.eq("showcase_type", params.showcaseType)
+      }
+      if (params.jobType) {
+        query = query.eq("job_type", params.jobType)
+      }
+      if (params.location) {
+        query = query.ilike("location", `%${params.location}%`)
+      }
 
-      // Always filter by author type (human is default)
+      // Filter by author type (human is default, "all" skips filter)
       if (params.authorType === "bot") {
         query = query.eq("profiles.is_bot", true)
-      } else {
+      } else if (params.authorType !== "all") {
         query = query.eq("profiles.is_bot", false)
+      }
+
+      if (params.sinceDate) {
+        query = query.gte("created_at", params.sinceDate)
       }
 
       if (params.sort === "new") {

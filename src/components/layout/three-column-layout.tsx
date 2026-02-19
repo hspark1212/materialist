@@ -12,8 +12,8 @@ export function ThreeColumnLayout({
   children,
 }: ThreeColumnLayoutProps) {
   return (
-    <div className="mx-auto grid w-full max-w-[1600px] grid-cols-1 md:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_20rem]">
-      <aside className="hidden border-r border-border md:block">{leftSidebar}</aside>
+    <div className="mx-auto grid w-full max-w-[1600px] grid-cols-1 md:grid-cols-[17rem_minmax(0,1fr)] xl:grid-cols-[17rem_minmax(0,1fr)_20rem]">
+      <aside className="hidden border-r border-border/70 md:block">{leftSidebar}</aside>
 
       <main className="min-h-[calc(100vh-var(--header-height))] px-3 pt-1 pb-20 md:px-5 md:pt-4 md:pb-4">{children}</main>
 

@@ -31,6 +31,7 @@ export async function getPostDetailUseCase(
   repository: PostsRepository,
   postId: string,
   commentSort: CommentSort,
+  authenticatedUserId?: string,
 ): Promise<{ post: Post; comments: Comment[] }> {
   const postRow = await repository.getPostById(postId)
   if (!postRow) {
@@ -40,9 +41,26 @@ export async function getPostDetailUseCase(
   const commentRows = await repository.listCommentsByPostId(postId, commentSort, 300)
   const commentTree = buildCommentTree(commentRows, commentSort)
 
-  return {
-    post: mapPostRowToPost(postRow),
-    comments: mapCommentTreeToComments(commentTree),
+  const post = mapPostRowToPost(postRow)
+  const comments = mapCommentTreeToComments(commentTree)
+
+  if (authenticatedUserId) {
+    post.isOwner = postRow.author_id === authenticatedUserId
+    const authorMap = new Map(commentRows.map((r) => [r.id, r.author_id]))
+    setCommentOwnership(comments, authorMap, authenticatedUserId)
+  }
+
+  return { post, comments }
+}
+
+function setCommentOwnership(
+  comments: Comment[],
+  authorMap: Map<string, string>,
+  userId: string,
+) {
+  for (const comment of comments) {
+    comment.isOwner = authorMap.get(comment.id) === userId
+    setCommentOwnership(comment.replies, authorMap, userId)
   }
 }
 

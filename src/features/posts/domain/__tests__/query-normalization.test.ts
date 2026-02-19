@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 
-import { normalizeSearchQuery, normalizeTag } from "../query-normalization"
+import {
+  normalizeForumFlair,
+  normalizeJobType,
+  normalizeLocationFilter,
+  normalizeSearchQuery,
+  normalizeShowcaseType,
+  normalizeTag,
+} from "../query-normalization"
 
 describe("normalizeSearchQuery", () => {
   it("returns undefined for null and undefined", () => {
@@ -59,5 +66,56 @@ describe("normalizeTag", () => {
     const result = normalizeTag(long)
     expect(result).toHaveLength(60)
     expect(result).toBe("t".repeat(60))
+  })
+})
+
+describe("normalizeForumFlair", () => {
+  it("returns undefined for missing values", () => {
+    expect(normalizeForumFlair(undefined)).toBeUndefined()
+    expect(normalizeForumFlair(null)).toBeUndefined()
+  })
+
+  it("returns flair when valid", () => {
+    expect(normalizeForumFlair("discussion")).toBe("discussion")
+    expect(normalizeForumFlair("news")).toBe("news")
+  })
+
+  it("returns undefined for unsupported values", () => {
+    expect(normalizeForumFlair("random")).toBeUndefined()
+  })
+})
+
+describe("normalizeShowcaseType", () => {
+  it("returns showcase type when valid", () => {
+    expect(normalizeShowcaseType("tool")).toBe("tool")
+  })
+
+  it("returns undefined when invalid", () => {
+    expect(normalizeShowcaseType("paper")).toBeUndefined()
+  })
+})
+
+describe("normalizeJobType", () => {
+  it("returns job type when valid", () => {
+    expect(normalizeJobType("postdoc")).toBe("postdoc")
+  })
+
+  it("returns undefined when invalid", () => {
+    expect(normalizeJobType("founder")).toBeUndefined()
+  })
+})
+
+describe("normalizeLocationFilter", () => {
+  it("normalizes spacing and trims", () => {
+    expect(normalizeLocationFilter("  New   York ")).toBe("New York")
+  })
+
+  it("returns undefined for empty values", () => {
+    expect(normalizeLocationFilter("   ")).toBeUndefined()
+  })
+
+  it("rejects unsafe wildcard characters", () => {
+    expect(normalizeLocationFilter("US%")).toBeUndefined()
+    expect(normalizeLocationFilter("US_")).toBeUndefined()
   })
 })

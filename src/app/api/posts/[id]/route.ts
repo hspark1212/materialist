@@ -16,19 +16,13 @@ type RouteContext = {
 
 async function resolvePostUserVote(
   supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
   postId: string,
 ): Promise<-1 | 0 | 1> {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) return 0
-
   const { data, error } = await supabase
     .from("votes")
     .select("vote_direction")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("target_type", "post")
     .eq("target_id", postId)
     .maybeSingle()
@@ -47,9 +41,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const commentSort = parseCommentSort(request.nextUrl.searchParams.get("commentSort"))
 
     const supabase = await createClient()
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+
     const repository = createSupabasePostsRepository(supabase)
-    const detail = await getPostDetailUseCase(repository, id, commentSort)
-    const userVote = await resolvePostUserVote(supabase, id)
+    const detail = await getPostDetailUseCase(repository, id, commentSort, authUser?.id)
+    const userVote = authUser ? await resolvePostUserVote(supabase, authUser.id, id) : 0
     const post: Post = { ...detail.post, userVote }
 
     return NextResponse.json({ ...detail, post }, {

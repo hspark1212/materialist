@@ -6,8 +6,6 @@ import { format, formatDistanceToNow, isPast } from "date-fns"
 import { Pencil, Trash2, ExternalLink, MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { useAuth } from "@/lib/auth"
-
 import type { Post } from "@/lib"
 import { getSectionLabel, getSectionHref, flairByKey, jobTypeLabels, showcaseTypeLabels, sectionByKey } from "@/lib/sections"
 import { InlineLatex } from "@/components/markdown/inline-latex"
@@ -29,14 +27,13 @@ type PostDetailProps = {
 
 export function PostDetail({ post }: PostDetailProps) {
   const router = useRouter()
-  const { user } = useAuth()
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const sectionColor = sectionByKey[post.section]?.color
   const primaryLink = getPostPrimaryLink(post)
   const paperMeta = getPaperMetaLinks(post)[0] ?? null
 
   const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000
-  const isOwnPost = Boolean(user && post.author && user.id === post.author.id)
+  const isOwnPost = Boolean(post.isOwner)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 

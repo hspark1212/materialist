@@ -6,7 +6,6 @@ import { Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import type { Comment } from "@/lib"
-import { useAuth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -27,7 +26,6 @@ const depthColors = ["#58a6ff", "#3fb950", "#f0883e", "#bc8cff", "#ff7b72", "#79
 const MAX_DEPTH = 6
 
 export function CommentItem({ comment, children, onChanged }: CommentItemProps) {
-  const { user } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(comment.isCollapsed)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
@@ -39,7 +37,7 @@ export function CommentItem({ comment, children, onChanged }: CommentItemProps) 
   const depthColor = depthColors[comment.depth % depthColors.length]
   const replyComposerRef = useRef<HTMLDivElement>(null)
 
-  const isOwnComment = Boolean(user && user.id === comment.author.id)
+  const isOwnComment = Boolean(comment.isOwner)
   const canReply = comment.depth < MAX_DEPTH
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
