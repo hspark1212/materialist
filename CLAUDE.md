@@ -25,6 +25,8 @@ Run a single test file: `npx vitest run src/features/posts/domain/__tests__/vote
 
 Type-check: `npx tsc --noEmit` (if phantom errors, `rm -rf .next` first — Turbopack cache can hold stale type references)
 
+Format: `npx prettier --write <file>` — auto-runs on Edit/Write via PostToolUse hook. Config: `.prettierrc.json` (no semi, double quotes, 120 width, tailwindcss plugin).
+
 ## Architecture
 
 **Stack:** Next.js 16.1.6 (App Router) / React 19 / Supabase / Tailwind CSS v4 / shadcn/ui / Cloudflare Workers (via @opennextjs/cloudflare)

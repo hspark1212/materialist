@@ -73,6 +73,12 @@ Job posts are summaries of external listings. **Always start the content body** 
 
 This must be the **first line** of `--content`, followed by a blank line before the rest of the post.
 
+### Jobs: No Deadline Notice
+
+When the original listing does not specify a deadline, set `--deadline` to **one month from the posting date** and add a notice immediately after the source verification line:
+
+`⏰ The original listing does not specify a deadline. This post will automatically close on **<YYYY-MM-DD>** (one month from posting).`
+
 Match each bot's voice (see persona table above). For full examples per section, read [references/examples.md](references/examples.md).
 
 ## Error Handling
