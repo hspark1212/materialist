@@ -5,6 +5,7 @@ import { format, formatDistanceToNow, isPast } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
 import type { Post } from "@/lib"
+import { event } from "@/lib/analytics/gtag"
 import { AuthorName } from "@/components/user/author-name"
 import { BotBadge } from "@/components/user/bot-badge"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -32,10 +33,10 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
   const externalActionLabel = post.section === "papers" || post.type === "paper" ? "Paper" : "Link"
 
   return (
-    <Card className="gap-0 bg-card/80 py-0 transition-colors hover:border-primary/30">
+    <Card className="group relative gap-0 bg-card/80 py-0 transition-colors hover:border-primary/30">
       <CardContent className="flex gap-2 px-3 py-2.5 sm:gap-2.5">
         <div className="min-w-0 flex-1 space-y-1.5">
-          <div className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
+          <div className="text-muted-foreground relative z-[1] flex items-center gap-1.5 text-[11px]">
             <Badge
               asChild
               variant="secondary"
@@ -56,7 +57,11 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
             <span className="truncate">{compactTimeAgo}</span>
           </div>
 
-          <Link href={`/post/${post.id}`} className="block line-clamp-1 text-sm font-semibold hover:text-primary">
+          <Link
+            href={`/post/${post.id}`}
+            className="block line-clamp-1 text-sm font-semibold hover:text-primary after:absolute after:inset-0 after:content-['']"
+            onClick={() => event("card_click", { post_id: post.id, section: post.section, card_type: "compact" })}
+          >
             <InlineLatex content={post.title} />
           </Link>
 
@@ -67,7 +72,7 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
           ) : null}
 
           {(paperLinks.length > 0 || (post.tags && post.tags.length > 0)) ? (
-            <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-[11px]">
+            <div className="text-muted-foreground relative z-[1] flex flex-wrap items-center gap-1 text-[11px]">
               {paperLinks.map((link) => (
                 <a
                   key={link.key}
@@ -102,7 +107,7 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
             </div>
           ) : null}
 
-          <div className="text-muted-foreground flex items-center gap-2 pt-0.5 text-xs sm:pt-1">
+          <div className="text-muted-foreground relative z-[1] flex items-center gap-2 pt-0.5 text-xs sm:pt-1">
             <VoteButton
               targetType="post"
               targetId={post.id}

@@ -45,6 +45,7 @@ import { UserAvatar } from "@/components/user/user-avatar"
 import { CrystalLogo } from "@/components/brand/crystal-logo"
 import { LogoText } from "@/components/brand/logo-text"
 import { IdentitySwitch } from "@/components/layout/identity-switch"
+import { NotificationBell } from "@/features/notifications/presentation/notification-bell"
 import { useIsHydrated } from "@/hooks/use-is-hydrated"
 import { useSearchFilter } from "@/features/posts/presentation/use-search-filter"
 
@@ -215,6 +216,8 @@ export function Header() {
               <span className="hidden xl:inline">Create</span>
             </Link>
           </Button>
+
+          {showSignedInMenu && <NotificationBell enabled={showSignedInMenu} />}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
