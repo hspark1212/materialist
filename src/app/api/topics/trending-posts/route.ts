@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("posts")
-      .select("id, title, section, vote_count")
+      .select("id, title, section, vote_count, content")
       .gte("created_at", cutoffDate.toISOString())
       .order("vote_count", { ascending: false })
       .limit(limit)
