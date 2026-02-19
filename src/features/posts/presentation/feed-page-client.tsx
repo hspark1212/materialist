@@ -10,6 +10,7 @@ import { cn, type Post, type Section } from "@/lib"
 import { sectionByKey } from "@/lib/sections"
 import { FeedControls, type DiscoveryChip, type FeedSort } from "@/components/feed/feed-controls"
 import { FeedList } from "@/components/feed/feed-list"
+import { getPostPreviewText } from "@/components/post/post-feed-utils"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useTrendingPosts } from "@/features/topics/presentation/use-trending-posts"
 import type { PostsFeedInitialData } from "../domain/feed-initial-data"
@@ -192,6 +193,7 @@ function DiscoveryStrip({
             href={`/post/${post.id}`}
             title={post.title}
             section={post.section}
+            preview={getPostPreviewText(post.content, 120)}
           />
         ))}
       </ScrollStrip>
@@ -207,6 +209,7 @@ function DiscoveryStrip({
             href={`/post/${post.id}`}
             title={post.title}
             section={post.section}
+            preview={getPostPreviewText(post.content, 120)}
             voteCount={post.vote_count}
           />
         ))}
@@ -281,7 +284,7 @@ function ScrollStrip({ children }: { children: ReactNode }) {
         onScroll={updateScroll}
         onMouseDown={onMouseDown}
         onClickCapture={onClickCapture}
-        className="flex cursor-grab gap-2 overflow-x-auto scrollbar-hide pb-1 active:cursor-grabbing"
+        className="flex cursor-grab gap-3 overflow-x-auto scrollbar-hide pb-1.5 active:cursor-grabbing"
       >
         {children}
       </div>
@@ -303,11 +306,13 @@ function ScrollStrip({ children }: { children: ReactNode }) {
 function DiscoveryCard({
   href,
   title,
+  preview,
   section,
   voteCount,
 }: {
   href: string
   title: string
+  preview?: string
   section: string
   voteCount?: number
 }) {
@@ -315,11 +320,11 @@ function DiscoveryCard({
   return (
     <Link
       href={href}
-      className="flex w-52 shrink-0 flex-col gap-1 rounded-lg border border-border/70 bg-background/70 p-2.5 transition-colors hover:border-primary/30"
+      className="flex w-64 shrink-0 flex-col gap-1.5 rounded-xl border border-border/70 bg-background/70 p-3 transition-colors hover:border-primary/30 sm:w-72 sm:p-3.5"
     >
-      <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <span
-          className="inline-block size-2 shrink-0 rounded-full"
+          className="inline-block size-2.5 shrink-0 rounded-full"
           style={{ backgroundColor: meta?.color }}
         />
         {meta?.label}
@@ -327,7 +332,10 @@ function DiscoveryCard({
           <span className="ml-auto">{voteCount} votes</span>
         )}
       </span>
-      <span className="line-clamp-2 text-sm leading-snug">{title}</span>
+      <span className="line-clamp-2 text-sm font-medium leading-snug">{title}</span>
+      {preview ? (
+        <span className="text-muted-foreground line-clamp-1 text-xs leading-relaxed">{preview}</span>
+      ) : null}
     </Link>
   )
 }
