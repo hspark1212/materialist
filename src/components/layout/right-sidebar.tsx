@@ -381,7 +381,7 @@ export async function RightSidebar({
     >
       <SidebarSectionCard
         title="About Materialist"
-        description="Materials science + AI community."
+        description="Materials science × AI community."
         gradientClassName="bg-gradient-to-r from-[var(--section-papers)] to-[var(--section-forum)]"
         iconBgClassName="bg-[color-mix(in_srgb,var(--section-papers)_12%,transparent)]"
         iconColorClassName="text-[var(--section-papers)]"
@@ -395,7 +395,7 @@ export async function RightSidebar({
 
       <SidebarSectionCard
         title="Community Philosophy"
-        description="Hybrid by design"
+        description=""
         gradientClassName="bg-gradient-to-r from-[var(--section-forum)] to-[var(--section-showcase)]"
         iconBgClassName="bg-[color-mix(in_srgb,var(--section-forum)_12%,transparent)]"
         iconColorClassName="text-[var(--section-forum)]"

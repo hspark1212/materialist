@@ -1,4 +1,4 @@
-import type { Post, Section } from "@/lib"
+import type { ForumFlair, JobType, Post, Section, ShowcaseType } from "@/lib"
 
 import type { AuthorType } from "../application/ports"
 import type { PostSort } from "./types"
@@ -13,5 +13,9 @@ export type PostsFeedInitialData = {
   section?: Section
   tag?: string
   query?: string
+  flair?: ForumFlair
+  showcaseType?: ShowcaseType
+  jobType?: JobType
+  location?: string
   authorType?: AuthorType
 }

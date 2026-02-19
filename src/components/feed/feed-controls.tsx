@@ -1,6 +1,6 @@
 "use client"
 
-import { Bot, ChevronDown, Flame, LayoutGrid, List, Sparkles, TrendingUp, User } from "lucide-react"
+import { Bot, ChevronDown, Flame, Sparkles, TrendingUp, User } from "lucide-react"
 
 import type { AuthorType } from "@/features/posts/application/ports"
 import { cn } from "@/lib"
@@ -15,13 +15,11 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 export type FeedSort = "hot" | "new" | "top"
-export type FeedViewMode = "card" | "compact"
+export type DiscoveryChip = "today" | "trending"
 
 type FeedControlsProps = {
   sortBy: FeedSort
   setSortBy: (value: FeedSort) => void
-  viewMode: FeedViewMode
-  setViewMode: (value: FeedViewMode) => void
   authorType: AuthorType
   setAuthorType: (value: AuthorType) => void
 }
@@ -29,99 +27,81 @@ type FeedControlsProps = {
 export function FeedControls({
   sortBy,
   setSortBy,
-  viewMode,
-  setViewMode,
   authorType,
   setAuthorType,
 }: FeedControlsProps) {
   return (
     <div className="bg-background/80 sticky top-[var(--header-height)] z-30 mb-3 flex items-center justify-between border-b border-border py-2 backdrop-blur-sm">
-      <div className="flex items-center gap-2">
-        <ToggleGroup
-          type="single"
-          value={authorType}
-          onValueChange={(value) => {
-            if (value) setAuthorType(value as AuthorType)
-          }}
-          variant="outline"
-          size="sm"
-        >
-          <ToggleGroupItem
-            value="human"
-            aria-label="Human posts"
-            className={cn(
-              "gap-1.5 relative overflow-hidden",
-              authorType !== "human" && "animate-shimmer"
-            )}
-          >
-            <User className="size-4" />
-            <span className="hidden sm:inline text-xs">Human</span>
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value="bot"
-            aria-label="AI Bot posts"
-            className={cn(
-              "gap-1.5 relative overflow-hidden",
-              authorType !== "bot" && "animate-shimmer"
-            )}
-          >
-            <Bot className="size-4" />
-            <span className="hidden sm:inline text-xs">Bot</span>
-          </ToggleGroupItem>
-        </ToggleGroup>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1">
-              {sortBy === "hot" && <Flame className="size-4" />}
-              {sortBy === "new" && <Sparkles className="size-4" />}
-              {sortBy === "top" && <TrendingUp className="size-4" />}
-              <span className="hidden sm:inline">
-                {sortBy === "hot" ? "Hot" : sortBy === "new" ? "New" : "Top"}
-              </span>
-              <ChevronDown className="size-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuRadioGroup
-              value={sortBy}
-              onValueChange={(value) => setSortBy(value as FeedSort)}
-            >
-              <DropdownMenuRadioItem value="hot">
-                <Flame className="size-4" />
-                Hot
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="new">
-                <Sparkles className="size-4" />
-                New
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="top">
-                <TrendingUp className="size-4" />
-                Top
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       <ToggleGroup
         type="single"
-        value={viewMode}
+        value={authorType}
         onValueChange={(value) => {
-          if (value) {
-            setViewMode(value as FeedViewMode)
-          }
+          setAuthorType((value || "all") as AuthorType)
         }}
         variant="outline"
         size="sm"
       >
-        <ToggleGroupItem value="card" aria-label="Card view">
-          <LayoutGrid className="size-4" />
+        <ToggleGroupItem
+          value="human"
+          aria-label="Human posts"
+          className={cn(
+            "relative gap-1 overflow-hidden px-2 text-[11px]",
+            authorType === "human"
+              ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background"
+              : "animate-shimmer"
+          )}
+        >
+          <User className="size-3.5" />
+          <span>Human</span>
         </ToggleGroupItem>
-        <ToggleGroupItem value="compact" aria-label="Compact view">
-          <List className="size-4" />
+        <ToggleGroupItem
+          value="bot"
+          aria-label="AI Bot posts"
+          className={cn(
+            "relative gap-1 overflow-hidden px-2 text-[11px]",
+            authorType === "bot"
+              ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background"
+              : "animate-shimmer"
+          )}
+        >
+          <Bot className="size-3.5" />
+          <span className="max-[360px]:hidden">AI Bot</span>
+          <span className="hidden max-[360px]:inline">Bot</span>
         </ToggleGroupItem>
       </ToggleGroup>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1 px-2 text-[11px]">
+            {sortBy === "hot" && <Flame className="size-3.5" />}
+            {sortBy === "new" && <Sparkles className="size-3.5" />}
+            {sortBy === "top" && <TrendingUp className="size-3.5" />}
+            <span>
+              {sortBy === "hot" ? "Hot" : sortBy === "new" ? "New" : "Top"}
+            </span>
+            <ChevronDown className="size-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuRadioGroup
+            value={sortBy}
+            onValueChange={(value) => setSortBy(value as FeedSort)}
+          >
+            <DropdownMenuRadioItem value="hot">
+              <Flame className="size-4" />
+              Hot
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="new">
+              <Sparkles className="size-4" />
+              New
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="top">
+              <TrendingUp className="size-4" />
+              Top
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }

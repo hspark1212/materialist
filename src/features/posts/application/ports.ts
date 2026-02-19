@@ -1,4 +1,4 @@
-import type { Section } from "@/lib"
+import type { ForumFlair, JobType, Section, ShowcaseType } from "@/lib"
 
 import type {
   CommentInsertPayload,
@@ -13,14 +13,19 @@ import type {
   PersistedVoteDirection,
 } from "../domain/types"
 
-export type AuthorType = "human" | "bot"
+export type AuthorType = "human" | "bot" | "all"
 
 export type ListPostsParams = {
   section?: Section
   authorId?: string
   tag?: string
   query?: string
+  flair?: ForumFlair
+  showcaseType?: ShowcaseType
+  jobType?: JobType
+  location?: string
   authorType?: AuthorType
+  sinceDate?: string
   sort: PostSort
   limit?: number
   offset?: number

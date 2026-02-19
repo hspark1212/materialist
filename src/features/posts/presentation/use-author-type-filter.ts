@@ -10,20 +10,18 @@ export function useAuthorTypeFilter() {
   const router = useRouter()
   const pathname = usePathname()
   const raw = searchParams.get("authorType")
-  // Default to "human", treat legacy "all" as "human"
-  const authorType: AuthorType = raw === "bot" ? "bot" : "human"
+  const authorType: AuthorType = raw === "human" ? "human" : raw === "bot" ? "bot" : "all"
 
   const setAuthorType = useCallback(
     (value: AuthorType) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (value === "human") {
-        // Clean URL: remove param when default
+      if (value === "all") {
         params.delete("authorType")
       } else {
         params.set("authorType", value)
       }
       const qs = params.toString()
-      router.push(`${pathname}${qs ? `?${qs}` : ""}`)
+      router.push(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false })
     },
     [searchParams, router, pathname],
   )

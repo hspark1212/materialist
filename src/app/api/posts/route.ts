@@ -8,11 +8,15 @@ import {
 import {
   handleApiError,
   parseAuthorType,
+  parseForumFlair,
+  parseJobType,
+  parseLocation,
   parsePostSort,
   parsePostsLimit,
   parsePostsOffset,
   parseSearchQuery,
   parseSection,
+  parseShowcaseType,
   parseTag,
 } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
@@ -88,6 +92,10 @@ export async function GET(request: NextRequest) {
     const authorId = request.nextUrl.searchParams.get("authorId") ?? undefined
     const tag = parseTag(request.nextUrl.searchParams.get("tag"))
     const query = parseSearchQuery(request.nextUrl.searchParams.get("q"))
+    const flair = parseForumFlair(request.nextUrl.searchParams.get("flair"))
+    const showcaseType = parseShowcaseType(request.nextUrl.searchParams.get("showcaseType"))
+    const jobType = parseJobType(request.nextUrl.searchParams.get("jobType"))
+    const location = parseLocation(request.nextUrl.searchParams.get("location"))
     const authorType = parseAuthorType(request.nextUrl.searchParams.get("authorType"))
     const limit = parsePostsLimit(request.nextUrl.searchParams.get("limit"))
     const offset = parsePostsOffset(request.nextUrl.searchParams.get("offset"))
@@ -95,7 +103,20 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const repository = createSupabasePostsRepository(supabase)
     // Fetch one extra to determine if there are more posts
-    const posts = await listPostsUseCase(repository, { sort, section, authorId, tag, query, authorType, limit: limit + 1, offset })
+    const posts = await listPostsUseCase(repository, {
+      sort,
+      section,
+      authorId,
+      tag,
+      query,
+      flair,
+      showcaseType,
+      jobType,
+      location,
+      authorType,
+      limit: limit + 1,
+      offset,
+    })
 
     const hasMore = posts.length > limit
     const items = hasMore ? posts.slice(0, limit) : posts

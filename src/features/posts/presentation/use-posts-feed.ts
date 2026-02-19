@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import type { Post, Section } from "@/lib"
+import type { ForumFlair, JobType, Post, Section, ShowcaseType } from "@/lib"
 import type { AuthorType } from "../application/ports"
 import type { PostsFeedInitialData } from "../domain/feed-initial-data"
 import type { PostSort } from "../domain/types"
@@ -13,6 +13,10 @@ type UsePostsFeedOptions = {
   filterAnonymous?: boolean
   tag?: string
   query?: string
+  flair?: ForumFlair
+  showcaseType?: ShowcaseType
+  jobType?: JobType
+  location?: string
   authorType?: AuthorType
   sortBy: PostSort
   limit?: number
@@ -32,6 +36,10 @@ export function usePostsFeed({
   filterAnonymous,
   tag,
   query,
+  flair,
+  showcaseType,
+  jobType,
+  location,
   authorType,
   sortBy,
   limit = 20,
@@ -63,12 +71,24 @@ export function usePostsFeed({
     if (query) {
       params.set("q", query)
     }
-    if (authorType === "bot") {
+    if (flair) {
+      params.set("flair", flair)
+    }
+    if (showcaseType) {
+      params.set("showcaseType", showcaseType)
+    }
+    if (jobType) {
+      params.set("jobType", jobType)
+    }
+    if (location) {
+      params.set("location", location)
+    }
+    if (authorType && authorType !== "all") {
       params.set("authorType", authorType)
     }
     params.set("limit", String(limit))
     return params.toString()
-  }, [section, authorId, tag, query, authorType, sortBy, limit])
+  }, [section, authorId, tag, query, flair, showcaseType, jobType, location, authorType, sortBy, limit])
 
   const fetchPosts = useCallback(
     async (offset: number, signal?: AbortSignal): Promise<FetchResult | null> => {

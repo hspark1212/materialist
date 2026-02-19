@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { BarChart3, Grid2x2, Home, Plus, User } from "lucide-react"
 
 import { cn } from "@/lib"
@@ -13,8 +13,11 @@ export function BottomNav() {
   const pathname = usePathname()
   const { profile } = useAuth()
   const [sectionsOpenOnPath, setSectionsOpenOnPath] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMounted(true), [])
 
-  const profileHref = profile ? `/u/${profile.username}` : "/u/me"
+  const profileHref = mounted && profile ? `/u/${profile.username}` : "/login"
   const isSectionsOpen = sectionsOpenOnPath === pathname
   const closeSections = () => setSectionsOpenOnPath(null)
   const isPathActive = (href: string) =>

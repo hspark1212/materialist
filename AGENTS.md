@@ -77,6 +77,7 @@ type Post = {
 - **shadcn/ui** — Components in `src/components/ui/` (DO NOT edit—they're generated)
 - **Supabase** — PostgreSQL + Auth (email/password, Google/GitHub OAuth, RLS policies)
 - **Cloudflare Workers** — Deployed via `@opennextjs/cloudflare` with Workers Builds (auto CI/CD)
+- **Path alias** — `@/` maps to `src/`
 
 ### Key Imports
 
@@ -100,6 +101,10 @@ import { cn } from "@/lib/utils"  // clsx + tailwind-merge
    --section-forum: #1a7f37    /* Forum = green */
    --upvote: #ff4500           /* Reddit-style upvote */
    ```
+5. **Middleware scope must stay `/auth/*` only** — Expanding matcher to all routes can trigger Cloudflare Workers CPU limit issues (Error 1102).
+6. **Never return raw Supabase rows to clients** — Always map DB rows through domain mappers in `features/*/domain/mappers.ts`.
+7. **Do not use service-role admin client in user-facing paths** — `src/lib/supabase/admin.ts` is for trusted/internal server flows only.
+8. **When removing component props, grep all usages first** — Prevent stale prop references and runtime/UI regressions.
 
 ---
 
@@ -159,7 +164,7 @@ supabase/
 
 wrangler.jsonc                    — Cloudflare Workers config (build command, vars)
 open-next.config.ts               — OpenNext Cloudflare adapter config
-middleware.ts                     — Supabase session refresh on every request
+middleware.ts                     — Supabase session refresh middleware (scoped to `/auth/*` only)
 ```
 
 ---
@@ -177,11 +182,18 @@ npx supabase start                # Start local Supabase (requires Docker)
 ```bash
 npm run dev           # Turbopack dev server (localhost:3001)
 npm run build         # Next.js production build
+npm run lint          # ESLint
 npm run preview       # OpenNext Cloudflare build + local preview
 npm run deploy        # OpenNext Cloudflare build + deploy to Workers
 npm run test          # Vitest unit tests
+npm run test:watch    # Vitest watch mode
 npm run test:e2e      # Playwright E2E tests
+npm run test:all      # Unit + E2E
 ```
+
+Run a single test file: `npx vitest run src/features/posts/domain/__tests__/vote-state.test.ts`
+
+Type-check: `npx tsc --noEmit` (if phantom type errors persist, clear Turbopack cache with `rm -rf .next`)
 
 ---
 
@@ -266,7 +278,7 @@ CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE
 **Key files**:
 - `wrangler.jsonc` — Workers config (name, compatibility_date, assets binding, public vars)
 - `open-next.config.ts` — OpenNext adapter config
-- `middleware.ts` — Supabase session refresh
+- `middleware.ts` — Supabase session refresh (scoped to `/auth/*`)
 
 **Environment Variables**:
 

@@ -1,19 +1,26 @@
 import "server-only"
 
-import type { Section } from "@/lib"
+import type { ForumFlair, JobType, Section, ShowcaseType } from "@/lib"
 import { createClient } from "@/lib/supabase/server"
 import type { AuthorType } from "../application/ports"
 import { listPostsUseCase } from "../application/use-cases"
 import type { PostsFeedInitialData } from "../domain/feed-initial-data"
-import { normalizeSearchQuery, normalizeTag } from "../domain/query-normalization"
+import {
+  normalizeForumFlair,
+  normalizeJobType,
+  normalizeLocationFilter,
+  normalizeSearchQuery,
+  normalizeShowcaseType,
+  normalizeTag,
+} from "../domain/query-normalization"
 import type { PostSort } from "../domain/types"
 import { createSupabasePostsRepository } from "../infrastructure/supabase-posts-repository"
 
 export type PageSearchParams = Record<string, string | string[] | undefined>
 export type AwaitablePageSearchParams = PageSearchParams | Promise<PageSearchParams> | undefined
 
-const INITIAL_FEED_LIMIT = 8
-const INITIAL_FEED_SORT: PostSort = "hot"
+const INITIAL_FEED_LIMIT = 12
+const INITIAL_FEED_SORT: PostSort = "new"
 
 function firstValue(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) {
@@ -42,6 +49,10 @@ function buildEmptyInitialFeed(options: {
   sortBy: PostSort
   tag?: string
   query?: string
+  flair?: ForumFlair
+  showcaseType?: ShowcaseType
+  jobType?: JobType
+  location?: string
   authorType?: AuthorType
 }): PostsFeedInitialData {
   return {
@@ -54,6 +65,10 @@ function buildEmptyInitialFeed(options: {
     section: options.section,
     tag: options.tag,
     query: options.query,
+    flair: options.flair,
+    showcaseType: options.showcaseType,
+    jobType: options.jobType,
+    location: options.location,
     authorType: options.authorType,
   }
 }
@@ -67,6 +82,13 @@ export async function getInitialPostsFeed({
 }: GetInitialPostsFeedOptions): Promise<PostsFeedInitialData> {
   const tag = normalizeTag(firstValue(searchParams?.tag))
   const query = normalizeSearchQuery(firstValue(searchParams?.q))
+  const flair = normalizeForumFlair(firstValue(searchParams?.flair))
+  const showcaseType = normalizeShowcaseType(firstValue(searchParams?.showcaseType))
+  const jobType = normalizeJobType(firstValue(searchParams?.jobType))
+  const location = normalizeLocationFilter(firstValue(searchParams?.location))
+  const rawAuthorType = firstValue(searchParams?.authorType)
+  const resolvedAuthorType = authorType
+    ?? (rawAuthorType === "human" ? "human" : rawAuthorType === "bot" ? "bot" : "all")
 
   try {
     const supabase = await createClient()
@@ -76,7 +98,11 @@ export async function getInitialPostsFeed({
       section,
       tag,
       query,
-      authorType,
+      flair,
+      showcaseType,
+      jobType,
+      location,
+      authorType: resolvedAuthorType,
       limit: limit + 1,
       offset: 0,
     })
@@ -126,10 +152,25 @@ export async function getInitialPostsFeed({
       section,
       tag,
       query,
-      authorType,
+      flair,
+      showcaseType,
+      jobType,
+      location,
+      authorType: resolvedAuthorType,
     }
   } catch (error) {
     console.warn("[posts] Failed to load initial feed:", error)
-    return buildEmptyInitialFeed({ section, limit, sortBy, tag, query, authorType })
+    return buildEmptyInitialFeed({
+      section,
+      limit,
+      sortBy,
+      tag,
+      query,
+      flair,
+      showcaseType,
+      jobType,
+      location,
+      authorType: resolvedAuthorType,
+    })
   }
 }

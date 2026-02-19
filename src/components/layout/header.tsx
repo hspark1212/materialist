@@ -139,7 +139,7 @@ export function Header() {
                 </>
               ) : (
                 <>
-                  {canUseVerifiedMode ? <Sun className="size-3.5" /> : <Lock className="size-3.5" />}
+                  {isHydrated && !canUseVerifiedMode ? <Lock className="size-3.5" /> : <Sun className="size-3.5" />}
                   <span>V</span>
                 </>
               )}

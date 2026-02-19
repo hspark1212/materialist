@@ -4,7 +4,7 @@ import Link from "next/link"
 import { format, formatDistanceToNow, isPast } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
-import type { Post } from "@/lib"
+import { cn, type Post } from "@/lib"
 import { AuthorName } from "@/components/user/author-name"
 import { BotBadge } from "@/components/user/bot-badge"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -25,7 +25,6 @@ type PostCardProps = {
 export function PostCard({ post }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const compactTimeAgo = timeAgo.replace(/^about\s+/i, "")
-  const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000
   const sectionColor = sectionByKey[post.section]?.color
   const previewText = getPostPreviewText(post.content, 360)
   const primaryLink = getPostPrimaryLink(post)
@@ -50,6 +49,11 @@ export function PostCard({ post }: PostCardProps) {
                 {flairByKey[post.flair].label}
               </Badge>
             ) : null}
+            {post.voteCount >= 3 || post.commentCount >= 3 ? (
+              <Badge className="inline-flex animate-[hot-pulse_2s_ease-in-out_infinite] items-center gap-0.5 border-0 bg-orange-100 px-1.5 py-0 text-[11px] text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                <span className="text-[9px] leading-none">🔥</span>Hot
+              </Badge>
+            ) : null}
             <span className="hidden sm:inline">•</span>
             <span className="hidden sm:inline">Posted by</span>
             <UserAvatar user={post.author} size="sm" />
@@ -57,7 +61,6 @@ export function PostCard({ post }: PostCardProps) {
             {post.author.isBot && !post.isAnonymous && <BotBadge />}
             <span>•</span>
             <span>{compactTimeAgo}</span>
-            {isEdited ? <span className="italic">(edited)</span> : null}
           </div>
 
           <Link
@@ -122,7 +125,7 @@ export function PostCard({ post }: PostCardProps) {
               countMode="net"
               className="h-7 min-h-11 px-1 md:min-h-0"
             />
-            <Button asChild variant="ghost" size="sm" className="h-7 min-h-11 px-2 md:min-h-0">
+            <Button asChild variant="ghost" size="sm" className={cn("h-7 min-h-11 px-2 md:min-h-0", post.commentCount > 0 && "text-foreground")}>
               <Link href={`/post/${post.id}#comments`}>
                 <MessageSquare className="size-3.5" />
                 <span className="sm:hidden">{post.commentCount}</span>

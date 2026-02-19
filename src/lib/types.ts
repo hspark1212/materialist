@@ -53,6 +53,7 @@ export interface Post {
   jobType?: JobType
   applicationUrl?: string
   deadline?: string  // ISO date string
+  isOwner?: boolean
 }
 
 export interface Comment {
@@ -67,4 +68,5 @@ export interface Comment {
   isAnonymous: boolean
   isCollapsed: boolean
   postId: string
+  isOwner?: boolean
 }

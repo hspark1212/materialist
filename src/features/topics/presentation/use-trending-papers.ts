@@ -12,9 +12,6 @@ export type TrendingPaper = {
 }
 
 function getPaperHref(paper: TrendingPaper): string {
-  if (paper.url) return paper.url
-  if (paper.arxiv_id) return `https://arxiv.org/abs/${paper.arxiv_id}`
-  if (paper.doi) return `https://doi.org/${paper.doi}`
   return `/post/${paper.id}`
 }
 
