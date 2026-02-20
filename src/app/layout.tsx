@@ -8,6 +8,7 @@ import { RightSidebar } from "@/components/layout/right-sidebar"
 import { RightSidebarSkeleton } from "@/components/layout/right-sidebar-skeleton"
 import { ThreeColumnLayout } from "@/components/layout/three-column-layout"
 import { BottomNav } from "@/components/layout/bottom-nav"
+import { FeedbackFab } from "@/components/feedback/feedback-fab"
 import { Toaster } from "sonner"
 import "./globals.css"
 
@@ -73,6 +74,7 @@ export default function RootLayout({
             </ThreeColumnLayout>
           </div>
           <BottomNav />
+          <FeedbackFab />
           <Toaster richColors />
         </Providers>
       </body>
