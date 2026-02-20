@@ -51,6 +51,9 @@ export default function SettingsPage() {
                     Verified {formatDistanceToNow(new Date(user.orcidVerifiedAt), { addSuffix: true })}
                   </p>
                 ) : null}
+                <p className="text-muted-foreground text-xs">
+                  You have two profiles. Switch between them using the toggle in the header.
+                </p>
               </div>
               <Button variant="outline" size="sm" onClick={() => setDisconnectOpen(true)}>
                 Disconnect ORCID
@@ -58,7 +61,10 @@ export default function SettingsPage() {
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-sm">Verify your researcher identity by linking your ORCID iD.</p>
+              <p className="text-muted-foreground text-sm">
+                Link your ORCID iD to get a second profile. Post as your verified self or stay anonymous — it&apos;s
+                your choice.
+              </p>
               <Button variant="outline" size="sm" asChild>
                 <a href={buildOrcidAuthUrl()}>Connect ORCID</a>
               </Button>

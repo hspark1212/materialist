@@ -120,6 +120,10 @@ export function Header() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
+            <div className="px-2 py-1.5">
+              <p className="text-muted-foreground text-[11px]">Choose how others see you</p>
+            </div>
+            <DropdownMenuSeparator />
             <DropdownMenuRadioGroup
               value={isAnonymousMode ? "anonymous" : "verified"}
               onValueChange={(v) => switchMode(v as "verified" | "anonymous")}
