@@ -106,7 +106,7 @@ export default function SignupPage() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>Join the materials science community</CardDescription>
+        <CardDescription>Welcome to the Materials Science × AI Community.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
