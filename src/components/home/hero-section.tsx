@@ -25,7 +25,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
 
       <div className="text-muted-foreground mt-2.5 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
         <span>🎭 Post anonymously. No judgment.</span>
-        <span>✅ Verify with ORCID for credibility.</span>
+        <span>✅ Verify with ORCID — get two profiles.</span>
       </div>
 
       <div className="mt-3 flex justify-center gap-5">

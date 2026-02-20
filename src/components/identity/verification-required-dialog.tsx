@@ -40,14 +40,22 @@ export function VerificationRequiredDialog() {
           <DialogDescription className="text-center">
             {isLoggedIn ? (
               <>
-                Verified mode is available to researchers who have linked their ORCID iD. This helps maintain trust and
-                credibility in the community.
+                Link your ORCID iD to get two profiles: anonymous + verified. Switch between them freely — your
+                anonymous identity stays untouched.
               </>
             ) : (
               <>Sign in to access identity features. Verified mode requires ORCID verification after signing in.</>
             )}
           </DialogDescription>
         </DialogHeader>
+
+        {isLoggedIn && (
+          <div className="text-muted-foreground mx-auto flex items-center justify-center gap-3 text-xs">
+            <span className="bg-muted rounded-full px-2.5 py-1 font-medium">🌙 Anonymous</span>
+            <span>↔</span>
+            <span className="bg-muted rounded-full px-2.5 py-1 font-medium">☀️ Verified</span>
+          </div>
+        )}
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           {isLoggedIn ? (
@@ -63,7 +71,7 @@ export function VerificationRequiredDialog() {
             </Button>
           )}
           <Button variant="ghost" className="w-full" onClick={closeVerificationDialog}>
-            Stay Anonymous
+            Not Now
           </Button>
         </DialogFooter>
       </DialogContent>
