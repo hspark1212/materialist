@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const GITHUB_REPO_OWNER = process.env.GITHUB_REPO_OWNER?.trim() || "hspark1212"
-const GITHUB_REPO_NAME = process.env.GITHUB_REPO_NAME?.trim() || "Materialist"
+const GITHUB_REPO_NAME = process.env.GITHUB_REPO_NAME?.trim() || "materialist"
 
 const MIN_LENGTH = 8
 const MAX_LENGTH = 2000
@@ -10,6 +10,7 @@ const GITHUB_HEADERS = {
   Accept: "application/vnd.github+json",
   "X-GitHub-Api-Version": "2022-11-28",
   "Content-Type": "application/json",
+  "User-Agent": "materialist-feedback",
 }
 
 let labelEnsured = false
