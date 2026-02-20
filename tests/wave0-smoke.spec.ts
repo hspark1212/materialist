@@ -19,6 +19,13 @@ test.describe("Wave 0-3: Foundation + Home Feed", () => {
   test("header is visible with logo and navigation", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("header")).toBeVisible();
-    await expect(page.getByText("Materialist")).toBeVisible();
+
+    const isMobile = test.info().project.name === "Mobile";
+    if (isMobile) {
+      // At 375px (<420px breakpoint), logo text is hidden — only crystal icon shows
+      await expect(page.locator("header a[href='/']")).toBeVisible();
+    } else {
+      await expect(page.getByText("Materialist")).toBeVisible();
+    }
   });
 });
