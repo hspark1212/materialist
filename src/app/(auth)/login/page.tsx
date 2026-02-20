@@ -80,8 +80,8 @@ function LoginForm() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Sign in to Materialist</CardTitle>
-        <CardDescription>Welcome back to the materials science community</CardDescription>
+        <CardTitle className="text-2xl">Sign in</CardTitle>
+        <CardDescription>Welcome to the Materials Science × AI Community.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
