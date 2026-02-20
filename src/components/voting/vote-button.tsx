@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowBigDown, ArrowBigUp } from "lucide-react"
 
 import { toast } from "sonner"
@@ -50,6 +50,19 @@ function getContainerClass({ compact, orientation }: VoteStyleParams) {
   return compact ? "w-9 flex-col gap-0.5 py-0.5 md:w-12 md:gap-1.5 md:py-1" : "w-12 flex-col py-1"
 }
 
+const VOTE_SYNC_EVENT = "vote-sync"
+
+type VoteSyncDetail = {
+  targetType: "post" | "comment"
+  targetId: string
+  userVote: -1 | 0 | 1
+  voteCount: number
+}
+
+function broadcastVoteSync(detail: VoteSyncDetail) {
+  window.dispatchEvent(new CustomEvent(VOTE_SYNC_EVENT, { detail }))
+}
+
 export function VoteButton({
   targetType,
   targetId,
@@ -67,6 +80,19 @@ export function VoteButton({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const canVote = status !== "loading" && status !== "anonymous"
+
+  // Sync vote state from other VoteButton instances for the same target
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<VoteSyncDetail>).detail
+      if (detail.targetType === targetType && detail.targetId === targetId) {
+        setUserVote(detail.userVote)
+        setVoteCount(detail.voteCount)
+      }
+    }
+    window.addEventListener(VOTE_SYNC_EVENT, handler)
+    return () => window.removeEventListener(VOTE_SYNC_EVENT, handler)
+  }, [targetType, targetId])
 
   const handleVote = async (direction: -1 | 1) => {
     if (!canVote) {
@@ -96,8 +122,11 @@ export function VoteButton({
         throw new Error(payload.error ?? "Failed to cast vote")
       }
 
-      setUserVote(payload.userVote as -1 | 0 | 1)
-      setVoteCount(payload.voteCount as number)
+      const newUserVote = payload.userVote as -1 | 0 | 1
+      const newVoteCount = payload.voteCount as number
+      setUserVote(newUserVote)
+      setVoteCount(newVoteCount)
+      broadcastVoteSync({ targetType, targetId, userVote: newUserVote, voteCount: newVoteCount })
     } catch (error) {
       console.error("[VoteButton] Vote failed:", error)
     } finally {

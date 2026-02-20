@@ -92,7 +92,7 @@ export function Header() {
 
         <Link href="/" className="flex items-center gap-2">
           <CrystalLogo size="md" className="text-primary" />
-          <LogoText size="sm" />
+          <LogoText size="sm" className="hidden min-[420px]:inline" />
         </Link>
 
         {/* Mobile Mode Pill Dropdown (md:hidden) */}

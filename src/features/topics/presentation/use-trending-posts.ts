@@ -10,6 +10,7 @@ export type TrendingPost = {
   section: Section
   vote_count: number
   content: string
+  user_vote?: -1 | 0 | 1
 }
 
 export function useTrendingPosts(limit = 3, daysBack = 30) {

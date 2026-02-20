@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { createClient } from "@/lib/supabase/server"
-
-export const revalidate = 300
+import { getUserVoteMap } from "@/features/posts/server/attach-user-votes"
 
 function parsePositiveInt(value: string | null, fallback: number, max: number): number {
   if (!value) return fallback
@@ -32,7 +31,15 @@ export async function GET(request: NextRequest) {
       throw new Error(error.message)
     }
 
-    return NextResponse.json({ posts: data ?? [] })
+    const posts = data ?? []
+
+    const voteMap = posts.length > 0 ? await getUserVoteMap(supabase, posts.map((p) => p.id)) : null
+    const postsWithVotes = posts.map((p) => ({
+      ...p,
+      user_vote: (voteMap?.get(p.id) ?? 0) as -1 | 0 | 1,
+    }))
+
+    return NextResponse.json({ posts: postsWithVotes })
   } catch (error) {
     console.error("[API] Failed to fetch trending posts:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

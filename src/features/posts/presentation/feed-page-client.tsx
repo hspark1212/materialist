@@ -12,7 +12,9 @@ import { FeedControls, type DiscoveryChip, type FeedSort } from "@/components/fe
 import { FeedList } from "@/components/feed/feed-list"
 import { getPostPreviewText } from "@/components/post/post-feed-utils"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { VoteButton } from "@/components/voting/vote-button"
 import { useTrendingPosts } from "@/features/topics/presentation/use-trending-posts"
+import type { RecentPostsLabel } from "../server/get-recent-posts"
 import type { PostsFeedInitialData } from "../domain/feed-initial-data"
 import {
   normalizeForumFlair,
@@ -32,12 +34,22 @@ type FeedPageClientProps = {
   section?: Section
   initialFeed: PostsFeedInitialData
   header?: ReactNode
-  todaysPosts?: Post[]
+  discoveryPosts?: Post[]
+  discoveryLabel?: RecentPostsLabel
 }
 
-export function FeedPageClient({ section, initialFeed, header, todaysPosts }: FeedPageClientProps) {
+export function FeedPageClient({
+  section,
+  initialFeed,
+  header,
+  discoveryPosts,
+  discoveryLabel = "today",
+}: FeedPageClientProps) {
   const [sortBy, setSortBy] = useState<FeedSort>(initialFeed.sortBy)
-  const [discoveryChip, setDiscoveryChip] = useState<DiscoveryChip | null>(todaysPosts ? "today" : null)
+  const hasDiscoveryPosts = discoveryPosts && discoveryPosts.length > 0
+  const [discoveryChip, setDiscoveryChip] = useState<DiscoveryChip | null>(
+    hasDiscoveryPosts ? "today" : "trending",
+  )
   const searchParams = useSearchParams()
   const { activeTag, clearTag } = useTagFilter()
   const { activeQuery, clearQuery } = useSearchFilter()
@@ -95,8 +107,13 @@ export function FeedPageClient({ section, initialFeed, header, todaysPosts }: Fe
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4">
       {header}
-      {todaysPosts ? (
-        <DiscoverySection chip={discoveryChip} onChipChange={setDiscoveryChip} todaysPosts={todaysPosts} />
+      {discoveryPosts ? (
+        <DiscoverySection
+          chip={discoveryChip}
+          onChipChange={setDiscoveryChip}
+          discoveryPosts={discoveryPosts}
+          discoveryLabel={discoveryLabel}
+        />
       ) : null}
       {activeQuery ? <ActiveSearchBadge query={activeQuery} onClear={clearQuery} /> : null}
       {activeTag ? <ActiveTagBadge tag={activeTag} onClear={clearTag} /> : null}
@@ -120,12 +137,15 @@ export function FeedPageClient({ section, initialFeed, header, todaysPosts }: Fe
 function DiscoverySection({
   chip,
   onChipChange,
-  todaysPosts,
+  discoveryPosts,
+  discoveryLabel,
 }: {
   chip: DiscoveryChip | null
   onChipChange: (chip: DiscoveryChip | null) => void
-  todaysPosts: Post[]
+  discoveryPosts: Post[]
+  discoveryLabel: RecentPostsLabel
 }) {
+  const todayChipLabel = discoveryLabel === "recent" ? "Recent" : "Today"
   return (
     <div className="space-y-3 pt-3">
       <ToggleGroup
@@ -137,14 +157,14 @@ function DiscoverySection({
       >
         <ToggleGroupItem
           value="today"
-          aria-label="Today's posts"
+          aria-label={discoveryLabel === "recent" ? "Recent posts" : "Today's posts"}
           className={cn(
             "gap-1 px-2 text-[11px]",
             chip === "today" ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background" : "",
           )}
         >
           <CalendarDays className="size-3.5" />
-          <span>Today</span>
+          <span>{todayChipLabel}</span>
         </ToggleGroupItem>
         <ToggleGroupItem
           value="trending"
@@ -159,24 +179,27 @@ function DiscoverySection({
           <span className="hidden max-[360px]:inline">Trend</span>
         </ToggleGroupItem>
       </ToggleGroup>
-      <DiscoveryStrip chip={chip} todaysPosts={todaysPosts} />
+      <DiscoveryStrip chip={chip} discoveryPosts={discoveryPosts} />
     </div>
   )
 }
 
-function DiscoveryStrip({ chip, todaysPosts }: { chip: DiscoveryChip | null; todaysPosts: Post[] }) {
+function DiscoveryStrip({ chip, discoveryPosts }: { chip: DiscoveryChip | null; discoveryPosts: Post[] }) {
   const { posts: trendingPosts } = useTrendingPosts(5, 30)
 
-  if (chip === "today" && todaysPosts.length > 0) {
+  if (chip === "today" && discoveryPosts.length > 0) {
     return (
       <ScrollStrip>
-        {todaysPosts.map((post) => (
+        {discoveryPosts.map((post) => (
           <DiscoveryCard
             key={post.id}
+            postId={post.id}
             href={`/post/${post.id}`}
             title={post.title}
             section={post.section}
             preview={getPostPreviewText(post.content, 120)}
+            voteCount={post.voteCount}
+            userVote={post.userVote ?? 0}
           />
         ))}
       </ScrollStrip>
@@ -189,11 +212,13 @@ function DiscoveryStrip({ chip, todaysPosts }: { chip: DiscoveryChip | null; tod
         {trendingPosts.map((post) => (
           <DiscoveryCard
             key={post.id}
+            postId={post.id}
             href={`/post/${post.id}`}
             title={post.title}
             section={post.section}
             preview={getPostPreviewText(post.content, 120)}
             voteCount={post.vote_count}
+            userVote={post.user_vote ?? 0}
           />
         ))}
       </ScrollStrip>
@@ -289,17 +314,21 @@ function ScrollStrip({ children }: { children: ReactNode }) {
 }
 
 function DiscoveryCard({
+  postId,
   href,
   title,
   preview,
   section,
   voteCount,
+  userVote,
 }: {
+  postId: string
   href: string
   title: string
   preview?: string
   section: string
-  voteCount?: number
+  voteCount: number
+  userVote: -1 | 0 | 1
 }) {
   const meta = sectionByKey[section as Section]
   return (
@@ -310,10 +339,24 @@ function DiscoveryCard({
       <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
         <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ backgroundColor: meta?.color }} />
         {meta?.label}
-        {voteCount != null && <span className="ml-auto">{voteCount} votes</span>}
+        <span className="ml-auto" onClick={(e) => e.preventDefault()}>
+          <VoteButton
+            targetType="post"
+            targetId={postId}
+            initialCount={voteCount}
+            initialUserVote={userVote}
+            orientation="horizontal"
+            size="sm"
+            compact
+            countMode="net"
+            className="h-6 gap-0.5 px-0.5"
+          />
+        </span>
       </span>
       <span className="line-clamp-2 text-sm leading-snug font-medium">{title}</span>
-      {preview ? <span className="text-muted-foreground line-clamp-1 text-xs leading-relaxed">{preview}</span> : null}
+      {preview ? (
+        <span className="text-muted-foreground line-clamp-1 text-xs leading-relaxed">{preview}</span>
+      ) : null}
     </Link>
   )
 }

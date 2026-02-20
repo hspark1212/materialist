@@ -2,7 +2,7 @@ name: Daily Paper Curation
 
 on:
   schedule:
-    - cron: '0 8 * * 1-5' # 08:00 UTC weekdays — auto-detects date range from DB
+    - cron: '0 8 * * *' # 08:00 UTC daily — auto-detects date range from DB
   workflow_dispatch:
     inputs:
       date:

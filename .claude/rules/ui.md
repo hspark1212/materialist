@@ -25,5 +25,8 @@
 - `.prose-materialist` / `.prose-compact` — markdown rendering styles with KaTeX support
 - `.avatar-verified-ring` / `.avatar-bot-ring` — animated/gradient avatar borders
 
+## Responsive Breakpoints
+- `min-[420px]` — Header logo text hidden below this width (crystal icon only). Prevents profile avatar overflow on small phones (375px).
+
 ## Props
 - When removing a prop from a component, grep all usages across the codebase first.

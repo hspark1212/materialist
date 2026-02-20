@@ -16,6 +16,7 @@
 - Pattern: `tests/**/*.spec.ts`
 - 2 test files: `wave0-smoke.spec.ts` (app loading, theme, posts), `auth-smoke.spec.ts` (auth UI, forms)
 - 3 viewports: Desktop (1440x900), Tablet iPad Mini (768x1024), Mobile iPhone 13 (375x812)
+- Mobile (375px) is below the 420px header breakpoint — logo text is hidden, only crystal icon shows. Tests must account for this via `test.info().project.name === "Mobile"`.
 - Web server auto-starts via `npm run dev`; runs fully parallel locally, single worker in CI
 - Retries: 0 locally, 2 in CI
 
