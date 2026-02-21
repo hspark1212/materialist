@@ -103,5 +103,40 @@
       "count": 0,
       "users": 0
     }
+  },
+  {
+    "date": "2026-02-21",
+    "page_view": {
+      "count": 20,
+      "users": 10
+    },
+    "session_start": {
+      "count": 9,
+      "users": 8
+    },
+    "first_visit": {
+      "count": 3,
+      "users": 3
+    },
+    "card_click": {
+      "count": 1,
+      "users": 1
+    },
+    "vote_cast": {
+      "count": 0,
+      "users": 0
+    },
+    "comment_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_updated": {
+      "count": 0,
+      "users": 0
+    }
   }
 ]
