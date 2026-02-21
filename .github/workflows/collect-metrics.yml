@@ -1,0 +1,71 @@
+name: Daily GA4 Metrics
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # 09:00 UTC daily — 1 hour after paper curation
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Override date (YYYY-MM-DD). Omit for 2 days ago.'
+        required: false
+        type: string
+
+concurrency:
+  group: metrics-collection
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Collect GA4 metrics
+        env:
+          GA4_CREDENTIALS: ${{ secrets.GA4_CREDENTIALS }}
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          INPUT_DATE: ${{ github.event.inputs.date }}
+        run: |
+          if [ -n "$INPUT_DATE" ]; then
+            npx tsx scripts/collect-metrics.ts --date "$INPUT_DATE"
+          else
+            npx tsx scripts/collect-metrics.ts
+          fi
+
+      - name: Commit and push metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add metrics/daily.json
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "metrics: update daily GA4 data"
+          git push
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = process.env.INPUT_DATE || 'auto';
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `GA4 metrics collection failed: ${date}`,
+              body: `The daily metrics collection pipeline failed.\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nCheck the workflow logs for details.`,
+              labels: ['bot', 'metrics-failure'],
+            });
+        env:
+          INPUT_DATE: ${{ github.event.inputs.date }}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 
 import { toast } from "sonner"
 import type { ForumFlair, JobType, Post, Section, ShowcaseType } from "@/lib"
+import { event } from "@/lib/analytics/gtag"
 import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
 import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseTypeLabels } from "@/lib/sections"
@@ -63,8 +64,8 @@ export function PostComposer({ initialPost }: PostComposerProps) {
   const inputClassName =
     "bg-background/80 border-border/80 shadow-sm transition-[border-color,box-shadow,background-color] hover:bg-background focus-visible:border-ring focus-visible:bg-background dark:bg-background/50"
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
     if (status === "anonymous") {
       toast.info("Sign in to create a post.")
@@ -109,8 +110,10 @@ export function PostComposer({ initialPost }: PostComposerProps) {
       }
 
       if (isEditMode) {
+        event("post_updated", { section, post_id: initialPost!.id })
         router.push(`/post/${initialPost!.id}`)
       } else {
+        event("post_created", { section, post_id: payload.post.id })
         router.push(`/post/${payload.post.id}`)
       }
     } catch (err) {
