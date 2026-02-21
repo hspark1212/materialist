@@ -10,69 +10,55 @@ Establish baseline metrics after GA4 custom events (`card_click`, `vote_cast`, `
 
 ## Measurement Window
 
-3 days post-event-deploy: **Feb 20–23, 2026**
+**Feb 20, 2026** — first full day after event instrumentation deploy.
+Feb 18–19 excluded (events not yet deployed, all custom event counts are 0).
 
 ## GA4 Events (Feb 20)
 
 | Event | Count | Unique Users | Source |
 |---|---|---|---|
-| `page_view` | 348 | 56 | GA4 > Events |
-| `session_start` | 71 | 51 | GA4 > Events |
-| `first_visit` | 22 | 22 | GA4 > Events |
-| `card_click` | 43 | 20 | GA4 > Events |
-| `vote_cast` | 0 | 0 | GA4 > Events |
-| `comment_created` | 0 | 0 | GA4 > Events |
-| `post_created` | 0 | 0 | GA4 > Events |
-| `post_updated` | 0 | 0 | GA4 > Events |
+| `page_view` | 572 | 68 | `metrics/daily.json` |
+| `session_start` | 114 | 69 | `metrics/daily.json` |
+| `first_visit` | 41 | 41 | `metrics/daily.json` |
+| `card_click` | 72 | 28 | `metrics/daily.json` |
+| `vote_cast` | 4 | 1 | `metrics/daily.json` |
+| `comment_created` | 1 | 1 | `metrics/daily.json` |
+| `post_created` | 0 | 0 | `metrics/daily.json` |
+| `post_updated` | 0 | 0 | `metrics/daily.json` |
 
 ## Derived Engagement Rates
 
 | Pillar Metric | Formula | Value | Notes |
 |---|---|---|---|
-| Vote rate | `vote_cast` / post `page_view` | 0% | No vote events recorded |
-| Comment rate | `comment_created` / post `page_view` | 0% | No comment events recorded |
-| Post creation rate | `post_created` / `session_start` | 0% | No post creation events recorded |
-| Card CTR | `card_click` / `page_view` | 12.36% | 43 / 348 |
-| Return visit rate | (`session_start` − `first_visit`) / `session_start` | 69.01% | (71 − 22) / 71 |
+| Card CTR | `card_click` / `page_view` | **12.59%** | 72 / 572 |
+| Vote rate | `vote_cast` / `page_view` | **0.70%** | 4 / 572 |
+| Comment rate | `comment_created` / `page_view` | **0.17%** | 1 / 572 |
+| Post creation rate | `post_created` / `session_start` | **0%** | 0 / 114 |
+| Return visit rate | (`session_start` − `first_visit`) / `session_start` | **64.04%** | (114 − 41) / 114 |
 
 ## Results
 
 **Measured:** 2026-02-20
-**Period:** Feb 20, 2026 (GA4)
-
-| Metric | Value | Notes |
-|---|---|---|
-| page_view | 348 (56 users) | — |
-| session_start | 71 (51 users) | — |
-| first_visit | 22 (22 users) | — |
-| Card CTR | 12.36% | 43 card clicks / 348 page views |
-| Vote rate | 0% | no events yet |
-| Comment rate | 0% | no events yet |
-| Post creation rate | 0% | no events yet |
-| Return visit rate | 69.01% | (71 − 22) / 71 |
+**Period:** Feb 20, 2026 (GA4 via daily cron)
 
 ### Analysis
 
-- **Card CTR 12.36%** is the first measurable baseline — 43 card clicks from 20 unique users out of 348 page views.
-- **Return visit rate 69.01%** — 49 of 71 sessions were returning visitors (GA4 `session_start` minus `first_visit`).
-- **Vote/comment/post creation** events are all 0 — either no authenticated user activity, or events need more accumulation time.
+- **Card CTR 12.59%** — 72 card clicks from 28 unique users out of 572 page views. Healthy engagement signal.
+- **Vote rate 0.70%** — 4 votes from 1 user. Very low but non-zero; suggests auth friction or discovery issue.
+- **Comment rate 0.17%** — 1 comment from 1 user. Same pattern as votes.
+- **Post creation rate 0%** — no posts created. Expected for early stage.
+- **Return visit rate 64.04%** — 73 of 114 sessions were returning visitors. Strong retention signal.
 
 ### Baseline Values for Future Experiments
 
-| Pillar | Baseline | Source |
+| Pillar | Baseline | Direction |
 |---|---|---|
-| Vote rate | 0% | GA4 (needs more data) |
-| Comment rate | 0% | GA4 (needs more data) |
-| Post creation rate | 0% | GA4 (needs more data) |
-| Return visit rate | 69.01% | GA4 |
-| Card CTR | 12.36% | GA4 |
+| Card CTR | 12.59% | ↑ |
+| Vote rate | 0.70% | ↑ |
+| Comment rate | 0.17% | ↑ |
+| Post creation rate | 0% | ↑ |
+| Return visit rate | 64.04% | ↑ |
 
-## Measurement Plan
+### Priority
 
-1. ~~Wait until Feb 23, 2026 (3 days of data accumulation).~~
-2. ~~Run `/experiment measure 001`.~~
-3. ~~Collect GA4 event counts (set date range Feb 20–23).~~
-4. ~~Calculate derived engagement rates.~~
-5. ~~Fill in all "—" values above.~~
-
-Test measurement completed Feb 20. Full 3-day measurement recommended after Feb 23 to get meaningful vote/comment/post creation baselines.
+Weakest pillars: **Post creation (0%)** > **Comment rate (0.17%)** > **Vote rate (0.70%)**. Next experiment should target one of these.

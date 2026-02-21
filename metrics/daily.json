@@ -1,1 +1,107 @@
-[]
+[
+  {
+    "date": "2026-02-18",
+    "page_view": {
+      "count": 1102,
+      "users": 295
+    },
+    "session_start": {
+      "count": 338,
+      "users": 295
+    },
+    "first_visit": {
+      "count": 287,
+      "users": 287
+    },
+    "card_click": {
+      "count": 0,
+      "users": 0
+    },
+    "vote_cast": {
+      "count": 0,
+      "users": 0
+    },
+    "comment_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_updated": {
+      "count": 0,
+      "users": 0
+    }
+  },
+  {
+    "date": "2026-02-19",
+    "page_view": {
+      "count": 1789,
+      "users": 148
+    },
+    "session_start": {
+      "count": 221,
+      "users": 153
+    },
+    "first_visit": {
+      "count": 138,
+      "users": 138
+    },
+    "card_click": {
+      "count": 12,
+      "users": 5
+    },
+    "vote_cast": {
+      "count": 0,
+      "users": 0
+    },
+    "comment_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_updated": {
+      "count": 0,
+      "users": 0
+    }
+  },
+  {
+    "date": "2026-02-20",
+    "page_view": {
+      "count": 572,
+      "users": 68
+    },
+    "session_start": {
+      "count": 114,
+      "users": 69
+    },
+    "first_visit": {
+      "count": 41,
+      "users": 41
+    },
+    "card_click": {
+      "count": 72,
+      "users": 28
+    },
+    "vote_cast": {
+      "count": 4,
+      "users": 1
+    },
+    "comment_created": {
+      "count": 1,
+      "users": 1
+    },
+    "post_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_updated": {
+      "count": 0,
+      "users": 0
+    }
+  }
+]
