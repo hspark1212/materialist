@@ -47,10 +47,35 @@ All events use `event(name, params)` from `@/lib/analytics/gtag` — no-ops when
 - Experiment docs: `experiments/<NNN>-<slug>.md` (zero-padded 3-digit, slug max 4 words)
 - GA4 custom events: snake_case
 
+## Current Baseline (001)
+
+Measured Feb 20, 2026 — first full day post-event-deploy. Source: `metrics/daily.json`.
+
+| Pillar | Baseline | Raw |
+|---|---|---|
+| Card CTR | 12.59% | 72 / 572 page_view |
+| Vote rate | 0.70% | 4 / 572 page_view |
+| Comment rate | 0.17% | 1 / 572 page_view |
+| Post creation rate | 0% | 0 / 114 session_start |
+| Return visit rate | 64.04% | 73 / 114 session_start |
+
+Full details: `experiments/001-baseline.md`.
+
 ## Automation
 
 - **`/experiment` skill** — 4 subcommands: `new`, `measure <NNN>`, `status`, `next`. Defined in `.claude/skills/experiment/SKILL.md`.
+- **Daily metrics cron** — `.github/workflows/collect-metrics.yml` runs `scripts/collect-metrics.ts` at 09:00 UTC daily, appends to `metrics/daily.json`, auto-commits. Uses `secrets.GA4_CREDENTIALS` (base64 service account JSON).
+- **Local metrics collection** — Not configured by default. For ad-hoc local runs, provide a service account JSON file path: `GA4_CREDENTIALS_FILE=./key.json npm run collect-metrics -- --date YYYY-MM-DD`.
+
+## Event Safety
+
+`event()` in `src/lib/analytics/gtag.ts` has two guards:
+1. **No-op when measurement ID missing** — `if (!GA_MEASUREMENT_ID) return`
+2. **try-catch + typeof** — `try { if (typeof window.gtag === "function") ... } catch {}`
+
+Ad-blockers or script load failures silently no-op. Core application logic is never affected.
 
 ## Tools
 
 - **GA4**: Page views, custom events, real-time, user engagement metrics
+- **Standalone scripts**: Use `tsx --env-file=.env.local` to load env vars (`.env.local` is Next.js-only, not auto-loaded by tsx).

@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
   issues: write
 
 jobs:
@@ -45,14 +46,25 @@ jobs:
             npx tsx scripts/collect-metrics.ts
           fi
 
-      - name: Commit and push metrics
+      - name: Create PR with metrics update
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          if git diff --quiet metrics/daily.json; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          BRANCH="metrics/daily-update"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add metrics/daily.json
-          git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "metrics: update daily GA4 data"
-          git push
+          git push -f origin "$BRANCH"
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          if [ -z "$EXISTING_PR" ]; then
+            gh pr create --title "metrics: update daily GA4 data" --body "Automated daily GA4 metrics collection." --label bot
+          fi
 
       - name: Create issue on failure
         if: failure()
