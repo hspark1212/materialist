@@ -6,6 +6,7 @@ import { ArrowBigDown, ArrowBigUp } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib"
+import { event } from "@/lib/analytics/gtag"
 
 type VoteButtonProps = {
   targetType: "post" | "comment"
@@ -127,6 +128,7 @@ export function VoteButton({
       setUserVote(newUserVote)
       setVoteCount(newVoteCount)
       broadcastVoteSync({ targetType, targetId, userVote: newUserVote, voteCount: newVoteCount })
+      event("vote_cast", { target_type: targetType, target_id: targetId, direction })
     } catch (error) {
       console.error("[VoteButton] Vote failed:", error)
     } finally {

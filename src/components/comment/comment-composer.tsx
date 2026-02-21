@@ -3,6 +3,7 @@
 import { useRef, useState } from "react"
 
 import { toast } from "sonner"
+import { event } from "@/lib/analytics/gtag"
 import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
@@ -65,6 +66,7 @@ export function CommentComposer({
       }
 
       setContent("")
+      event("comment_created", { post_id: postId, is_reply: Boolean(parentCommentId) })
 
       if (onSubmitted) {
         await onSubmitted()
