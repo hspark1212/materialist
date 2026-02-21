@@ -39,7 +39,12 @@ export function CommentComposer({
     if (!content.trim()) return
 
     if (status === "anonymous") {
-      toast.info("Sign in to comment.")
+      toast.info("Sign in to comment.", {
+        action: {
+          label: "Sign in",
+          onClick: () => (window.location.href = "/login"),
+        },
+      })
       return
     }
 
