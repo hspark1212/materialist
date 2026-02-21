@@ -3,6 +3,7 @@
 ## Verification Baseline
 - After code changes: `npm run lint && npx tsc --noEmit && npm run test`
 - When UI or navigation flows change, also run: `npm run test:e2e`
+- Before committing: run `/review` for project-specific rule checks and optional Codex second opinion
 - If phantom type errors persist: `rm -rf .next` (Turbopack cache can hold stale references)
 - After tests pass: review if `CLAUDE.md` or `.claude/rules/` need updates for new constraints or patterns. Propose changes and get user approval before editing.
 
