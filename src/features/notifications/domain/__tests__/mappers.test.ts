@@ -141,4 +141,23 @@ describe("mapNotificationRowToNotification", () => {
 
     expect(result.type).toBe("reply_to_comment")
   })
+
+  it("maps comment_on_voted_post type", () => {
+    const result = mapNotificationRowToNotification(makeRow({ type: "comment_on_voted_post" }))
+
+    expect(result.type).toBe("comment_on_voted_post")
+  })
+
+  it("masks actor identity for anonymous comment on voted post", () => {
+    const result = mapNotificationRowToNotification(
+      makeRow({
+        type: "comment_on_voted_post",
+        comments: { content: "Anon on voted", is_anonymous: true },
+      }),
+    )
+
+    expect(result.actorDisplayName).toBe("Anonymous")
+    expect(result.actorAvatar).toBe("")
+    expect(result.actorIsAnonymous).toBe(true)
+  })
 })
