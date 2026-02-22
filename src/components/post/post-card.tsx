@@ -21,9 +21,10 @@ import { ShareButton } from "@/components/post/share-button"
 
 type PostCardProps = {
   post: Post
+  isHot?: boolean
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, isHot }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const compactTimeAgo = timeAgo.replace(/^about\s+/i, "")
   const sectionColor = sectionByKey[post.section]?.color
@@ -58,7 +59,7 @@ export function PostCard({ post }: PostCardProps) {
                 {flairByKey[post.flair].label}
               </Badge>
             ) : null}
-            {post.voteCount >= 3 || post.commentCount >= 3 ? (
+            {isHot ? (
               <Badge className="inline-flex animate-[hot-pulse_2s_ease-in-out_infinite] items-center gap-0.5 border-0 bg-orange-100 px-1.5 py-0 text-[11px] text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
                 <span className="text-[9px] leading-none">🔥</span>Hot
               </Badge>

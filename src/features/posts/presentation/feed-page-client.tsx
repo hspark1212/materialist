@@ -144,7 +144,7 @@ export function FeedPageClient({
       {!error && loading ? <p className="text-muted-foreground py-2 text-sm">Loading posts...</p> : null}
       {!error && !loading ? (
         <>
-          <FeedList posts={posts} />
+          <FeedList posts={posts} hotPostIds={initialFeed.hotPostIds} />
           {hasMore ? (
             <div ref={sentinelRef} className="flex justify-center py-6">
               {loadingMore ? <p className="text-muted-foreground text-sm">Loading more...</p> : null}
