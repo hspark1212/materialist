@@ -44,7 +44,7 @@ Applies consistently across all contexts (card, detail, comment, discovery).
 - **Baseline:** 0.70% (Feb 20)
 - **Target:** 2%+
 - **Window:** 3 days post-deploy
-- **Command:** `/experiment measure 002`
+- **Command:** `/ux-experiment measure 002`
 - **Guard rails:** Monitor card CTR, comment rate, return visit rate for regression.
 
 ## Rollback

@@ -1,6 +1,6 @@
 ---
-name: experiment
-description: Manage engagement experiments. Create, measure, review status, or get suggestions for the next experiment.
+name: ux-experiment
+description: Manage UX experiments. Create, measure, review status, or get suggestions for the next UX experiment.
 argument-hint: "[new|measure|status|next] [experiment-number]"
 ---
 
@@ -15,7 +15,9 @@ argument-hint: "[new|measure|status|next] [experiment-number]"
 | `status` | List all experiments with engagement trend tracking |
 | `next` | Analyze past results and suggest the next experiment |
 
-Parse the subcommand from args (e.g., `/experiment new`, `/experiment measure 001`, `/experiment status`, `/experiment next`). If no args or unrecognized, ask with `AskUserQuestion`.
+Parse the subcommand from args (e.g., `/ux-experiment new`, `/ux-experiment measure 001`, `/ux-experiment status`, `/ux-experiment next`). If no args or unrecognized, ask with `AskUserQuestion`.
+
+**Reference:** `ux-experiment/000-guide.md` — event inventory, baseline data, automation, event safety.
 
 ---
 
@@ -23,15 +25,15 @@ Parse the subcommand from args (e.g., `/experiment new`, `/experiment measure 00
 
 ### Workflow
 
-1. **Scan baseline** — Read `experiments/001-baseline.md` (or latest measured experiment). Extract current pillar metric values.
+1. **Scan baseline** — Read `ux-experiment/001-baseline.md` (or latest measured experiment). Extract current pillar metric values.
 2. **Analyze weakness** — Compare the 4 pillar metrics (vote rate, comment rate, post creation rate, return visit rate) against reasonable benchmarks. Identify the weakest.
-3. **Review prior art** — Scan all `experiments/*.md` for previous experiments targeting the same pillar. Note what worked and what didn't.
+3. **Review prior art** — Scan all `ux-experiment/*.md` for previous experiments targeting the same pillar. Note what worked and what didn't.
 4. **Suggest** — Propose 2-3 hypothesis options targeting the weakest pillar. Use `AskUserQuestion` with previews to let the user choose.
 5. **Collect details** — Use `AskUserQuestion` or conversation to collect:
    - **Hypothesis** (one sentence with numeric target)
    - **Type** (UX Fix / Feature / Performance / Observation)
    - **What to change** (brief description)
-6. **Generate** — Create `experiments/<NNN>-<slug>.md` using the template below. Auto-fill Before values from baseline.
+6. **Generate** — Create `ux-experiment/<NNN>-<slug>.md` using the template below. Auto-fill Before values from baseline.
 7. **Confirm** — Show the generated document. Ask for approval before writing.
 
 ### Template
@@ -78,7 +80,7 @@ Parse the subcommand from args (e.g., `/experiment new`, `/experiment measure 00
 
 ### Workflow
 
-1. **Read** — Glob `experiments/<NNN>-*.md` to find the file. Parse the Metrics table.
+1. **Read** — Glob `ux-experiment/<NNN>-*.md` to find the file. Parse the Metrics table.
 2. **Generate links** — For each metric, provide the appropriate dashboard link and instructions:
 
    **GA4:**
@@ -121,7 +123,7 @@ Parse the subcommand from args (e.g., `/experiment new`, `/experiment measure 00
 
 ### Workflow
 
-1. **Scan** — Glob `experiments/*.md`, read each file.
+1. **Scan** — Glob `ux-experiment/*.md`, read each file.
 2. **Extract** from each: number, title, date, type, status, pillar, hypothesis (first sentence).
 3. **Output table:**
 
@@ -149,10 +151,10 @@ Pillar Trends (baseline → latest):
 
 ### Workflow
 
-1. **Read all experiments** — Glob `experiments/*.md`. Parse status, pillar, and results.
+1. **Read all experiments** — Glob `ux-experiment/*.md`. Parse status, pillar, and results.
 2. **Check prerequisites:**
-   - If baseline (001) is not yet measured: respond "Baseline 001 has not been measured yet. Run `/experiment measure 001` first."
-   - If any experiment is `Deployed` but not yet measured: respond "Experiment <NNN> is deployed but not yet measured. Run `/experiment measure <NNN>` first."
+   - If baseline (001) is not yet measured: respond "Baseline 001 has not been measured yet. Run `/ux-experiment measure 001` first."
+   - If any experiment is `Deployed` but not yet measured: respond "Experiment <NNN> is deployed but not yet measured. Run `/ux-experiment measure <NNN>` first."
 3. **Analyze gaps** — Compare current pillar values against targets. Rank by improvement opportunity.
 4. **Priority order** (tiebreaker when gaps are similar):
    1. Vote rate low → vote UX optimization
@@ -165,4 +167,4 @@ Pillar Trends (baseline → latest):
    - Hypothesis sketch
    - Estimated complexity (Low / Medium / High)
    - Relevant prior experiment results
-6. **Offer** — Ask if the user wants to proceed with `/experiment new` using the suggestion.
+6. **Offer** — Ask if the user wants to proceed with `/ux-experiment new` using the suggestion.
