@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
-import { useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { CalendarDays, TrendingUp } from "lucide-react"
 
@@ -38,6 +38,13 @@ type FeedPageClientProps = {
   discoveryLabel?: RecentPostsLabel
 }
 
+function parseFeedSort(value: string | null, fallback: FeedSort): FeedSort {
+  if (value === "hot" || value === "new" || value === "top") {
+    return value
+  }
+  return fallback
+}
+
 export function FeedPageClient({
   section,
   initialFeed,
@@ -45,12 +52,27 @@ export function FeedPageClient({
   discoveryPosts,
   discoveryLabel = "today",
 }: FeedPageClientProps) {
-  const [sortBy, setSortBy] = useState<FeedSort>(initialFeed.sortBy)
   const hasDiscoveryPosts = discoveryPosts && discoveryPosts.length > 0
   const [discoveryChip, setDiscoveryChip] = useState<DiscoveryChip | null>(
     hasDiscoveryPosts ? "today" : "trending",
   )
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
+  const sortBy = parseFeedSort(searchParams.get("sort"), initialFeed.sortBy)
+  const setSortBy = useCallback(
+    (value: FeedSort) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (value === "new") {
+        params.delete("sort")
+      } else {
+        params.set("sort", value)
+      }
+      const qs = params.toString()
+      router.push(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false })
+    },
+    [pathname, router, searchParams],
+  )
   const { activeTag, clearTag } = useTagFilter()
   const { activeQuery, clearQuery } = useSearchFilter()
   const { authorType, setAuthorType } = useAuthorTypeFilter()

@@ -99,6 +99,7 @@ const POSTS_SELECT_LIST = `${POST_COLUMNS_LIST},profiles(${PROFILE_COLUMNS})`
 const POSTS_SELECT_LIST_INNER = `${POST_COLUMNS_LIST},profiles!inner(${PROFILE_COLUMNS})`
 const POSTS_SELECT_DETAIL = `${POST_COLUMNS_FULL},profiles(${PROFILE_COLUMNS})`
 const COMMENTS_SELECT = `${COMMENT_COLUMNS},profiles(${PROFILE_COLUMNS})`
+const HOT_RECENT_WINDOW_DAYS = 7
 
 type SearchPostIdRow = {
   post_id: string
@@ -125,6 +126,118 @@ function throwIfError(error: { message: string } | null, context: string): void 
 }
 
 export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRepository {
+  function buildListPostsQuery(params: ListPostsParams, options?: { head?: boolean }) {
+    const isHead = options?.head === true
+
+    // Use inner join when filtering by author type (human or bot)
+    let query =
+      params.authorType === "all"
+        ? isHead
+          ? supabase.from("posts").select(POSTS_SELECT_LIST, { count: "exact", head: true })
+          : supabase.from("posts").select(POSTS_SELECT_LIST)
+        : isHead
+          ? supabase.from("posts").select(POSTS_SELECT_LIST_INNER, { count: "exact", head: true })
+          : supabase.from("posts").select(POSTS_SELECT_LIST_INNER)
+
+    if (params.section) {
+      query = query.eq("section", params.section)
+    }
+
+    if (params.authorId) {
+      query = query.eq("author_id", params.authorId)
+    }
+
+    if (params.tag) {
+      query = query.contains("tags", [params.tag])
+    }
+    if (params.flair) {
+      query = query.eq("flair", params.flair)
+    }
+    if (params.showcaseType) {
+      query = query.eq("showcase_type", params.showcaseType)
+    }
+    if (params.jobType) {
+      query = query.eq("job_type", params.jobType)
+    }
+    if (params.location) {
+      query = query.ilike("location", `%${params.location}%`)
+    }
+
+    // Filter by author type (human is default, "all" skips filter)
+    if (params.authorType === "bot") {
+      query = query.eq("profiles.is_bot", true)
+    } else if (params.authorType !== "all") {
+      query = query.eq("profiles.is_bot", false)
+    }
+
+    return query
+  }
+
+  function getHotRecentCutoffIso(): string {
+    const now = Date.now()
+    return new Date(now - HOT_RECENT_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString()
+  }
+
+  async function listHotPostsWithRecentWindow(
+    params: ListPostsParams,
+    limit: number,
+    offset: number,
+  ): Promise<PostWithAuthorRow[]> {
+    const cutoffIso = getHotRecentCutoffIso()
+
+    const recentCountQuery = buildListPostsQuery(params, { head: true }).gte("created_at", cutoffIso)
+    const { count, error: recentCountError } = await recentCountQuery
+    throwIfError(recentCountError, "Failed to count recent hot posts")
+    const recentCount = count ?? 0
+
+    const rows: PostWithAuthorRow[] = []
+
+    if (offset < recentCount) {
+      const recentLimit = Math.min(limit, recentCount - offset)
+
+      const recentQuery = buildListPostsQuery(params, { head: false })
+        .gte("created_at", cutoffIso)
+        .order("comment_count", { ascending: false })
+        .order("vote_count", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(offset, offset + recentLimit - 1)
+
+      const { data: recentRows, error: recentError } = await recentQuery
+      throwIfError(recentError, "Failed to list recent hot posts")
+      rows.push(...(((recentRows ?? []) as unknown) as PostWithAuthorRow[]))
+
+      const remaining = limit - rows.length
+      if (remaining <= 0) {
+        return rows
+      }
+
+      const olderQuery = buildListPostsQuery(params, { head: false })
+        .lt("created_at", cutoffIso)
+        .order("comment_count", { ascending: false })
+        .order("vote_count", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(0, remaining - 1)
+
+      const { data: olderRows, error: olderError } = await olderQuery
+      throwIfError(olderError, "Failed to list older hot posts")
+      rows.push(...(((olderRows ?? []) as unknown) as PostWithAuthorRow[]))
+
+      return rows
+    }
+
+    const olderOffset = offset - recentCount
+    const olderQuery = buildListPostsQuery(params, { head: false })
+      .lt("created_at", cutoffIso)
+      .order("comment_count", { ascending: false })
+      .order("vote_count", { ascending: false })
+      .order("created_at", { ascending: false })
+      .range(olderOffset, olderOffset + limit - 1)
+
+    const { data: olderRows, error: olderError } = await olderQuery
+    throwIfError(olderError, "Failed to list older hot posts")
+    return ((olderRows ?? []) as unknown) as PostWithAuthorRow[]
+  }
+
   async function listPostsBySearch(
     params: ListPostsParams,
     limit: number,
@@ -184,42 +297,11 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
         return listPostsBySearch(params, limit, offset)
       }
 
-      // Use inner join when filtering by author type (human or bot)
-      let query =
-        params.authorType === "all"
-          ? supabase.from("posts").select(POSTS_SELECT_LIST)
-          : supabase.from("posts").select(POSTS_SELECT_LIST_INNER)
-
-      if (params.section) {
-        query = query.eq("section", params.section)
+      if (params.sort === "hot" && !params.sinceDate) {
+        return listHotPostsWithRecentWindow(params, limit, offset)
       }
 
-      if (params.authorId) {
-        query = query.eq("author_id", params.authorId)
-      }
-
-      if (params.tag) {
-        query = query.contains("tags", [params.tag])
-      }
-      if (params.flair) {
-        query = query.eq("flair", params.flair)
-      }
-      if (params.showcaseType) {
-        query = query.eq("showcase_type", params.showcaseType)
-      }
-      if (params.jobType) {
-        query = query.eq("job_type", params.jobType)
-      }
-      if (params.location) {
-        query = query.ilike("location", `%${params.location}%`)
-      }
-
-      // Filter by author type (human is default, "all" skips filter)
-      if (params.authorType === "bot") {
-        query = query.eq("profiles.is_bot", true)
-      } else if (params.authorType !== "all") {
-        query = query.eq("profiles.is_bot", false)
-      }
+      let query = buildListPostsQuery(params, { head: false })
 
       if (params.sinceDate) {
         query = query.gte("created_at", params.sinceDate)
@@ -227,8 +309,13 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
 
       if (params.sort === "new") {
         query = query.order("created_at", { ascending: false })
-      } else {
+      } else if (params.sort === "top") {
         query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false })
+      } else {
+        query = query
+          .order("comment_count", { ascending: false })
+          .order("vote_count", { ascending: false })
+          .order("created_at", { ascending: false })
       }
 
       const { data, error } = await query.range(offset, offset + limit - 1)
