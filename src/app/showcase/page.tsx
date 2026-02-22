@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import type { Metadata } from "next"
 
 import { ShowcasePageClient } from "@/app/showcase/showcase-page-client"
 import {
@@ -6,6 +7,12 @@ import {
   resolvePageSearchParams,
   type AwaitablePageSearchParams,
 } from "@/features/posts/server/get-initial-posts-feed"
+
+export const metadata: Metadata = {
+  title: "Showcase",
+  description: "Share your tools, datasets, models, and projects in materials science and AI.",
+  alternates: { canonical: "/showcase" },
+}
 
 type ShowcasePageProps = {
   searchParams?: AwaitablePageSearchParams

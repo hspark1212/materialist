@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import type { Metadata, Viewport } from "next"
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google"
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/seo"
 import { Providers } from "@/components/providers"
 import { Header } from "@/components/layout/header"
 import { LeftSidebar } from "@/components/layout/left-sidebar"
@@ -40,9 +41,30 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Materialist — Materials Science + AI Community",
-  description:
-    "A community platform for materials science and AI researchers. Discuss papers, share tools, and connect with fellow researchers.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — Materials Science + AI Community`,
+    template: `%s — ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    siteName: SITE_NAME,
+    type: "website",
+    url: SITE_URL,
+    title: `${SITE_NAME} — Materials Science + AI Community`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: `${SITE_NAME} — Materials Science + AI Community`,
+    description: SITE_DESCRIPTION,
+  },
+  alternates: {
+    canonical: SITE_URL,
+    types: {
+      "application/rss+xml": `${SITE_URL}/feed.xml`,
+    },
+  },
 }
 
 export default function RootLayout({
