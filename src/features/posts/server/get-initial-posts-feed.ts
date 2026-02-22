@@ -68,6 +68,7 @@ function buildEmptyInitialFeed(options: {
     nextOffset: null,
     limit: options.limit,
     sortBy: options.sortBy,
+    hotPostIds: [],
     section: options.section,
     tag: options.tag,
     query: options.query,
@@ -100,24 +101,33 @@ export async function getInitialPostsFeed({
   try {
     const supabase = await createClient()
     const repository = createSupabasePostsRepository(supabase)
-    const rows = await listPostsUseCase(repository, {
-      sort: resolvedSortBy,
-      section,
-      tag,
-      query,
-      flair,
-      showcaseType,
-      jobType,
-      location,
-      authorType: resolvedAuthorType,
-      limit: limit + 1,
-      offset: 0,
-    })
+    const [rows, hotPosts] = await Promise.all([
+      listPostsUseCase(repository, {
+        sort: resolvedSortBy,
+        section,
+        tag,
+        query,
+        flair,
+        showcaseType,
+        jobType,
+        location,
+        authorType: resolvedAuthorType,
+        limit: limit + 1,
+        offset: 0,
+      }),
+      listPostsUseCase(repository, {
+        sort: "hot",
+        section,
+        limit: 10,
+        offset: 0,
+      }).catch(() => []),
+    ])
 
     const hasMore = rows.length > limit
     const posts = hasMore ? rows.slice(0, limit) : rows
 
     const postsWithVotes = await attachUserVotes(supabase, posts)
+    const hotPostIds = hotPosts.map((p) => p.id)
 
     return {
       prefetched: true,
@@ -126,6 +136,7 @@ export async function getInitialPostsFeed({
       nextOffset: hasMore ? limit : null,
       limit,
       sortBy: resolvedSortBy,
+      hotPostIds,
       section,
       tag,
       query,

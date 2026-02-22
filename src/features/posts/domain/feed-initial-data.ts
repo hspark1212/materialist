@@ -10,6 +10,7 @@ export type PostsFeedInitialData = {
   nextOffset: number | null
   limit: number
   sortBy: PostSort
+  hotPostIds: string[]
   section?: Section
   tag?: string
   query?: string
