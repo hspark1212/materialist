@@ -58,6 +58,7 @@ Data flows: API route → use case → repository (via port) → Supabase → ma
 - **All Supabase rows go through domain mappers** — Never return raw DB rows to the client. Map via functions in `features/*/domain/mappers.ts`.
 - **RLS is enabled** — Never use the admin client in user-facing code paths.
 - **When removing a prop from a component**, grep all usages across the codebase to avoid missed references.
+- **English only for Git/GitHub** — All commit messages, PR titles, PR descriptions, branch names, and issue comments must be in English.
 
 ## Testing
 
