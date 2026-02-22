@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
-import { MessageSquare, Reply } from "lucide-react"
+import { ArrowBigUp, MessageSquare, Reply } from "lucide-react"
 
 import { cn } from "@/lib"
 import { AnonymousAvatar } from "@/components/user/anonymous-avatar"
@@ -16,8 +16,13 @@ type NotificationItemProps = {
 export function NotificationItem({ notification, onRead }: NotificationItemProps) {
   const timeAgo = formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })
   const isReply = notification.type === "reply_to_comment"
-  const Icon = isReply ? Reply : MessageSquare
-  const actionText = isReply ? "replied to your comment on" : "commented on"
+  const isVotedPost = notification.type === "comment_on_voted_post"
+  const Icon = isVotedPost ? ArrowBigUp : isReply ? Reply : MessageSquare
+  const actionText = isVotedPost
+    ? "commented on a post you voted on:"
+    : isReply
+      ? "replied to your comment on"
+      : "commented on"
 
   return (
     <Link

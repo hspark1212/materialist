@@ -1,6 +1,6 @@
 import type { ProfileRow } from "@/features/posts/domain/types"
 
-export type NotificationType = "comment_on_post" | "reply_to_comment"
+export type NotificationType = "comment_on_post" | "reply_to_comment" | "comment_on_voted_post"
 
 export type NotificationRow = {
   id: string
