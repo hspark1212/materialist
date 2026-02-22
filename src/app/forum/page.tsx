@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import type { Metadata } from "next"
 
 import { ForumPageClient } from "@/app/forum/forum-page-client"
 import {
@@ -6,6 +7,12 @@ import {
   resolvePageSearchParams,
   type AwaitablePageSearchParams,
 } from "@/features/posts/server/get-initial-posts-feed"
+
+export const metadata: Metadata = {
+  title: "Forum",
+  description: "Free discussion — questions, career advice, news, and community topics in materials science and AI.",
+  alternates: { canonical: "/forum" },
+}
 
 type ForumPageProps = {
   searchParams?: AwaitablePageSearchParams

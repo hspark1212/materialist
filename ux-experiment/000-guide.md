@@ -38,6 +38,8 @@ Measured Feb 20, 2026 — first full day post-event-deploy. Source: `metrics/dai
 
 Full details: `ux-experiment/001-baseline.md`.
 
+**Note:** SEO infrastructure (sitemap, robots.txt, OG tags, JSON-LD, RSS) deployed Feb 22, 2026. Organic traffic may shift page_view/session_start denominators — re-baseline after 1-2 weeks of organic data.
+
 ## Automation
 
 - **`/ux-experiment` skill** — 4 subcommands: `new`, `measure <NNN>`, `status`, `next`. Defined in `.claude/skills/ux-experiment/SKILL.md`.
