@@ -2,7 +2,7 @@
  * Collect daily GA4 metrics and append to metrics/daily.json.
  *
  * Usage:
- *   npx tsx scripts/collect-metrics.ts                  # 2 days ago (GA4 delay)
+ *   npx tsx scripts/collect-metrics.ts                  # yesterday
  *   npx tsx scripts/collect-metrics.ts --date 2026-02-18  # specific date
  *
  * Env:
@@ -44,9 +44,9 @@ function parseArgs(): string {
     }
     return d;
   }
-  // Default: 2 days ago (GA4 data processing delay)
+  // Default: yesterday (GA4 data is available within ~24 hours)
   const dt = new Date();
-  dt.setDate(dt.getDate() - 2);
+  dt.setDate(dt.getDate() - 1);
   return dt.toISOString().slice(0, 10);
 }
 

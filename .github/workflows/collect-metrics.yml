@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       date:
-        description: 'Override date (YYYY-MM-DD). Omit for 2 days ago.'
+        description: 'Override date (YYYY-MM-DD). Omit for yesterday.'
         required: false
         type: string
 
