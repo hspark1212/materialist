@@ -101,6 +101,7 @@ export async function getInitialPostsFeed({
   try {
     const supabase = await createClient()
     const repository = createSupabasePostsRepository(supabase)
+    const isHotSort = resolvedSortBy === "hot"
     const [rows, hotPosts] = await Promise.all([
       listPostsUseCase(repository, {
         sort: resolvedSortBy,
@@ -115,19 +116,21 @@ export async function getInitialPostsFeed({
         limit: limit + 1,
         offset: 0,
       }),
-      listPostsUseCase(repository, {
-        sort: "hot",
-        section,
-        limit: 10,
-        offset: 0,
-      }).catch(() => []),
+      isHotSort
+        ? Promise.resolve([])
+        : listPostsUseCase(repository, {
+            sort: "hot",
+            section,
+            limit: 10,
+            offset: 0,
+          }).catch(() => []),
     ])
 
     const hasMore = rows.length > limit
     const posts = hasMore ? rows.slice(0, limit) : rows
 
     const postsWithVotes = await attachUserVotes(supabase, posts)
-    const hotPostIds = hotPosts.map((p) => p.id)
+    const hotPostIds = isHotSort ? rows.slice(0, 10).map((p) => p.id) : hotPosts.map((p) => p.id)
 
     return {
       prefetched: true,
