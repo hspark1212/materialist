@@ -68,7 +68,12 @@ export function PostComposer({ initialPost }: PostComposerProps) {
     e.preventDefault()
 
     if (status === "anonymous") {
-      toast.info("Sign in to create a post.")
+      toast.info("Sign in to create a post.", {
+        action: {
+          label: "Sign in",
+          onClick: () => (window.location.href = "/login"),
+        },
+      })
       return
     }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Usage: git diff | bash .claude/skills/review/scripts/codex-review.sh
+# Usage: git diff | bash .claude/skills/code-review/scripts/codex-review.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHECKLIST_FILE="$SCRIPT_DIR/../references/checklist.md"

@@ -1,17 +1,6 @@
-# Experiment Rules
+# UX Experiment Guide
 
-## 4 Pillar Metrics
-
-Every experiment targets at least one pillar. Track all four to avoid metric cannibalization.
-
-| Pillar | Formula | GA4 Event | Direction |
-|---|---|---|---|
-| Vote rate | `vote_cast` / post `page_view` | `vote_cast` | ↑ |
-| Comment rate | `comment_created` / post `page_view` | `comment_created` | ↑ |
-| Post creation rate | `post_created` / `session_start` | `post_created` | ↑ |
-| Return visit rate | (`session_start` − `first_visit`) / `session_start` | `session_start`, `first_visit` | ↑ |
-
-Supporting metrics (not pillars, but track for context): engagement time, scroll events.
+Reference doc for the `/ux-experiment` skill. For constraints and conventions, see `.claude/rules/ux-experiment.md`.
 
 ## GA4 Custom Event Inventory
 
@@ -27,25 +16,13 @@ All events use `event(name, params)` from `@/lib/analytics/gtag` — no-ops when
 
 ## Workflow
 
-1. **Check baseline** — Read latest `experiments/001-baseline.md` (or most recent measured experiment) for current numbers.
+1. **Check baseline** — Read latest `ux-experiment/001-baseline.md` (or most recent measured experiment) for current numbers.
 2. **Hypothesize** — Pick the weakest pillar. State a numeric target (e.g., "vote rate 2% → 5%").
-3. **Document** — Create `experiments/<NNN>-<slug>.md` with: pillar, hypothesis, before/target metrics, measurement plan, rollback steps.
+3. **Document** — Create `ux-experiment/<NNN>-<slug>.md` with: pillar, hypothesis, before/target metrics, measurement plan, rollback steps.
 4. **Instrument** — Add/modify `event()` calls if needed. Register new events in the inventory above.
 5. **Deploy** — Ship the change.
-6. **Measure after 3 days** — Run `/experiment measure <NNN>`. Update the doc with actual results.
+6. **Measure after 3 days** — Run `/ux-experiment measure <NNN>`. Update the doc with actual results.
 7. **Decide** — Keep, iterate, or rollback based on data.
-
-## Adding New Events
-
-1. Use `event(name, params)` from `@/lib/analytics/gtag`.
-2. Naming: `snake_case`, descriptive (e.g., `signup_start`, `share_click`).
-3. Params: flat object, no nesting. Max 25 custom parameters per event (GA4 limit).
-4. **Register** — After adding, update the GA4 Custom Event Inventory table above with event name, parameters, and source file.
-
-## Naming
-
-- Experiment docs: `experiments/<NNN>-<slug>.md` (zero-padded 3-digit, slug max 4 words)
-- GA4 custom events: snake_case
 
 ## Current Baseline (001)
 
@@ -59,11 +36,11 @@ Measured Feb 20, 2026 — first full day post-event-deploy. Source: `metrics/dai
 | Post creation rate | 0% | 0 / 114 session_start |
 | Return visit rate | 64.04% | 73 / 114 session_start |
 
-Full details: `experiments/001-baseline.md`.
+Full details: `ux-experiment/001-baseline.md`.
 
 ## Automation
 
-- **`/experiment` skill** — 4 subcommands: `new`, `measure <NNN>`, `status`, `next`. Defined in `.claude/skills/experiment/SKILL.md`.
+- **`/ux-experiment` skill** — 4 subcommands: `new`, `measure <NNN>`, `status`, `next`. Defined in `.claude/skills/ux-experiment/SKILL.md`.
 - **Daily metrics cron** — `.github/workflows/collect-metrics.yml` runs `scripts/collect-metrics.ts` at 09:00 UTC daily, appends to `metrics/daily.json`, auto-commits. Uses `secrets.GA4_CREDENTIALS` (base64 service account JSON).
 - **Local metrics collection** — Not configured by default. For ad-hoc local runs, provide a service account JSON file path: `GA4_CREDENTIALS_FILE=./key.json npm run collect-metrics -- --date YYYY-MM-DD`.
 

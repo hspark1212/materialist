@@ -1,5 +1,5 @@
 ---
-name: review
+name: code-review
 description: Pre-commit code review. Analyzes git diff against Materialist project rules, optionally gets Codex CLI second opinion, and presents unified findings. Use /review before committing.
 argument-hint: "[--staged | --no-codex | --codex-only | files...]"
 ---
@@ -36,7 +36,7 @@ Parse flags from args. Multiple flags can combine (e.g., `--staged --no-codex`).
 
 Skip if `--codex-only`.
 
-1. **Read** the checklist at `.claude/skills/review/references/checklist.md`.
+1. **Read** the checklist at `.claude/skills/code-review/references/checklist.md`.
 2. **Review** each changed file against all 14 checklist items. Only flag actual violations found in the diff — do not flag items that don't apply.
 3. **Also check** for general issues: bugs, logic errors, error handling gaps, naming inconsistencies.
 4. **Record findings** as a list, each with:
@@ -53,7 +53,7 @@ Skip if `--no-codex`. Run in parallel with Phase 2 when possible (use Task tool 
 
 1. **Pipe the diff** to the wrapper script:
    ```bash
-   git diff | bash .claude/skills/review/scripts/codex-review.sh
+   git diff | bash .claude/skills/code-review/scripts/codex-review.sh
    ```
    (Use `git diff --cached` for `--staged`, add `-- <files>` for specific files.)
 

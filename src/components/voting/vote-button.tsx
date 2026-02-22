@@ -97,7 +97,12 @@ export function VoteButton({
 
   const handleVote = async (direction: -1 | 1) => {
     if (!canVote) {
-      toast.info("Sign in to vote.")
+      toast.info("Sign in to vote.", {
+        action: {
+          label: "Sign in",
+          onClick: () => (window.location.href = "/login"),
+        },
+      })
       return
     }
 
@@ -146,10 +151,11 @@ export function VoteButton({
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-md transition-colors",
+        "flex items-center gap-1.5 rounded-md border border-transparent transition-colors",
+        userVote === 0 && "hover:border-border hover:bg-muted/50",
         getContainerClass(styleParams),
-        userVote === 1 && "bg-upvote/10",
-        userVote === -1 && "bg-downvote/10",
+        userVote === 1 && "border-upvote/20 bg-upvote/10 hover:bg-upvote/15",
+        userVote === -1 && "border-downvote/20 bg-downvote/10 hover:bg-downvote/15",
         className,
       )}
     >
