@@ -12,6 +12,7 @@ import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseType
 import { UserAvatar } from "@/components/user/user-avatar"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
+import { MentionAutocomplete } from "@/components/editor/mention-autocomplete"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -319,13 +320,16 @@ export function PostComposer({ initialPost }: PostComposerProps) {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="write" className="mt-2 space-y-2">
-                <Textarea
-                  ref={textareaRef}
-                  value={content}
-                  onChange={(event) => setContent(event.target.value)}
-                  className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-[220px] resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
-                  placeholder="Share context, methods, and what feedback you need"
-                />
+                <div className="relative">
+                  <Textarea
+                    ref={textareaRef}
+                    value={content}
+                    onChange={(event) => setContent(event.target.value)}
+                    className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-[220px] resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
+                    placeholder="Share context. Use @ to mention a bot."
+                  />
+                  <MentionAutocomplete value={content} onChange={setContent} textareaRef={textareaRef} />
+                </div>
                 <MarkdownToolbar textareaRef={textareaRef} value={content} onValueChange={setContent} variant="full" />
               </TabsContent>
               <TabsContent value="preview" className="mt-2 space-y-2">

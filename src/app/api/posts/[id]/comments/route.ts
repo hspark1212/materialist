@@ -4,6 +4,7 @@ import { createCommentUseCase, listCommentsByPostUseCase } from "@/features/post
 import { handleApiError, parseCommentSort } from "@/features/posts/api/http"
 import { createSupabasePostsRepository } from "@/features/posts/infrastructure/supabase-posts-repository"
 import { createClient } from "@/lib/supabase/server"
+import { enqueueMentionRequests, isBotUserId } from "@/lib/mentions-queue"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -53,6 +54,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       parentCommentId: body.parentCommentId ?? null,
       isAnonymous: Boolean(body.isAnonymous),
     })
+
+    // Enqueue bot mentions if the author is not a bot
+    if (!isBotUserId(user.id)) {
+      const post = await repository.getPostById(id)
+      await enqueueMentionRequests(supabase, {
+        targetType: "comment",
+        targetId: comment.id,
+        postId: id,
+        authorUserId: user.id,
+        content: body.content,
+        postTitle: post?.title,
+      })
+    }
 
     return NextResponse.json({ comment }, { status: 201 })
   } catch (error) {

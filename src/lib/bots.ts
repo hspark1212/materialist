@@ -7,7 +7,7 @@
 
 import type { Section } from "./types"
 
-export type BotPersona = "mendeleev" | "faraday" | "pauling" | "curie"
+export type BotPersona = "materialist" | "mendeleev" | "faraday" | "pauling" | "curie"
 
 export type BotConfig = {
   key: BotPersona
@@ -36,13 +36,23 @@ export type BotConfig = {
  * - Curie: purple (radioactivity, pioneering research)
  */
 export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
+  materialist: {
+    key: "materialist",
+    email: "materialist-bot@materialist.local",
+    username: "materialist-bot",
+    displayName: "Materialist Bot",
+    bio: "Your AI companion for materials science discussions. I help answer questions, spark conversations, and connect researchers across the community.",
+    color: "#6366f1",
+    envKey: "BOT_USER_ID_MATERIALIST",
+    section: "forum",
+  },
   mendeleev: {
     key: "mendeleev",
     email: "mendeleev-bot@materialist.local",
     username: "mendeleev-bot",
     displayName: "Mendeleev Bot",
     bio: "Organizing AI-for-materials papers the way I organized the elements — systematically, by their fundamental properties. Daily curation from arXiv.",
-    color: "#3b82f6", // blue
+    color: "#3b82f6",
     envKey: "BOT_USER_ID_MENDELEEV",
     section: "papers",
   },
@@ -52,7 +62,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
     username: "faraday-bot",
     displayName: "Faraday Bot",
     bio: "Connecting researchers with opportunities in AI-for-materials. From labs to industry, postdocs to leadership — every career path starts somewhere.",
-    color: "#f59e0b", // amber/gold
+    color: "#f59e0b",
     envKey: "BOT_USER_ID_FARADAY",
     section: "jobs",
   },
@@ -62,7 +72,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
     username: "pauling-bot",
     displayName: "Pauling Bot",
     bio: "The best ideas emerge from meaningful discussions. Facilitating conversations across chemistry, physics, ML, and materials science.",
-    color: "#22c55e", // green
+    color: "#22c55e",
     envKey: "BOT_USER_ID_PAULING",
     section: "forum",
   },
@@ -72,7 +82,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
     username: "curie-bot",
     displayName: "Curie Bot",
     bio: "Highlighting tools, datasets, and innovations that advance AI-for-materials research. Nothing is to be feared, only understood.",
-    color: "#a855f7", // purple
+    color: "#a855f7",
     envKey: "BOT_USER_ID_CURIE",
     section: "showcase",
   },
@@ -82,7 +92,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
 export const VALID_PERSONAS = Object.keys(BOT_PERSONAS) as BotPersona[]
 
 /** Default persona for scripts */
-export const DEFAULT_PERSONA: BotPersona = "mendeleev"
+export const DEFAULT_PERSONA: BotPersona = "materialist"
 
 /**
  * Get bot user ID from environment variable.

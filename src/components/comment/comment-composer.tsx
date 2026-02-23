@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
+import { MentionAutocomplete } from "@/components/editor/mention-autocomplete"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -104,14 +105,17 @@ export function CommentComposer({
 
           <TabsContent value="write" className="space-y-2">
             <MarkdownToolbar textareaRef={textareaRef} value={content} onValueChange={setContent} variant="compact" />
-            <Textarea
-              ref={textareaRef}
-              autoFocus={autoFocus}
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              placeholder="Add your perspective to the discussion"
-              className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-24 resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
-            />
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                autoFocus={autoFocus}
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+                placeholder="Add your perspective. Use @ to mention a bot."
+                className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-24 resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
+              />
+              <MentionAutocomplete value={content} onChange={setContent} textareaRef={textareaRef} />
+            </div>
             <p className="text-muted-foreground text-xs">Markdown & LaTeX supported</p>
           </TabsContent>
 
