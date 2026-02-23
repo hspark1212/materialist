@@ -541,6 +541,27 @@
   margin-bottom: 0.5rem;
 }
 
+/* ── Mention chip: @bot-name highlighting ── */
+.mention-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.875em;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--mention-color);
+  background-color: var(--mention-bg);
+  transition: filter 0.15s ease;
+  cursor: default;
+}
+
+.mention-chip:hover {
+  filter: brightness(1.15);
+}
+
 /* ── Shimmer animation for toggle buttons ── */
 @keyframes shimmer {
   0% {

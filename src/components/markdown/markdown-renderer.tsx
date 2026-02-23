@@ -5,6 +5,7 @@ import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
 import rehypeKatex from "rehype-katex"
 
+import { rehypeMentionHighlight } from "./rehype-mention-highlight"
 import { sanitizeUrl } from "@/lib/url"
 import { cn } from "@/lib/utils"
 
@@ -19,7 +20,7 @@ export function MarkdownRenderer({ content, className, compact = false }: Markdo
     <div className={cn("prose-materialist", compact && "prose-compact", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[rehypeKatex, rehypeMentionHighlight]}
         components={{
           h1: ({ children }) => <h1>{children}</h1>,
           h2: ({ children }) => <h2>{children}</h2>,
