@@ -137,6 +137,14 @@
     "post_updated": {
       "count": 0,
       "users": 0
+    },
+    "bot_mention": {
+      "count": 0,
+      "users": 0
+    },
+    "bot_reply_received": {
+      "count": 0,
+      "users": 0
     }
   }
 ]
