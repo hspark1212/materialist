@@ -12,7 +12,9 @@ type VoteButtonProps = {
   targetType: "post" | "comment"
   targetId: string
   initialCount: number
-  initialUserVote?: -1 | 0 | 1
+  initialUserVoteAnonymous?: -1 | 0 | 1
+  initialUserVoteVerified?: -1 | 0 | 1
+  isAnonymous?: boolean
   orientation?: "vertical" | "horizontal"
   size?: "default" | "sm"
   compact?: boolean
@@ -56,6 +58,7 @@ const VOTE_SYNC_EVENT = "vote-sync"
 type VoteSyncDetail = {
   targetType: "post" | "comment"
   targetId: string
+  isAnonymous: boolean
   userVote: -1 | 0 | 1
   voteCount: number
 }
@@ -68,7 +71,9 @@ export function VoteButton({
   targetType,
   targetId,
   initialCount,
-  initialUserVote = 0,
+  initialUserVoteAnonymous = 0,
+  initialUserVoteVerified = 0,
+  isAnonymous = false,
   orientation = "vertical",
   size = "default",
   compact = false,
@@ -76,19 +81,37 @@ export function VoteButton({
   className,
 }: VoteButtonProps) {
   const { status } = useAuth()
-  const [userVote, setUserVote] = useState<-1 | 0 | 1>(initialUserVote)
+  const [anonVote, setAnonVote] = useState<-1 | 0 | 1>(initialUserVoteAnonymous)
+  const [verifiedVote, setVerifiedVote] = useState<-1 | 0 | 1>(initialUserVoteVerified)
   const [voteCount, setVoteCount] = useState(initialCount)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const userVote = isAnonymous ? anonVote : verifiedVote
+
   const canVote = status !== "loading" && status !== "anonymous"
+
+  // Parent data can change without remounting (e.g. profile identity-mode switches).
+  // Keep local state aligned with server-derived props so the active mode shows the correct vote.
+  useEffect(() => {
+    setAnonVote(initialUserVoteAnonymous)
+  }, [initialUserVoteAnonymous])
+
+  useEffect(() => {
+    setVerifiedVote(initialUserVoteVerified)
+  }, [initialUserVoteVerified])
+
+  useEffect(() => {
+    setVoteCount(initialCount)
+  }, [initialCount])
 
   // Sync vote state from other VoteButton instances for the same target
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<VoteSyncDetail>).detail
       if (detail.targetType === targetType && detail.targetId === targetId) {
-        setUserVote(detail.userVote)
         setVoteCount(detail.voteCount)
+        if (detail.isAnonymous) setAnonVote(detail.userVote)
+        else setVerifiedVote(detail.userVote)
       }
     }
     window.addEventListener(VOTE_SYNC_EVENT, handler)
@@ -119,6 +142,7 @@ export function VoteButton({
           targetType,
           targetId,
           direction,
+          isAnonymous,
         }),
       })
 
@@ -130,10 +154,11 @@ export function VoteButton({
 
       const newUserVote = payload.userVote as -1 | 0 | 1
       const newVoteCount = payload.voteCount as number
-      setUserVote(newUserVote)
+      if (isAnonymous) setAnonVote(newUserVote)
+      else setVerifiedVote(newUserVote)
       setVoteCount(newVoteCount)
-      broadcastVoteSync({ targetType, targetId, userVote: newUserVote, voteCount: newVoteCount })
-      event("vote_cast", { target_type: targetType, target_id: targetId, direction })
+      broadcastVoteSync({ targetType, targetId, isAnonymous, userVote: newUserVote, voteCount: newVoteCount })
+      event("vote_cast", { target_type: targetType, target_id: targetId, direction, is_anonymous: isAnonymous })
     } catch (error) {
       console.error("[VoteButton] Vote failed:", error)
     } finally {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { createClient } from "@/lib/supabase/server"
-import { getUserVoteMap } from "@/features/posts/server/attach-user-votes"
+import { getUserDualVoteMap } from "@/features/posts/server/attach-user-votes"
 
 function parsePositiveInt(value: string | null, fallback: number, max: number): number {
   if (!value) return fallback
@@ -33,10 +33,11 @@ export async function GET(request: NextRequest) {
 
     const posts = data ?? []
 
-    const voteMap = posts.length > 0 ? await getUserVoteMap(supabase, posts.map((p) => p.id)) : null
+    const dualVoteMap = posts.length > 0 ? await getUserDualVoteMap(supabase, posts.map((p) => p.id)) : null
     const postsWithVotes = posts.map((p) => ({
       ...p,
-      user_vote: (voteMap?.get(p.id) ?? 0) as -1 | 0 | 1,
+      user_vote_anonymous: (dualVoteMap?.anonMap.get(p.id) ?? 0) as -1 | 0 | 1,
+      user_vote_verified: (dualVoteMap?.verifiedMap.get(p.id) ?? 0) as -1 | 0 | 1,
     }))
 
     return NextResponse.json({ posts: postsWithVotes })

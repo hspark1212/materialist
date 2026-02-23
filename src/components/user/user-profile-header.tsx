@@ -36,6 +36,13 @@ export function UserProfileHeader({ user, showVerifyAction = false }: UserProfil
             ) : null}
           </div>
           {user.bio && <p className="text-muted-foreground text-sm">{user.bio}</p>}
+          {!user.isBot && user.isAnonymous ? (
+            <div className="bg-muted border-border/60 mt-1 rounded-full border px-4 py-1.5">
+              <p className="text-foreground flex items-center justify-center gap-1.5 text-sm">
+                🥷 No one else can see this anonymous profile 🔒
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

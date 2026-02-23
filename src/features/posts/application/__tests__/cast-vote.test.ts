@@ -21,11 +21,12 @@ function makeRepository(): PostsRepository {
     updateVoteDirection: vi.fn(),
     deleteVote: vi.fn(),
     getTargetVoteCount: vi.fn(),
+    listVotedPosts: vi.fn(),
   }
 }
 
 describe("castVoteUseCase", () => {
-  it("inserts new vote when no existing vote", async () => {
+  it("inserts new vote when no existing vote (anonymous)", async () => {
     const repository = makeRepository()
     vi.mocked(repository.targetExists).mockResolvedValue(true)
     vi.mocked(repository.getVoteDirection).mockResolvedValue(0)
@@ -35,9 +36,30 @@ describe("castVoteUseCase", () => {
       targetType: "post",
       targetId: "post-1",
       direction: 1,
+      isAnonymous: true,
     })
 
-    expect(repository.insertVote).toHaveBeenCalledWith("user-1", "post", "post-1", 1)
+    expect(repository.getVoteDirection).toHaveBeenCalledWith("user-1", "post", "post-1", true)
+    expect(repository.insertVote).toHaveBeenCalledWith("user-1", "post", "post-1", 1, true)
+    expect(result.userVote).toBe(1)
+    expect(result.voteCount).toBe(10)
+  })
+
+  it("inserts new vote when no existing vote (verified)", async () => {
+    const repository = makeRepository()
+    vi.mocked(repository.targetExists).mockResolvedValue(true)
+    vi.mocked(repository.getVoteDirection).mockResolvedValue(0)
+    vi.mocked(repository.getTargetVoteCount).mockResolvedValue(10)
+
+    const result = await castVoteUseCase(repository, "user-1", {
+      targetType: "post",
+      targetId: "post-1",
+      direction: 1,
+      isAnonymous: false,
+    })
+
+    expect(repository.getVoteDirection).toHaveBeenCalledWith("user-1", "post", "post-1", false)
+    expect(repository.insertVote).toHaveBeenCalledWith("user-1", "post", "post-1", 1, false)
     expect(result.userVote).toBe(1)
     expect(result.voteCount).toBe(10)
   })
@@ -52,9 +74,10 @@ describe("castVoteUseCase", () => {
       targetType: "post",
       targetId: "post-1",
       direction: 1,
+      isAnonymous: true,
     })
 
-    expect(repository.deleteVote).toHaveBeenCalledWith("user-1", "post", "post-1")
+    expect(repository.deleteVote).toHaveBeenCalledWith("user-1", "post", "post-1", true)
     expect(result.userVote).toBe(0)
   })
 
@@ -68,9 +91,42 @@ describe("castVoteUseCase", () => {
       targetType: "comment",
       targetId: "comment-1",
       direction: -1,
+      isAnonymous: false,
     })
 
-    expect(repository.updateVoteDirection).toHaveBeenCalledWith("user-1", "comment", "comment-1", -1)
+    expect(repository.updateVoteDirection).toHaveBeenCalledWith("user-1", "comment", "comment-1", -1, false)
     expect(result.userVote).toBe(-1)
+  })
+
+  it("votes in different identity modes are independent", async () => {
+    const repository = makeRepository()
+    vi.mocked(repository.targetExists).mockResolvedValue(true)
+    vi.mocked(repository.getTargetVoteCount).mockResolvedValue(2)
+
+    // Anonymous vote: no existing → insert
+    vi.mocked(repository.getVoteDirection).mockResolvedValue(0)
+    const anonResult = await castVoteUseCase(repository, "user-1", {
+      targetType: "post",
+      targetId: "post-1",
+      direction: 1,
+      isAnonymous: true,
+    })
+
+    expect(repository.getVoteDirection).toHaveBeenCalledWith("user-1", "post", "post-1", true)
+    expect(repository.insertVote).toHaveBeenCalledWith("user-1", "post", "post-1", 1, true)
+    expect(anonResult.userVote).toBe(1)
+
+    // Verified vote: no existing → insert (independent from anonymous)
+    vi.mocked(repository.getVoteDirection).mockResolvedValue(0)
+    const verifiedResult = await castVoteUseCase(repository, "user-1", {
+      targetType: "post",
+      targetId: "post-1",
+      direction: 1,
+      isAnonymous: false,
+    })
+
+    expect(repository.getVoteDirection).toHaveBeenCalledWith("user-1", "post", "post-1", false)
+    expect(repository.insertVote).toHaveBeenCalledWith("user-1", "post", "post-1", 1, false)
+    expect(verifiedResult.userVote).toBe(1)
   })
 })

@@ -220,15 +220,20 @@ export async function castVoteUseCase(
     throw new ApplicationError(404, "Vote target not found")
   }
 
-  const existingDirection = await repository.getVoteDirection(userId, input.targetType, input.targetId)
+  const existingDirection = await repository.getVoteDirection(
+    userId,
+    input.targetType,
+    input.targetId,
+    input.isAnonymous,
+  )
   const mutation = resolveVoteMutation(existingDirection, input.direction)
 
   if (mutation.action === "insert") {
-    await repository.insertVote(userId, input.targetType, input.targetId, input.direction)
+    await repository.insertVote(userId, input.targetType, input.targetId, input.direction, input.isAnonymous)
   } else if (mutation.action === "update") {
-    await repository.updateVoteDirection(userId, input.targetType, input.targetId, input.direction)
+    await repository.updateVoteDirection(userId, input.targetType, input.targetId, input.direction, input.isAnonymous)
   } else {
-    await repository.deleteVote(userId, input.targetType, input.targetId)
+    await repository.deleteVote(userId, input.targetType, input.targetId, input.isAnonymous)
   }
 
   const voteCount = await repository.getTargetVoteCount(input.targetType, input.targetId)

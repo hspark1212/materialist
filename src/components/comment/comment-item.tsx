@@ -7,6 +7,7 @@ import { toast } from "sonner"
 
 import type { Comment } from "@/lib"
 import type { Section } from "@/lib/types"
+import { useIdentity } from "@/lib/identity"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -28,6 +29,7 @@ const depthColors = ["#58a6ff", "#3fb950", "#f0883e", "#bc8cff", "#ff7b72", "#79
 const MAX_DEPTH = 6
 
 export function CommentItem({ comment, section, children, onChanged }: CommentItemProps) {
+  const { isAnonymousMode } = useIdentity()
   const [isCollapsed, setIsCollapsed] = useState(comment.isCollapsed)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
@@ -154,6 +156,7 @@ export function CommentItem({ comment, section, children, onChanged }: CommentIt
                 targetType="comment"
                 targetId={comment.id}
                 initialCount={comment.voteCount}
+                isAnonymous={isAnonymousMode}
                 orientation="horizontal"
                 size="sm"
               />

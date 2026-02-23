@@ -21,12 +21,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const targetType = parseVoteTargetType(body.targetType)
     const direction = parseVoteDirection(body.direction)
+    const isAnonymous = Boolean(body.isAnonymous)
 
     const repository = createSupabasePostsRepository(supabase)
     const result = await castVoteUseCase(repository, user.id, {
       targetType,
       targetId: body.targetId,
       direction,
+      isAnonymous,
     })
 
     return NextResponse.json(result)

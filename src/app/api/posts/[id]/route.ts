@@ -10,25 +10,30 @@ type RouteContext = {
   params: Promise<{ id: string }>
 }
 
-async function resolvePostUserVote(
+async function resolvePostUserVotes(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   postId: string,
-): Promise<-1 | 0 | 1> {
+): Promise<{ anonymous: -1 | 0 | 1; verified: -1 | 0 | 1 }> {
   const { data, error } = await supabase
     .from("votes")
-    .select("vote_direction")
+    .select("vote_direction,is_anonymous")
     .eq("user_id", userId)
     .eq("target_type", "post")
     .eq("target_id", postId)
-    .maybeSingle()
 
   if (error) {
     console.warn("[post-detail/api] Failed to load post vote state:", error.message)
-    return 0
+    return { anonymous: 0, verified: 0 }
   }
 
-  return (data?.vote_direction as -1 | 0 | 1 | undefined) ?? 0
+  let anonymous: -1 | 0 | 1 = 0
+  let verified: -1 | 0 | 1 = 0
+  for (const row of data ?? []) {
+    if (row.is_anonymous) anonymous = row.vote_direction as -1 | 0 | 1
+    else verified = row.vote_direction as -1 | 0 | 1
+  }
+  return { anonymous, verified }
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -43,8 +48,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const repository = createSupabasePostsRepository(supabase)
     const detail = await getPostDetailUseCase(repository, id, commentSort, authUser?.id)
-    const userVote = authUser ? await resolvePostUserVote(supabase, authUser.id, id) : 0
-    const post: Post = { ...detail.post, userVote }
+    const userVotes = authUser
+      ? await resolvePostUserVotes(supabase, authUser.id, id)
+      : { anonymous: 0 as const, verified: 0 as const }
+    const post: Post = {
+      ...detail.post,
+      userVoteAnonymous: userVotes.anonymous,
+      userVoteVerified: userVotes.verified,
+    }
 
     return NextResponse.json(
       { ...detail, post },
