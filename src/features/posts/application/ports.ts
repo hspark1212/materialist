@@ -45,14 +45,27 @@ export interface PostsRepository {
   deleteComment(commentId: string, authorId: string): Promise<boolean>
 
   targetExists(targetType: VoteTargetType, targetId: string): Promise<boolean>
-  getVoteDirection(userId: string, targetType: VoteTargetType, targetId: string): Promise<PersistedVoteDirection>
-  insertVote(userId: string, targetType: VoteTargetType, targetId: string, direction: VoteDirection): Promise<void>
+  getVoteDirection(
+    userId: string,
+    targetType: VoteTargetType,
+    targetId: string,
+    isAnonymous: boolean,
+  ): Promise<PersistedVoteDirection>
+  insertVote(
+    userId: string,
+    targetType: VoteTargetType,
+    targetId: string,
+    direction: VoteDirection,
+    isAnonymous: boolean,
+  ): Promise<void>
   updateVoteDirection(
     userId: string,
     targetType: VoteTargetType,
     targetId: string,
     direction: VoteDirection,
+    isAnonymous: boolean,
   ): Promise<void>
-  deleteVote(userId: string, targetType: VoteTargetType, targetId: string): Promise<void>
+  deleteVote(userId: string, targetType: VoteTargetType, targetId: string, isAnonymous: boolean): Promise<void>
   getTargetVoteCount(targetType: VoteTargetType, targetId: string): Promise<number>
+  listVotedPosts(userId: string, limit: number, offset: number): Promise<Array<PostWithAuthorRow & { vote_is_anonymous: boolean }>>
 }

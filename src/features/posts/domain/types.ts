@@ -70,6 +70,7 @@ export type VoteRow = {
   target_type: VoteTargetType
   target_id: string
   vote_direction: VoteDirection
+  is_anonymous: boolean
   created_at: string
   updated_at: string
 }
@@ -119,6 +120,7 @@ export type CastVoteInput = {
   targetType: VoteTargetType
   targetId: string
   direction: VoteDirection
+  isAnonymous: boolean
 }
 
 export type PostInsertPayload = {

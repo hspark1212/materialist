@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { CalendarDays, TrendingUp } from "lucide-react"
 
 import { cn, type Post, type Section } from "@/lib"
+import { useIdentity } from "@/lib/identity"
 import { sectionByKey } from "@/lib/sections"
 import { FeedControls, type DiscoveryChip, type FeedSort } from "@/components/feed/feed-controls"
 import { FeedList } from "@/components/feed/feed-list"
@@ -208,6 +209,7 @@ function DiscoverySection({
 
 function DiscoveryStrip({ chip, discoveryPosts }: { chip: DiscoveryChip | null; discoveryPosts: Post[] }) {
   const { posts: trendingPosts } = useTrendingPosts(5, 30)
+  const { isAnonymousMode } = useIdentity()
 
   if (chip === "today" && discoveryPosts.length > 0) {
     return (
@@ -221,7 +223,9 @@ function DiscoveryStrip({ chip, discoveryPosts }: { chip: DiscoveryChip | null; 
             section={post.section}
             preview={getPostPreviewText(post.content, 120)}
             voteCount={post.voteCount}
-            userVote={post.userVote ?? 0}
+            userVoteAnonymous={post.userVoteAnonymous ?? 0}
+            userVoteVerified={post.userVoteVerified ?? 0}
+            isAnonymous={isAnonymousMode}
           />
         ))}
       </ScrollStrip>
@@ -240,7 +244,9 @@ function DiscoveryStrip({ chip, discoveryPosts }: { chip: DiscoveryChip | null; 
             section={post.section}
             preview={getPostPreviewText(post.content, 120)}
             voteCount={post.vote_count}
-            userVote={post.user_vote ?? 0}
+            userVoteAnonymous={post.user_vote_anonymous ?? 0}
+            userVoteVerified={post.user_vote_verified ?? 0}
+            isAnonymous={isAnonymousMode}
           />
         ))}
       </ScrollStrip>
@@ -342,7 +348,9 @@ function DiscoveryCard({
   preview,
   section,
   voteCount,
-  userVote,
+  userVoteAnonymous = 0,
+  userVoteVerified = 0,
+  isAnonymous = false,
 }: {
   postId: string
   href: string
@@ -350,7 +358,9 @@ function DiscoveryCard({
   preview?: string
   section: string
   voteCount: number
-  userVote: -1 | 0 | 1
+  userVoteAnonymous?: -1 | 0 | 1
+  userVoteVerified?: -1 | 0 | 1
+  isAnonymous?: boolean
 }) {
   const meta = sectionByKey[section as Section]
   return (
@@ -366,7 +376,9 @@ function DiscoveryCard({
             targetType="post"
             targetId={postId}
             initialCount={voteCount}
-            initialUserVote={userVote}
+            initialUserVoteAnonymous={userVoteAnonymous}
+            initialUserVoteVerified={userVoteVerified}
+            isAnonymous={isAnonymous}
             orientation="horizontal"
             size="sm"
             compact

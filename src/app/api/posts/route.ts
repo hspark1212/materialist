@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/server"
 type VoteDirectionRow = {
   target_id: string
   vote_direction: -1 | 1
+  is_anonymous: boolean
 }
 
 type PostsWithVoteState = {
@@ -55,7 +56,7 @@ async function attachPostVoteState(
   const postIds = posts.map((post) => post.id)
   const { data, error } = await supabase
     .from("votes")
-    .select("target_id,vote_direction")
+    .select("target_id,vote_direction,is_anonymous")
     .eq("user_id", user.id)
     .eq("target_type", "post")
     .in("target_id", postIds)
@@ -63,20 +64,23 @@ async function attachPostVoteState(
   if (error) {
     console.warn("[posts/api] Failed to load post vote state:", error.message)
     return {
-      posts: posts.map((post) => ({ ...post, userVote: 0 })),
+      posts: posts.map((post) => ({ ...post, userVoteAnonymous: 0, userVoteVerified: 0 })),
       authenticated: true,
     }
   }
 
-  const voteByPostId = new Map<string, -1 | 0 | 1>()
+  const anonMap = new Map<string, -1 | 0 | 1>()
+  const verifiedMap = new Map<string, -1 | 0 | 1>()
   for (const row of (data ?? []) as VoteDirectionRow[]) {
-    voteByPostId.set(row.target_id, row.vote_direction)
+    const map = row.is_anonymous ? anonMap : verifiedMap
+    map.set(row.target_id, row.vote_direction)
   }
 
   return {
     posts: posts.map((post) => ({
       ...post,
-      userVote: voteByPostId.get(post.id) ?? 0,
+      userVoteAnonymous: anonMap.get(post.id) ?? 0,
+      userVoteVerified: verifiedMap.get(post.id) ?? 0,
     })),
     authenticated: true,
   }

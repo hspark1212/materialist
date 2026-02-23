@@ -432,6 +432,7 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
       userId: string,
       targetType: VoteTargetType,
       targetId: string,
+      isAnonymous: boolean,
     ): Promise<PersistedVoteDirection> {
       const { data, error } = await supabase
         .from("votes")
@@ -439,41 +440,57 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
         .eq("user_id", userId)
         .eq("target_type", targetType)
         .eq("target_id", targetId)
+        .eq("is_anonymous", isAnonymous)
         .maybeSingle()
 
       throwIfError(error, "Failed to get vote")
       return (data?.vote_direction as unknown as PersistedVoteDirection | undefined) ?? 0
     },
 
-    async insertVote(userId: string, targetType: VoteTargetType, targetId: string, direction: VoteDirection) {
+    async insertVote(
+      userId: string,
+      targetType: VoteTargetType,
+      targetId: string,
+      direction: VoteDirection,
+      isAnonymous: boolean,
+    ) {
       const { error } = await supabase.from("votes").insert({
         user_id: userId,
         target_type: targetType,
         target_id: targetId,
         vote_direction: direction,
+        is_anonymous: isAnonymous,
       })
 
       throwIfError(error, "Failed to insert vote")
     },
 
-    async updateVoteDirection(userId: string, targetType: VoteTargetType, targetId: string, direction: VoteDirection) {
+    async updateVoteDirection(
+      userId: string,
+      targetType: VoteTargetType,
+      targetId: string,
+      direction: VoteDirection,
+      isAnonymous: boolean,
+    ) {
       const { error } = await supabase
         .from("votes")
         .update({ vote_direction: direction })
         .eq("user_id", userId)
         .eq("target_type", targetType)
         .eq("target_id", targetId)
+        .eq("is_anonymous", isAnonymous)
 
       throwIfError(error, "Failed to update vote")
     },
 
-    async deleteVote(userId: string, targetType: VoteTargetType, targetId: string) {
+    async deleteVote(userId: string, targetType: VoteTargetType, targetId: string, isAnonymous: boolean) {
       const { error } = await supabase
         .from("votes")
         .delete()
         .eq("user_id", userId)
         .eq("target_type", targetType)
         .eq("target_id", targetId)
+        .eq("is_anonymous", isAnonymous)
 
       throwIfError(error, "Failed to delete vote")
     },
@@ -484,6 +501,54 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
 
       throwIfError(error, "Failed to load vote count")
       return (data as { vote_count: number }).vote_count
+    },
+
+    async listVotedPosts(
+      userId: string,
+      limit: number,
+      offset: number,
+    ): Promise<Array<PostWithAuthorRow & { vote_is_anonymous: boolean }>> {
+      const normalizedLimit = Math.max(1, normalizePositiveInteger(limit, 50, 100))
+      const normalizedOffset = normalizePositiveInteger(offset, 0, 10_000)
+
+      // Step 1: get upvote records ordered by recency
+      const { data: voteRows, error: voteError } = await supabase
+        .from("votes")
+        .select("target_id,is_anonymous")
+        .eq("user_id", userId)
+        .eq("target_type", "post")
+        .gt("vote_direction", 0)
+        .order("created_at", { ascending: false })
+        .range(normalizedOffset, normalizedOffset + normalizedLimit - 1)
+
+      throwIfError(voteError, "Failed to load voted posts")
+      if (!voteRows || voteRows.length === 0) return []
+
+      const typedVoteRows = voteRows as { target_id: string; is_anonymous: boolean }[]
+
+      // Unique post IDs for SQL query (same post may have both anon and verified votes)
+      const uniquePostIds = [...new Set(typedVoteRows.map((r) => r.target_id))]
+
+      // Step 2: fetch posts for those IDs
+      const { data: postRows, error: postsError } = await supabase
+        .from("posts")
+        .select(POSTS_SELECT_LIST)
+        .in("id", uniquePostIds)
+
+      throwIfError(postsError, "Failed to load voted post details")
+
+      const postRowById = new Map<string, PostWithAuthorRow>(
+        ((postRows ?? []) as unknown as PostWithAuthorRow[]).map((r) => [r.id, r]),
+      )
+
+      // One entry per vote record — posts voted in both modes appear twice with different vote_is_anonymous
+      return typedVoteRows
+        .map((voteRow) => {
+          const postRow = postRowById.get(voteRow.target_id)
+          if (!postRow) return null
+          return { ...postRow, vote_is_anonymous: voteRow.is_anonymous }
+        })
+        .filter((r): r is PostWithAuthorRow & { vote_is_anonymous: boolean } => r !== null)
     },
   }
 }

@@ -7,6 +7,7 @@ import { Pencil, Trash2, ExternalLink, MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import type { Post } from "@/lib"
+import { useIdentity } from "@/lib/identity"
 import {
   getSectionLabel,
   getSectionHref,
@@ -61,6 +62,7 @@ function normalizePaperDigestContent(content: string): string {
 
 export function PostDetail({ post }: PostDetailProps) {
   const router = useRouter()
+  const { isAnonymousMode } = useIdentity()
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const sectionColor = sectionByKey[post.section]?.color
   const primaryLink = getPostPrimaryLink(post)
@@ -273,7 +275,9 @@ export function PostDetail({ post }: PostDetailProps) {
               targetType="post"
               targetId={post.id}
               initialCount={post.voteCount}
-              initialUserVote={post.userVote ?? 0}
+              initialUserVoteAnonymous={post.userVoteAnonymous ?? 0}
+              initialUserVoteVerified={post.userVoteVerified ?? 0}
+              isAnonymous={isAnonymousMode}
               orientation="horizontal"
               size="sm"
               compact

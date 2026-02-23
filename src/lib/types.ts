@@ -38,7 +38,8 @@ export interface Post {
   tags: string[]
   isAnonymous: boolean
   type: PostType
-  userVote?: -1 | 0 | 1
+  userVoteAnonymous?: -1 | 0 | 1
+  userVoteVerified?: -1 | 0 | 1
   // Shared external source
   url?: string
   // Forum fields

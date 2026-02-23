@@ -5,6 +5,7 @@ import { format, formatDistanceToNow, isPast } from "date-fns"
 import { ExternalLink, MessageSquare } from "lucide-react"
 
 import type { Post } from "@/lib"
+import { useIdentity } from "@/lib/identity"
 import { event } from "@/lib/analytics/gtag"
 import { AuthorName } from "@/components/user/author-name"
 import { BotBadge } from "@/components/user/bot-badge"
@@ -24,6 +25,7 @@ type PostCardCompactProps = {
 }
 
 export function PostCardCompact({ post }: PostCardCompactProps) {
+  const { isAnonymousMode } = useIdentity()
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
   const compactTimeAgo = timeAgo.replace(/^about\s+/i, "")
   const sectionColor = sectionByKey[post.section]?.color
@@ -124,7 +126,9 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
               targetType="post"
               targetId={post.id}
               initialCount={post.voteCount}
-              initialUserVote={post.userVote ?? 0}
+              initialUserVoteAnonymous={post.userVoteAnonymous ?? 0}
+              initialUserVoteVerified={post.userVoteVerified ?? 0}
+              isAnonymous={isAnonymousMode}
               orientation="horizontal"
               size="sm"
               compact

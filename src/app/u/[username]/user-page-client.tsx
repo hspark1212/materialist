@@ -12,6 +12,7 @@ import { useIdentity } from "@/lib/identity"
 import { createClient } from "@/lib/supabase/client"
 import { usePostsFeed } from "@/features/posts/presentation/use-posts-feed"
 import { useUserComments } from "@/features/posts/presentation/use-user-comments"
+import { useUserVotedPosts } from "@/features/posts/presentation/use-user-voted-posts"
 import { PostCardCompact } from "@/components/post/post-card-compact"
 import { UserProfileHeader } from "@/components/user/user-profile-header"
 import { ProfileEditForm } from "@/components/user/profile-edit-form"
@@ -112,6 +113,15 @@ function UserPageContent() {
     enabled: Boolean(pageUser),
   })
 
+  const {
+    posts: votedPosts,
+    loading: votesLoading,
+    error: votesError,
+  } = useUserVotedPosts({
+    filterAnonymous: profileAnonymousFilter,
+    enabled: isOwnProfile && Boolean(pageUser),
+  })
+
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-4xl py-10">
@@ -158,6 +168,7 @@ function UserPageContent() {
         <TabsList>
           <TabsTrigger value="posts">Posts</TabsTrigger>
           <TabsTrigger value="comments">Comments</TabsTrigger>
+          {isOwnProfile ? <TabsTrigger value="votes">Votes</TabsTrigger> : null}
         </TabsList>
 
         <TabsContent value="posts" className="mt-3 space-y-2">
@@ -211,6 +222,22 @@ function UserPageContent() {
             </p>
           ) : null}
         </TabsContent>
+
+        {isOwnProfile ? (
+          <TabsContent value="votes" className="mt-3 space-y-2">
+            {votesError ? <p className="text-destructive text-sm">{votesError}</p> : null}
+            {votesLoading ? <p className="text-muted-foreground text-sm">Loading votes...</p> : null}
+            {!votesLoading && votedPosts.length ? (
+              votedPosts.map((post) => <PostCardCompact key={`${post.id}-${post.voteIsAnonymous}`} post={post} />)
+            ) : !votesLoading ? (
+              <p className="text-muted-foreground text-sm">
+                {profileAnonymousFilter
+                  ? "No anonymous upvotes yet. Switch to verified mode to see verified upvotes."
+                  : "No verified upvotes yet. Switch to anonymous mode to see anonymous upvotes."}
+              </p>
+            ) : null}
+          </TabsContent>
+        ) : null}
       </Tabs>
 
       {isOwnProfile && myProfile ? (

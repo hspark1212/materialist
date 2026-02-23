@@ -21,6 +21,7 @@ function makeRepository(): PostsRepository {
     updateVoteDirection: vi.fn(),
     deleteVote: vi.fn(),
     getTargetVoteCount: vi.fn(),
+    listVotedPosts: vi.fn(),
   }
 }
 
