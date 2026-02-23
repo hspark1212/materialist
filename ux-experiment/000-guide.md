@@ -11,6 +11,8 @@ Reference doc for the `/ux-experiment` skill. For constraints and conventions, s
 | `comment_created` | `post_id`, `is_reply` (bool) | `src/components/comment/comment-composer.tsx:69` |
 | `post_created` | `section`, `post_id` | `src/components/post/post-composer.tsx:116` |
 | `post_updated` | `section`, `post_id` | `src/components/post/post-composer.tsx:113` |
+| `bot_mention` | `post_id` | `src/features/bot-mention/presentation/use-bot-reply.ts:21` |
+| `bot_reply_received` | `post_id` | `src/features/bot-mention/presentation/use-bot-reply.ts:41` |
 
 All events use `event(name, params)` from `@/lib/analytics/gtag` — no-ops when measurement ID is missing.
 

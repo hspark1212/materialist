@@ -68,7 +68,7 @@ export function PostDetailPageClient() {
 
       <Separator />
 
-      <CommentComposer postId={post.id} onSubmitted={refreshWithSidebar} />
+      <CommentComposer postId={post.id} section={post.section} onSubmitted={refreshWithSidebar} />
 
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold sm:text-base">Comments</h2>
@@ -91,7 +91,7 @@ export function PostDetailPageClient() {
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
       {loading ? <p className="text-muted-foreground text-sm">Loading comments...</p> : null}
-      <CommentThread comments={comments} onChanged={refreshWithSidebar} />
+      <CommentThread comments={comments} section={post.section} onChanged={refreshWithSidebar} />
     </div>
   )
 }

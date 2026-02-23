@@ -6,6 +6,7 @@ import { Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import type { Comment } from "@/lib"
+import type { Section } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -18,6 +19,7 @@ import { CommentComposer } from "@/components/comment/comment-composer"
 
 type CommentItemProps = {
   comment: Comment
+  section: Section
   children?: ReactNode
   onChanged?: () => void | Promise<void>
 }
@@ -25,7 +27,7 @@ type CommentItemProps = {
 const depthColors = ["#58a6ff", "#3fb950", "#f0883e", "#bc8cff", "#ff7b72", "#79c0ff"]
 const MAX_DEPTH = 6
 
-export function CommentItem({ comment, children, onChanged }: CommentItemProps) {
+export function CommentItem({ comment, section, children, onChanged }: CommentItemProps) {
   const [isCollapsed, setIsCollapsed] = useState(comment.isCollapsed)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
@@ -200,6 +202,7 @@ export function CommentItem({ comment, children, onChanged }: CommentItemProps) 
               <div ref={replyComposerRef} className="pt-2">
                 <CommentComposer
                   postId={comment.postId}
+                  section={section}
                   parentCommentId={comment.id}
                   autoFocus
                   onSubmitted={async () => {

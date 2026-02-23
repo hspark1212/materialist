@@ -3,9 +3,15 @@
 import { useRef, useState } from "react"
 
 import { toast } from "sonner"
+import { getBotForSection } from "@/lib/bots"
+import type { Section } from "@/lib/types"
 import { event } from "@/lib/analytics/gtag"
 import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
+import { parseMentionBot } from "@/features/bot-mention/domain/mention-parser"
+import { useMentionAutocomplete } from "@/features/bot-mention/presentation/use-mention-autocomplete"
+import { useBotReply } from "@/features/bot-mention/presentation/use-bot-reply"
+import { MentionDropdown } from "@/features/bot-mention/presentation/mention-dropdown"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
 import { Button } from "@/components/ui/button"
@@ -15,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 type CommentComposerProps = {
   postId: string
+  section: Section
   parentCommentId?: string | null
   onSubmitted?: () => void | Promise<void>
   autoFocus?: boolean
@@ -22,6 +29,7 @@ type CommentComposerProps = {
 
 export function CommentComposer({
   postId,
+  section,
   parentCommentId = null,
   onSubmitted,
   autoFocus = false,
@@ -32,8 +40,34 @@ export function CommentComposer({
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [cursorPosition, setCursorPosition] = useState(0)
+
+  const bot = getBotForSection(section)
+  const { showDropdown, insertMention } = useMentionAutocomplete(content, cursorPosition, bot.username)
+  const { isBotReplying, triggerBotReply } = useBotReply(postId, onSubmitted)
 
   const displayName = activeUser?.displayName ?? "Anonymous"
+
+  const updateCursorPosition = () => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      setCursorPosition(textarea.selectionStart)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (showDropdown) {
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault()
+        insertMention(textareaRef, setContent)
+      } else if (e.key === "Escape") {
+        e.preventDefault()
+        // Close dropdown by moving cursor (the autocomplete will recalculate)
+        setCursorPosition(-1)
+        requestAnimationFrame(updateCursorPosition)
+      }
+    }
+  }
 
   const handleSubmit = async () => {
     if (!content.trim()) return
@@ -70,10 +104,17 @@ export function CommentComposer({
         throw new Error(payload.error ?? "Failed to create comment")
       }
 
+      const submittedContent = content
       setContent("")
       event("comment_created", { post_id: postId, is_reply: Boolean(parentCommentId) })
 
-      if (onSubmitted) {
+      // Trigger bot reply if mention detected (fire-and-forget, comment already saved)
+      // When bot reply is triggered, onSubmitted is called by useBotReply after the reply arrives
+      const commentId = payload.comment?.id as string | undefined
+      const hasMention = parseMentionBot(submittedContent).found
+      if (commentId && hasMention) {
+        triggerBotReply(submittedContent, commentId)
+      } else if (onSubmitted) {
         await onSubmitted()
       }
     } catch (err) {
@@ -104,14 +145,31 @@ export function CommentComposer({
 
           <TabsContent value="write" className="space-y-2">
             <MarkdownToolbar textareaRef={textareaRef} value={content} onValueChange={setContent} variant="compact" />
-            <Textarea
-              ref={textareaRef}
-              autoFocus={autoFocus}
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              placeholder="Add your perspective to the discussion"
-              className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-24 resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
-            />
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                autoFocus={autoFocus}
+                value={content}
+                onChange={(e) => {
+                  setContent(e.target.value)
+                  setCursorPosition(e.target.selectionStart)
+                }}
+                onSelect={updateCursorPosition}
+                onKeyDown={handleKeyDown}
+                placeholder="Add your perspective to the discussion"
+                className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-24 resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
+              />
+              {showDropdown ? (
+                <MentionDropdown
+                  botUsername={bot.username}
+                  botColor={bot.color}
+                  botLabel={bot.shortLabel}
+                  onSelect={() => insertMention(textareaRef, setContent)}
+                  textareaRef={textareaRef}
+                  cursorPosition={cursorPosition}
+                />
+              ) : null}
+            </div>
             <p className="text-muted-foreground text-xs">Markdown & LaTeX supported</p>
           </TabsContent>
 
@@ -137,6 +195,13 @@ export function CommentComposer({
             {isSubmitting ? "Commenting..." : "Comment"}
           </Button>
         </div>
+
+        {isBotReplying ? (
+          <p role="status" aria-live="polite" className="text-muted-foreground flex items-center gap-2 text-xs">
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            {bot.displayName} is thinking...
+          </p>
+        ) : null}
 
         {error ? <p className="text-destructive text-xs">{error}</p> : null}
       </CardContent>
