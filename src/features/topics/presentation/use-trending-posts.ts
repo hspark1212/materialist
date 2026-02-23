@@ -9,6 +9,7 @@ export type TrendingPost = {
   title: string
   section: Section
   vote_count: number
+  comment_count: number
   content: string
   user_vote_anonymous?: -1 | 0 | 1
   user_vote_verified?: -1 | 0 | 1
