@@ -19,6 +19,7 @@ Supporting metrics (not pillars, but track for context): engagement time, scroll
 2. Naming: `snake_case`, descriptive (e.g., `signup_start`, `share_click`).
 3. Params: flat object, no nesting. Max 25 custom parameters per event (GA4 limit).
 4. **Register** — After adding, update the GA4 Custom Event Inventory in `ux-experiment/000-guide.md`.
+5. **Collect** — Add to `EVENTS` array in `scripts/collect-metrics.ts` so it's included in daily metrics.
 
 ## Naming
 
