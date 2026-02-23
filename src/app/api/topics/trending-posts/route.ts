@@ -10,6 +10,11 @@ function parsePositiveInt(value: string | null, fallback: number, max: number): 
   return Math.min(parsed, max)
 }
 
+export function calculateTrendingScore(voteCount: number, commentCount: number, createdAt: string): number {
+  const hoursAge = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60)
+  return (voteCount + commentCount * 0.5) / Math.pow(hoursAge + 2, 1.5)
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -19,19 +24,34 @@ export async function GET(request: NextRequest) {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - daysBack)
 
+    const candidatePoolSize = Math.max(limit * 10, 50)
+
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("posts")
-      .select("id, title, section, vote_count, content")
+      .select("id, title, section, vote_count, comment_count, content, created_at")
       .gte("created_at", cutoffDate.toISOString())
       .order("vote_count", { ascending: false })
-      .limit(limit)
+      .limit(candidatePoolSize)
 
     if (error) {
       throw new Error(error.message)
     }
 
-    const posts = data ?? []
+    const candidates = data ?? []
+    const ranked = candidates
+      .map((p) => ({ ...p, _score: calculateTrendingScore(p.vote_count, p.comment_count, p.created_at) }))
+      .sort((a, b) => b._score - a._score)
+      .slice(0, limit)
+
+    const posts = ranked.map(({ id, title, section, vote_count, comment_count, content }) => ({
+      id,
+      title,
+      section,
+      vote_count,
+      comment_count,
+      content,
+    }))
 
     const dualVoteMap = posts.length > 0 ? await getUserDualVoteMap(supabase, posts.map((p) => p.id)) : null
     const postsWithVotes = posts.map((p) => ({
