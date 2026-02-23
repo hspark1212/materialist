@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Pre-commit code review with 6 parallel expert subagents. Use when the user invokes /code-review, asks for a code review before committing, or wants to check staged/uncommitted changes. Checks architecture, security, database, UI, design philosophy, and runs automated checks.
-argument-hint: "[--staged | --all | --quick | files...]"
+argument-hint: "[--staged | --all | --quick | --auto-fix | files...]"
 ---
 
 # Code Review — 6 Parallel Expert Subagents
@@ -16,9 +16,10 @@ Parse flags from the skill arguments:
 | `--staged` | Explicit staged (same as default) |
 | `--all` | All uncommitted — `git diff HEAD` |
 | `--quick` | Skip Automated Checks subagent (subagent 6) |
+| `--auto-fix` | Run review, then automatically fix auto-fixable findings |
 | `files...` | Specific files — append `-- <files>` to diff command |
 
-Flags combine freely: `--all --quick`, `--quick src/features/posts/`.
+Flags combine freely: `--all --quick`, `--quick src/features/posts/`, `--all --auto-fix`, `--quick --auto-fix`.
 
 ---
 
@@ -335,6 +336,59 @@ else                                        → "PASS — ready to commit"
 
 ---
 
+## Phase 5 — Auto-Fix
+
+**Skip this entire phase if `--auto-fix` flag is NOT set.**
+
+### Auto-Fixable Criteria
+
+A finding is auto-fixable only if ALL conditions are met:
+
+| Condition | Description |
+|---|---|
+| Unambiguous | `fix` field describes exactly one concrete implementation |
+| Surgical | Modifies 1 existing file, a few lines at most |
+| No design decision | No architecture choices or trade-offs involved |
+| No new files | Existing file edits only — no new file creation |
+| Safe | Improves safety/correctness only — no behavior changes |
+
+**Never auto-fix Critical severity findings.** Critical issues require design decisions.
+
+### Auto-Fixable Categories (examples)
+
+- Inconsistent error code checks (`error.message.includes(...)` → `error.code === "PGRST116"`)
+- Type safety guards (unsafe `as` cast → validation guard)
+- Missing `"use client"` directive
+- Missing `try/finally` DOM cleanup
+- Non-null assertion (`!`) → explicit null guard
+- Missing `<user_content>` tags (prompt injection defense)
+- Rule doc updates (`.claude/rules/*.md`, `ux-experiment/000-guide.md`)
+
+### NOT Auto-Fixable (always skip)
+
+- **Critical** severity — design decision required
+- Multi-file refactors (e.g., deduplicating logic across files)
+- Interface/type changes (affects other consumers)
+- Requires creating a new file
+- Involves any behavior change
+
+### Execution
+
+1. Filter findings: `severity === warning | suggestion` + all auto-fixable criteria met + not Critical
+2. If no fixable findings → output `"No auto-fixable findings."` and stop
+3. For each fixable finding in order:
+   a. Read the target file
+   b. Apply surgical Edit (minimum change)
+   c. Record what was applied
+4. Run verification (skip if `--quick` flag was set):
+   ```
+   npm run lint && npx tsc --noEmit && npm run test
+   ```
+5. If verification fails: revert the failing fix → move to "failed" list
+6. Output Auto-Fix Results section (see Report Template below)
+
+---
+
 ## Report Template
 
 Output this report to the user:
@@ -378,7 +432,28 @@ Output this report to the user:
 ### Verdict
 **{BLOCK / CAUTION / PASS}** — {description}
 
-*Tip: "Fix #1 and #3" or "Fix all warnings" to address findings.*
+*Tip: "Fix #1 and #3" or "Fix all warnings" to address findings. Or re-run with `--auto-fix` to fix safe findings automatically.*
+
+---
+
+### Auto-Fix Results ({N} fixed, {N} skipped, {N} failed)
+
+{Include this section only when `--auto-fix` flag was set}
+
+#### Fixed
+- [#{id}] `{file}:{line}` — {what was fixed}
+
+#### Skipped (requires manual review)
+- [#{id}] {severity}: {file} — {reason skipped}
+
+#### Verification
+| Check | Status |
+|---|---|
+| ESLint | PASS / FAIL |
+| TypeScript | PASS / FAIL |
+| Unit Tests | PASS / FAIL |
+
+{If `--quick` was also set: replace Verification table with: "Verification skipped (`--quick`)."}
 ```
 
 **If `--quick` flag was used:** omit the Automated Checks table entirely and add a note: _"Automated checks skipped (`--quick`). Run `npm run lint && npx tsc --noEmit && npm run test` manually."_
