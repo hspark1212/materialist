@@ -63,8 +63,33 @@ type VoteSyncDetail = {
   voteCount: number
 }
 
+const VOTE_SYNC_STORAGE_PREFIX = "vote-sync:"
+
+type StoredVoteSync = VoteSyncDetail & { timestamp: number }
+
+function persistVoteSync(detail: VoteSyncDetail) {
+  try {
+    const key = `${VOTE_SYNC_STORAGE_PREFIX}${detail.targetType}:${detail.targetId}`
+    localStorage.setItem(key, JSON.stringify({ ...detail, timestamp: Date.now() }))
+  } catch {
+    // localStorage unavailable (SSR, quota exceeded)
+  }
+}
+
+function readPersistedVoteSync(targetType: string, targetId: string): StoredVoteSync | null {
+  try {
+    const key = `${VOTE_SYNC_STORAGE_PREFIX}${targetType}:${targetId}`
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    return JSON.parse(raw) as StoredVoteSync
+  } catch {
+    return null
+  }
+}
+
 function broadcastVoteSync(detail: VoteSyncDetail) {
   window.dispatchEvent(new CustomEvent(VOTE_SYNC_EVENT, { detail }))
+  persistVoteSync(detail)
 }
 
 export function VoteButton({
@@ -116,6 +141,38 @@ export function VoteButton({
     }
     window.addEventListener(VOTE_SYNC_EVENT, handler)
     return () => window.removeEventListener(VOTE_SYNC_EVENT, handler)
+  }, [targetType, targetId])
+
+  // Cross-page vote sync via localStorage (survives client-side navigation).
+  // Only applies when the server-rendered vote state is stale (differs from persisted).
+  // When they match (e.g. full page reload), skip to preserve the server's fresher voteCount.
+  useEffect(() => {
+    const persisted = readPersistedVoteSync(targetType, targetId)
+    if (persisted) {
+      const serverVote = persisted.isAnonymous ? initialUserVoteAnonymous : initialUserVoteVerified
+      if (persisted.userVote !== serverVote) {
+        setVoteCount(initialCount + (persisted.userVote - serverVote))
+        if (persisted.isAnonymous) setAnonVote(persisted.userVote)
+        else setVerifiedVote(persisted.userVote)
+      }
+    }
+
+    const handler = (e: StorageEvent) => {
+      if (!e.key?.startsWith(VOTE_SYNC_STORAGE_PREFIX) || !e.newValue) return
+      try {
+        const detail = JSON.parse(e.newValue) as StoredVoteSync
+        if (detail.targetType === targetType && detail.targetId === targetId) {
+          setVoteCount(detail.voteCount)
+          if (detail.isAnonymous) setAnonVote(detail.userVote)
+          else setVerifiedVote(detail.userVote)
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+    window.addEventListener("storage", handler)
+    return () => window.removeEventListener("storage", handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- omits initialCount/initialUserVote*; re-running on prop changes would fight prop-sync effects
   }, [targetType, targetId])
 
   const handleVote = async (direction: -1 | 1) => {
