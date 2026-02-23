@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { BookOpen, PenSquare } from "lucide-react"
 
 import { formatNumber } from "@/lib"
 import { Button } from "@/components/ui/button"
@@ -43,13 +44,24 @@ export function HeroSection({ stats }: HeroSectionProps) {
         </div>
       </div>
 
-      <div className="mt-3 flex justify-center gap-2">
-        <Button size="sm" asChild>
+      <div className="mx-auto mt-3 flex w-full max-w-xs flex-col gap-2">
+        <Button className="w-full" asChild>
           <Link href="/login">Join Community</Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/create">Create Post</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="flex-1" asChild>
+            <Link href="/create">
+              <PenSquare className="size-3.5 shrink-0" />
+              Create Post
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="flex-1" asChild>
+            <Link href="/post/eaf36a55-5cec-4bcc-9fc0-9631ff1558a8">
+              <BookOpen className="size-3.5 shrink-0" />
+              Community Guide
+            </Link>
+          </Button>
+        </div>
       </div>
     </section>
   )

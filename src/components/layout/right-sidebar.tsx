@@ -1,6 +1,6 @@
 import { cache, type ReactNode } from "react"
 import Link from "next/link"
-import { ArrowUpRight, Bot, EyeOff, Github, ShieldCheck, Sparkles, Trophy, User as UserIcon } from "lucide-react"
+import { ArrowUpRight, BookOpen, Bot, EyeOff, Github, ShieldCheck, Sparkles, Trophy, User as UserIcon } from "lucide-react"
 
 import { cn, formatNumber, type User as AppUser } from "@/lib"
 import { isMobileRequest } from "@/lib/request/is-mobile-request"
@@ -356,11 +356,24 @@ export async function RightSidebar({ sticky = true, className, hideOnMobile = fa
         iconBgClassName="bg-[color-mix(in_srgb,var(--section-papers)_12%,transparent)]"
         iconColorClassName="text-[var(--section-papers)]"
         icon={<CrystalLogo size="sm" />}
-        contentClassName="grid grid-cols-3 gap-2 px-4"
+        contentClassName="space-y-2 px-4"
       >
-        <StatTile value={formatNumber(stats.members)} label="Members" />
-        <StatTile value={formatNumber(stats.posts)} label="Posts" />
-        <StatTile value={formatNumber(stats.comments)} label="Comments" />
+        <div className="grid grid-cols-3 gap-2">
+          <StatTile value={formatNumber(stats.members)} label="Members" />
+          <StatTile value={formatNumber(stats.posts)} label="Posts" />
+          <StatTile value={formatNumber(stats.comments)} label="Comments" />
+        </div>
+        <hr className="border-border/50" />
+        <Link
+          href="/post/eaf36a55-5cec-4bcc-9fc0-9631ff1558a8"
+          className="border-primary/30 bg-background/70 hover:bg-accent hover:border-primary/60 flex items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-sm font-medium transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <BookOpen className="text-primary size-4 shrink-0" />
+            Community Guide
+          </span>
+          <ArrowUpRight className="text-primary size-3.5 shrink-0" />
+        </Link>
       </SidebarSectionCard>
 
       <SidebarSectionCard
@@ -400,6 +413,7 @@ export async function RightSidebar({ sticky = true, className, hideOnMobile = fa
             </span>
           </div>
         </div>
+
       </SidebarSectionCard>
 
       <SidebarSectionCard
