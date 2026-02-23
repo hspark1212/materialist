@@ -1,16 +1,18 @@
 import Link from "next/link"
 
 import type { Comment } from "@/lib"
+import type { Section } from "@/lib/types"
 import { CommentItem } from "@/components/comment/comment-item"
 
 type CommentThreadProps = {
   comments: Comment[]
+  section: Section
   onChanged?: () => void | Promise<void>
 }
 
 const MAX_DEPTH = 6
 
-export function CommentThread({ comments, onChanged }: CommentThreadProps) {
+export function CommentThread({ comments, section, onChanged }: CommentThreadProps) {
   return (
     <div className="space-y-0.5">
       {comments.map((comment) => {
@@ -18,13 +20,13 @@ export function CommentThread({ comments, onChanged }: CommentThreadProps) {
         const hasReplies = comment.replies.length > 0
 
         return (
-          <CommentItem key={comment.id} comment={comment} onChanged={onChanged}>
+          <CommentItem key={comment.id} comment={comment} section={section} onChanged={onChanged}>
             {hasReplies && hasMoreDepth ? (
               <Link href={`/post/${comment.postId}#${comment.id}`} className="text-primary text-xs hover:underline">
                 Continue this thread →
               </Link>
             ) : hasReplies ? (
-              <CommentThread comments={comment.replies} onChanged={onChanged} />
+              <CommentThread comments={comment.replies} section={section} onChanged={onChanged} />
             ) : null}
           </CommentItem>
         )

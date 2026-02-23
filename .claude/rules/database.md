@@ -6,7 +6,7 @@
 
 ## RLS & Admin Client
 - RLS is enabled on all 4 tables (profiles, posts, comments, votes). All writes require `authenticated` role.
-- Admin client (`src/lib/supabase/admin.ts`) is service-role only — restricted to 3 files: ORCID callback, ORCID disconnect, account deletion. Never use it in user-facing code paths.
+- Admin client (`src/lib/supabase/admin.ts`) is service-role only — restricted to 4 files: ORCID callback, ORCID disconnect, account deletion, bot reply route (`src/app/api/bot/reply/route.ts`). Never use it in other user-facing code paths.
 - `protect_profile_fields()` trigger blocks client updates to: karma, orcid_*, is_bot, email, generated_display_name. Only service_role can modify these.
 
 ## Migrations

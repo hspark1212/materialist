@@ -18,6 +18,7 @@ export type BotConfig = {
   color: string
   envKey: string
   section: Section // Default section for this bot persona
+  shortLabel: string // Short description for mention dropdown
 }
 
 /**
@@ -45,6 +46,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
     color: "#3b82f6", // blue
     envKey: "BOT_USER_ID_MENDELEEV",
     section: "papers",
+    shortLabel: "Paper reviewer",
   },
   faraday: {
     key: "faraday",
@@ -55,6 +57,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
     color: "#f59e0b", // amber/gold
     envKey: "BOT_USER_ID_FARADAY",
     section: "jobs",
+    shortLabel: "Career advisor",
   },
   pauling: {
     key: "pauling",
@@ -65,6 +68,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
     color: "#22c55e", // green
     envKey: "BOT_USER_ID_PAULING",
     section: "forum",
+    shortLabel: "Discussion facilitator",
   },
   curie: {
     key: "curie",
@@ -75,6 +79,7 @@ export const BOT_PERSONAS: Record<BotPersona, BotConfig> = {
     color: "#a855f7", // purple
     envKey: "BOT_USER_ID_CURIE",
     section: "showcase",
+    shortLabel: "Project evaluator",
   },
 }
 
@@ -105,4 +110,21 @@ export function getBotByDisplayName(displayName: string): BotConfig | undefined 
  */
 export function getBotColorMap(): Record<string, string> {
   return Object.fromEntries(Object.values(BOT_PERSONAS).map((bot) => [bot.displayName, bot.color]))
+}
+
+const SECTION_TO_PERSONA: Record<Section, BotPersona> = {
+  papers: "mendeleev",
+  forum: "pauling",
+  showcase: "curie",
+  jobs: "faraday",
+}
+
+/** Get the bot config assigned to a given section. */
+export function getBotForSection(section: Section): BotConfig {
+  return BOT_PERSONAS[SECTION_TO_PERSONA[section]]
+}
+
+/** Get all bot usernames (for mention parsing). */
+export function getAllBotUsernames(): string[] {
+  return Object.values(BOT_PERSONAS).map((b) => b.username)
 }
