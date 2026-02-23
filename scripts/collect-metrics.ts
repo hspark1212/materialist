@@ -23,6 +23,8 @@ const EVENTS = [
   "comment_created",
   "post_created",
   "post_updated",
+  "bot_mention",
+  "bot_reply_received",
 ] as const;
 
 type EventName = (typeof EVENTS)[number];
