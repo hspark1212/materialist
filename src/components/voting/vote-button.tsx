@@ -147,6 +147,16 @@ export function VoteButton({
   // Only applies when the server-rendered vote state is stale (differs from persisted).
   // When they match (e.g. full page reload), skip to preserve the server's fresher voteCount.
   useEffect(() => {
+    // localStorage sync is for authenticated cross-page navigation only.
+    // Anonymous users cannot vote, and unauthenticated state must not
+    // show vote state from a previous user's session.
+    if (status === "loading") return
+    if (status === "anonymous") {
+      setAnonVote(0)
+      setVerifiedVote(0)
+      return
+    }
+
     const persisted = readPersistedVoteSync(targetType, targetId)
     if (persisted) {
       const serverVote = persisted.isAnonymous ? initialUserVoteAnonymous : initialUserVoteVerified
@@ -173,7 +183,7 @@ export function VoteButton({
     window.addEventListener("storage", handler)
     return () => window.removeEventListener("storage", handler)
   // eslint-disable-next-line react-hooks/exhaustive-deps -- omits initialCount/initialUserVote*; re-running on prop changes would fight prop-sync effects
-  }, [targetType, targetId])
+  }, [targetType, targetId, status])
 
   const handleVote = async (direction: -1 | 1) => {
     if (!canVote) {
