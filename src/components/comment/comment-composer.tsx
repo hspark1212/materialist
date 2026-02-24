@@ -25,6 +25,7 @@ type CommentComposerProps = {
   parentCommentId?: string | null
   onSubmitted?: () => void | Promise<void>
   autoFocus?: boolean
+  isFirstComment?: boolean
 }
 
 export function CommentComposer({
@@ -33,6 +34,7 @@ export function CommentComposer({
   parentCommentId = null,
   onSubmitted,
   autoFocus = false,
+  isFirstComment = false,
 }: CommentComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { status } = useAuth()
@@ -156,7 +158,7 @@ export function CommentComposer({
                 }}
                 onSelect={updateCursorPosition}
                 onKeyDown={handleKeyDown}
-                placeholder="Add your perspective to the discussion"
+                placeholder={isFirstComment ? "Be the first to share your thoughts..." : "Add your perspective to the discussion"}
                 className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-24 resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
               />
               {showDropdown ? (

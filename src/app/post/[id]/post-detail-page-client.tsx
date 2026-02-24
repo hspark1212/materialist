@@ -68,7 +68,12 @@ export function PostDetailPageClient() {
 
       <Separator />
 
-      <CommentComposer postId={post.id} section={post.section} onSubmitted={refreshWithSidebar} />
+      <CommentComposer
+        postId={post.id}
+        section={post.section}
+        onSubmitted={refreshWithSidebar}
+        isFirstComment={!loading && comments.length === 0}
+      />
 
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold sm:text-base">Comments</h2>
@@ -91,7 +96,13 @@ export function PostDetailPageClient() {
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
       {loading ? <p className="text-muted-foreground text-sm">Loading comments...</p> : null}
-      <CommentThread comments={comments} section={post.section} onChanged={refreshWithSidebar} />
+      {!loading && comments.length === 0 ? (
+        <div className="border-border/80 bg-muted/20 rounded-lg border border-dashed px-4 py-6 text-center">
+          <p className="text-muted-foreground text-sm">No comments yet. Be the first to share your thoughts.</p>
+        </div>
+      ) : (
+        <CommentThread comments={comments} section={post.section} onChanged={refreshWithSidebar} />
+      )}
     </div>
   )
 }
