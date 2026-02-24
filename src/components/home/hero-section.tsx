@@ -29,24 +29,25 @@ export function HeroSection({ stats }: HeroSectionProps) {
         <span>✅ Verify with ORCID — get two profiles.</span>
       </div>
 
-      <div className="mt-3 flex justify-center gap-5">
+      <div className="mt-2.5 flex justify-center gap-5">
         <div>
-          <p className="text-base font-semibold">{formatNumber(stats.members)}</p>
+          <p className="text-sm font-semibold">{formatNumber(stats.members)}</p>
           <p className="text-muted-foreground text-xs">Members</p>
         </div>
         <div>
-          <p className="text-base font-semibold">{formatNumber(stats.posts)}</p>
+          <p className="text-sm font-semibold">{formatNumber(stats.posts)}</p>
           <p className="text-muted-foreground text-xs">Posts</p>
         </div>
         <div>
-          <p className="text-base font-semibold">{formatNumber(stats.comments)}</p>
+          <p className="text-sm font-semibold">{formatNumber(stats.comments)}</p>
           <p className="text-muted-foreground text-xs">Comments</p>
         </div>
       </div>
 
+
       <div className="mx-auto mt-3 flex w-full max-w-xs flex-col gap-2">
         <Button className="w-full" asChild>
-          <Link href="/login">Join Community</Link>
+          <Link href="/login">Join the discussion</Link>
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="flex-1" asChild>

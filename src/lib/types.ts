@@ -54,6 +54,7 @@ export interface Post {
   jobType?: JobType
   applicationUrl?: string
   deadline?: string // ISO date string
+  lastCommentAt?: string
   isOwner?: boolean
 }
 

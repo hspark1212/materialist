@@ -580,6 +580,10 @@
   50% { transform: scale(1.15); }
 }
 
+@utility animate-vote-pulse {
+  animation: hot-pulse 1s ease-in-out infinite;
+}
+
 /* ── Radix ScrollArea: prevent table display from expanding beyond viewport ── */
 aside [data-radix-scroll-area-viewport] > div {
   display: block !important;

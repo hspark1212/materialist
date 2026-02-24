@@ -84,6 +84,7 @@ export function mapPostRowToPost(row: PostWithAuthorRow): Post {
     jobType: row.job_type ?? undefined,
     applicationUrl: row.application_url ?? undefined,
     deadline: row.deadline ?? undefined,
+    lastCommentAt: row.last_comment_at ?? undefined,
   }
 }
 

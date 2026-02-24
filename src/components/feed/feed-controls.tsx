@@ -15,7 +15,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 export type FeedSort = "hot" | "new" | "top"
-export type DiscoveryChip = "today" | "trending"
+export type DiscoveryChip = "today" | "trending" | "active"
 
 type FeedControlsProps = {
   sortBy: FeedSort
@@ -31,7 +31,7 @@ export function FeedControls({ sortBy, setSortBy, authorType, setAuthorType }: F
         type="single"
         value={authorType}
         onValueChange={(value) => {
-          setAuthorType((value || "all") as AuthorType)
+          setAuthorType((value || "human") as AuthorType)
         }}
         variant="outline"
         size="sm"

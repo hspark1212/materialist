@@ -10,7 +10,7 @@
 - `protect_profile_fields()` trigger blocks client updates to: karma, orcid_*, is_bot, email, generated_display_name. Only service_role can modify these.
 
 ## Migrations
-- Single squashed migration: `supabase/migrations/20260218120000_drop_profile_pii_columns.sql`
+- Migration files: `supabase/migrations/`
 - Never run `supabase db push` without explicit user approval.
 
 ## Key Triggers
@@ -18,6 +18,7 @@
 - `handle_updated_at()` — auto-updates timestamps on posts, comments, profiles. **Column-scoped**: triggers use `BEFORE UPDATE OF <content_columns>` to exclude denormalized counters (`vote_count`, `comment_count`, `karma`) and `search_document`. New columns must be added to the trigger's column list if they should affect `updated_at`.
 - `handle_post_vote_count()` / `handle_comment_vote_count()` — denormalized vote counts
 - `handle_comment_count()` — denormalized comment count on posts
+- `handle_last_comment_at()` — denormalized last comment timestamp on posts
 - `on_post_search_document` — maintains tsvector for full-text search (also column-scoped: `title`, `content`, `tags`, `doi`, `arxiv_id`, `company`)
 
 ## Search
