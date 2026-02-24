@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
-import { CalendarDays, TrendingUp } from "lucide-react"
+import { CalendarDays, MessageSquare, TrendingUp } from "lucide-react"
 
 import { cn, type Post, type Section } from "@/lib"
 import { useIdentity } from "@/lib/identity"
@@ -37,6 +37,7 @@ type FeedPageClientProps = {
   header?: ReactNode
   discoveryPosts?: Post[]
   discoveryLabel?: RecentPostsLabel
+  activeDiscussions?: Post[]
 }
 
 function parseFeedSort(value: string | null, fallback: FeedSort): FeedSort {
@@ -52,10 +53,12 @@ export function FeedPageClient({
   header,
   discoveryPosts,
   discoveryLabel = "today",
+  activeDiscussions,
 }: FeedPageClientProps) {
+  const hasActiveDiscussions = activeDiscussions && activeDiscussions.length > 0
   const hasDiscoveryPosts = discoveryPosts && discoveryPosts.length > 0
   const [discoveryChip, setDiscoveryChip] = useState<DiscoveryChip | null>(
-    hasDiscoveryPosts ? "today" : "trending",
+    hasActiveDiscussions ? "active" : hasDiscoveryPosts ? "today" : "trending",
   )
   const router = useRouter()
   const pathname = usePathname()
@@ -92,7 +95,7 @@ export function FeedPageClient({
     activeShowcaseType === initialFeed.showcaseType &&
     activeJobType === initialFeed.jobType &&
     activeLocation === initialFeed.location &&
-    authorType === (initialFeed.authorType ?? "all")
+    authorType === (initialFeed.authorType ?? "human")
 
   const { posts, loading, loadingMore, error, hasMore, loadMore } = usePostsFeed({
     section,
@@ -130,12 +133,13 @@ export function FeedPageClient({
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4">
       {header}
-      {discoveryPosts ? (
+      {discoveryPosts?.length || activeDiscussions?.length ? (
         <DiscoverySection
           chip={discoveryChip}
           onChipChange={setDiscoveryChip}
-          discoveryPosts={discoveryPosts}
+          discoveryPosts={discoveryPosts ?? []}
           discoveryLabel={discoveryLabel}
+          activeDiscussions={activeDiscussions ?? []}
         />
       ) : null}
       {activeQuery ? <ActiveSearchBadge query={activeQuery} onClear={clearQuery} /> : null}
@@ -162,13 +166,16 @@ function DiscoverySection({
   onChipChange,
   discoveryPosts,
   discoveryLabel,
+  activeDiscussions,
 }: {
   chip: DiscoveryChip | null
   onChipChange: (chip: DiscoveryChip | null) => void
   discoveryPosts: Post[]
   discoveryLabel: RecentPostsLabel
+  activeDiscussions: Post[]
 }) {
   const todayChipLabel = discoveryLabel === "recent" ? "Recent" : "Today"
+  const hasActive = activeDiscussions.length > 0
   return (
     <div className="space-y-3 pt-3">
       <ToggleGroup
@@ -178,6 +185,19 @@ function DiscoverySection({
         variant="outline"
         size="sm"
       >
+        {hasActive && (
+          <ToggleGroupItem
+            value="active"
+            aria-label="Active discussions"
+            className={cn(
+              "gap-1 px-2 text-[11px]",
+              chip === "active" ? "bg-foreground text-background hover:bg-foreground/90 hover:text-background" : "",
+            )}
+          >
+            <MessageSquare className="size-3.5" />
+            <span>Active</span>
+          </ToggleGroupItem>
+        )}
         <ToggleGroupItem
           value="today"
           aria-label={discoveryLabel === "recent" ? "Recent posts" : "Today's posts"}
@@ -202,14 +222,44 @@ function DiscoverySection({
           <span className="hidden max-[360px]:inline">Trend</span>
         </ToggleGroupItem>
       </ToggleGroup>
-      <DiscoveryStrip chip={chip} discoveryPosts={discoveryPosts} />
+      <DiscoveryStrip chip={chip} discoveryPosts={discoveryPosts} activeDiscussions={activeDiscussions} />
     </div>
   )
 }
 
-function DiscoveryStrip({ chip, discoveryPosts }: { chip: DiscoveryChip | null; discoveryPosts: Post[] }) {
-  const { posts: trendingPosts } = useTrendingPosts(5, 30)
+function DiscoveryStrip({
+  chip,
+  discoveryPosts,
+  activeDiscussions,
+}: {
+  chip: DiscoveryChip | null
+  discoveryPosts: Post[]
+  activeDiscussions: Post[]
+}) {
+  const { posts: trendingPosts } = useTrendingPosts(10, 30)
   const { isAnonymousMode } = useIdentity()
+
+  if (chip === "active" && activeDiscussions.length > 0) {
+    return (
+      <ScrollStrip>
+        {activeDiscussions.map((post) => (
+          <DiscoveryCard
+            key={post.id}
+            postId={post.id}
+            href={`/post/${post.id}`}
+            title={post.title}
+            section={post.section}
+            preview={getPostPreviewText(post.content, 120)}
+            voteCount={post.voteCount}
+            commentCount={post.commentCount}
+            userVoteAnonymous={post.userVoteAnonymous ?? 0}
+            userVoteVerified={post.userVoteVerified ?? 0}
+            isAnonymous={isAnonymousMode}
+          />
+        ))}
+      </ScrollStrip>
+    )
+  }
 
   if (chip === "today" && discoveryPosts.length > 0) {
     return (
@@ -348,6 +398,7 @@ function DiscoveryCard({
   preview,
   section,
   voteCount,
+  commentCount,
   userVoteAnonymous = 0,
   userVoteVerified = 0,
   isAnonymous = false,
@@ -358,6 +409,7 @@ function DiscoveryCard({
   preview?: string
   section: string
   voteCount: number
+  commentCount?: number
   userVoteAnonymous?: -1 | 0 | 1
   userVoteVerified?: -1 | 0 | 1
   isAnonymous?: boolean
@@ -371,20 +423,28 @@ function DiscoveryCard({
       <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
         <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ backgroundColor: meta?.color }} />
         {meta?.label}
-        <span className="ml-auto" onClick={(e) => e.preventDefault()}>
-          <VoteButton
-            targetType="post"
-            targetId={postId}
-            initialCount={voteCount}
-            initialUserVoteAnonymous={userVoteAnonymous}
-            initialUserVoteVerified={userVoteVerified}
-            isAnonymous={isAnonymous}
-            orientation="horizontal"
-            size="sm"
-            compact
-            countMode="net"
-            className="h-6 gap-0.5 px-0.5"
-          />
+        <span className="ml-auto flex items-center gap-1.5">
+          {commentCount !== undefined && commentCount > 0 && (
+            <span className="flex items-center gap-0.5">
+              <MessageSquare className="size-3" />
+              <span>{commentCount}</span>
+            </span>
+          )}
+          <span onClick={(e) => e.preventDefault()}>
+            <VoteButton
+              targetType="post"
+              targetId={postId}
+              initialCount={voteCount}
+              initialUserVoteAnonymous={userVoteAnonymous}
+              initialUserVoteVerified={userVoteVerified}
+              isAnonymous={isAnonymous}
+              orientation="horizontal"
+              size="sm"
+              compact
+              countMode="net"
+              className="h-6 gap-0.5 px-0.5"
+            />
+          </span>
         </span>
       </span>
       <span className="line-clamp-2 text-sm leading-snug font-medium">{title}</span>

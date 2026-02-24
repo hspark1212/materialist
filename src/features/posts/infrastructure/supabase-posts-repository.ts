@@ -52,6 +52,7 @@ const POST_COLUMNS_FULL = [
   "deadline",
   "created_at",
   "updated_at",
+  "last_comment_at",
 ].join(",")
 
 // Columns for feed cards (include content for inline preview rendering)
@@ -80,6 +81,7 @@ const POST_COLUMNS_LIST = [
   "deadline",
   "created_at",
   "updated_at",
+  "last_comment_at",
 ].join(",")
 
 const COMMENT_COLUMNS = [
@@ -95,8 +97,8 @@ const COMMENT_COLUMNS = [
   "updated_at",
 ].join(",")
 
-const POSTS_SELECT_LIST = `${POST_COLUMNS_LIST},profiles(${PROFILE_COLUMNS})`
-const POSTS_SELECT_LIST_INNER = `${POST_COLUMNS_LIST},profiles!inner(${PROFILE_COLUMNS})`
+export const POSTS_SELECT_LIST = `${POST_COLUMNS_LIST},profiles(${PROFILE_COLUMNS})`
+export const POSTS_SELECT_LIST_INNER = `${POST_COLUMNS_LIST},profiles!inner(${PROFILE_COLUMNS})`
 const POSTS_SELECT_DETAIL = `${POST_COLUMNS_FULL},profiles(${PROFILE_COLUMNS})`
 const COMMENTS_SELECT = `${COMMENT_COLUMNS},profiles(${PROFILE_COLUMNS})`
 const HOT_RECENT_WINDOW_DAYS = 7

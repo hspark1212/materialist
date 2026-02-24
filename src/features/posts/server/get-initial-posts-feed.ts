@@ -95,8 +95,9 @@ export async function getInitialPostsFeed({
   const location = normalizeLocationFilter(firstValue(searchParams?.location))
   const resolvedSortBy = sortBy ?? parsePagePostSort(firstValue(searchParams?.sort))
   const rawAuthorType = firstValue(searchParams?.authorType)
+  // Default is "human" — matches useAuthorTypeFilter client default.
   const resolvedAuthorType =
-    authorType ?? (rawAuthorType === "human" ? "human" : rawAuthorType === "bot" ? "bot" : "all")
+    authorType ?? (rawAuthorType === "bot" ? "bot" : rawAuthorType === "all" ? "all" : "human")
 
   try {
     const supabase = await createClient()

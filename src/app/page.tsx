@@ -7,7 +7,7 @@ import {
   resolvePageSearchParams,
   type AwaitablePageSearchParams,
 } from "@/features/posts/server/get-initial-posts-feed"
-import { getRecentPosts } from "@/features/posts/server/get-recent-posts"
+import { getActiveDiscussions, getRecentPosts } from "@/features/posts/server/get-recent-posts"
 
 type HomePageProps = {
   searchParams?: AwaitablePageSearchParams
@@ -38,11 +38,12 @@ export default async function Home({ searchParams }: HomePageProps) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [initialFeed, stats, recentResult] = await Promise.all([
+  const [initialFeed, stats, recentResult, activeDiscussions] = await Promise.all([
     getInitialPostsFeed({ searchParams: resolvedSearchParams }),
     // Only fetch stats for anonymous visitors (hero section)
     user ? Promise.resolve(null) : getCommunityStats(),
     getRecentPosts(),
+    getActiveDiscussions(),
   ])
 
   return (
@@ -52,6 +53,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         stats={stats}
         discoveryPosts={recentResult.posts}
         discoveryLabel={recentResult.label}
+        activeDiscussions={activeDiscussions}
       />
     </Suspense>
   )

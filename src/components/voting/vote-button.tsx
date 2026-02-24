@@ -256,7 +256,7 @@ export function VoteButton({
         disabled={isSubmitting}
         onClick={() => handleVote(1)}
         className={cn(
-          "text-muted-foreground hover:text-upvote flex touch-manipulation items-center justify-center transition-all hover:scale-110 active:scale-95 disabled:opacity-60",
+          "text-muted-foreground hover:text-upvote flex touch-manipulation items-center justify-center transition-colors hover:animate-vote-pulse active:scale-95 disabled:opacity-60",
           buttonSizeClass,
         )}
         aria-label="Upvote"
@@ -280,7 +280,7 @@ export function VoteButton({
         disabled={isSubmitting}
         onClick={() => handleVote(-1)}
         className={cn(
-          "text-muted-foreground hover:text-downvote flex touch-manipulation items-center justify-center transition-all hover:scale-110 active:scale-95 disabled:opacity-60",
+          "text-muted-foreground hover:text-downvote flex touch-manipulation items-center justify-center transition-colors hover:animate-vote-pulse active:scale-95 disabled:opacity-60",
           buttonSizeClass,
         )}
         aria-label="Downvote"

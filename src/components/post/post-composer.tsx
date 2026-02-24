@@ -20,6 +20,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
+const sectionPlaceholders: Record<Section, { title: string; content: string }> = {
+  papers: {
+    title: "e.g., New MLFF benchmark shows 10x speedup over DFT",
+    content: "Share what you found interesting, key results, or how it connects to your work...",
+  },
+  forum: {
+    title: "e.g., Best practices for training on small crystal datasets?",
+    content: "What's on your mind? Share a question, observation, or start a discussion...",
+  },
+  showcase: {
+    title: "e.g., matbench-discovery — open benchmark for crystal stability prediction",
+    content: "Describe your project, what problem it solves, and how others can use it...",
+  },
+  jobs: {
+    title: "e.g., Postdoc in computational materials design — MIT",
+    content: "Describe the role, requirements, and what makes this opportunity unique...",
+  },
+}
+
 type PostComposerProps = {
   initialPost?: Post
 }
@@ -297,7 +316,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
               className={inputClassName}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Write a concise, specific title"
+              placeholder={sectionPlaceholders[section].title}
             />
           </div>
 
@@ -324,7 +343,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
                   className="border-border/80 bg-background/70 hover:bg-background focus-visible:border-ring focus-visible:bg-background min-h-[220px] resize-y rounded-lg border font-mono shadow-sm transition-[border-color,box-shadow,background-color]"
-                  placeholder="Share context, methods, and what feedback you need"
+                  placeholder={sectionPlaceholders[section].content}
                 />
                 <MarkdownToolbar textareaRef={textareaRef} value={content} onValueChange={setContent} variant="full" />
               </TabsContent>

@@ -49,6 +49,7 @@ export type PostRow = {
   deadline: string | null
   created_at: string
   updated_at: string
+  last_comment_at: string | null
 }
 
 export type CommentRow = {

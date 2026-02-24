@@ -11,14 +11,16 @@ type HomePageClientProps = {
   stats: CommunityStats | null
   discoveryPosts: Post[]
   discoveryLabel: RecentPostsLabel
+  activeDiscussions: Post[]
 }
 
-export function HomePageClient({ initialFeed, stats, discoveryPosts, discoveryLabel }: HomePageClientProps) {
+export function HomePageClient({ initialFeed, stats, discoveryPosts, discoveryLabel, activeDiscussions }: HomePageClientProps) {
   return (
     <FeedPageClient
       initialFeed={initialFeed}
       discoveryPosts={discoveryPosts}
       discoveryLabel={discoveryLabel}
+      activeDiscussions={activeDiscussions}
       header={stats ? <HeroSection stats={stats} /> : null}
     />
   )
