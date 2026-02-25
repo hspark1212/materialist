@@ -12,6 +12,7 @@ import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseType
 import { UserAvatar } from "@/components/user/user-avatar"
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer"
 import { MarkdownToolbar } from "@/components/editor/markdown-toolbar"
+import { normalizeTag } from "@/features/posts/domain/query-normalization"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -73,6 +74,12 @@ export function PostComposer({ initialPost }: PostComposerProps) {
       .filter(Boolean)
   }, [tags])
 
+  // Canonicalize and deduplicate tags for API submission, without mutating user input UI
+  const canonicalTagsForSubmit = useMemo(() => {
+    const normalized = parsedTags.map((t) => normalizeTag(t)).filter((t): t is string => typeof t === "string")
+    return Array.from(new Set(normalized))
+  }, [parsedTags])
+
   const parsedTechStack = useMemo(() => {
     return techStack
       .split(",")
@@ -112,7 +119,8 @@ export function PostComposer({ initialPost }: PostComposerProps) {
           title,
           content,
           section,
-          tags: parsedTags,
+          // Submit canonicalized, deduplicated tags for server side filtering
+          tags: canonicalTagsForSubmit,
           isAnonymous: isAnonymousMode,
           flair: section === "forum" ? flair : undefined,
           url,

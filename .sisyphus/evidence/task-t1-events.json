@@ -1,0 +1,55 @@
+[
+  {
+    "event": "activated",
+    "params": { "activation_type": "vote" },
+    "source_files": ["src/components/voting/vote-button.tsx"]
+  },
+  {
+    "event": "activated",
+    "params": { "activation_type": "comment" },
+    "source_files": ["src/components/comment/comment-composer.tsx"]
+  },
+  {
+    "event": "activated",
+    "params": { "activation_type": "post" },
+    "source_files": ["src/components/post/post-composer.tsx"]
+  },
+  {
+    "event": "auth_gate_shown",
+    "params": {},
+    "source_files": [
+      "src/components/voting/vote-button.tsx",
+      "src/components/comment/comment-composer.tsx",
+      "src/components/post/post-composer.tsx"
+    ]
+  },
+  {
+    "event": "auth_gate_click",
+    "params": { "action": "Sign In" },
+    "source_files": [
+      "src/components/voting/vote-button.tsx",
+      "src/components/comment/comment-composer.tsx",
+      "src/components/post/post-composer.tsx"
+    ]
+  },
+  {
+    "event": "composer_open",
+    "params": { "composer": "post" },
+    "source_files": ["src/components/post/post-composer.tsx"]
+  },
+  {
+    "event": "search_used",
+    "params": { "query_length": 0 },
+    "source_files": ["src/components/layout/header.tsx"]
+  },
+  {
+    "event": "search_result_click",
+    "params": {},
+    "source_files": ["src/components/post/post-card.tsx", "src/components/post/post-card-compact.tsx"]
+  },
+  {
+    "event": "share_click",
+    "params": {},
+    "source_files": ["src/components/post/share-button.tsx"]
+  }
+]

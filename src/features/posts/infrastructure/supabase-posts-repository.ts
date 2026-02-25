@@ -150,7 +150,11 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
     }
 
     if (params.tag) {
-      query = query.contains("tags", [params.tag])
+      // Support both canonical and legacy tag representations by using an OR on contains
+      // Attempt to leverage PostgREST OR syntax for array contains on the same field.
+      // This avoids a separate migration and keeps existing behavior intact.
+      const tagValue = params.tag
+      query = query.or(`tags.contains.{${tagValue}},tags.contains.{#${tagValue}}`)
     }
     if (params.flair) {
       query = query.eq("flair", params.flair)
@@ -206,7 +210,7 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
 
       const { data: recentRows, error: recentError } = await recentQuery
       throwIfError(recentError, "Failed to list recent hot posts")
-      rows.push(...(((recentRows ?? []) as unknown) as PostWithAuthorRow[]))
+      rows.push(...((recentRows ?? []) as unknown as PostWithAuthorRow[]))
 
       const remaining = limit - rows.length
       if (remaining <= 0) {
@@ -222,7 +226,7 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
 
       const { data: olderRows, error: olderError } = await olderQuery
       throwIfError(olderError, "Failed to list older hot posts")
-      rows.push(...(((olderRows ?? []) as unknown) as PostWithAuthorRow[]))
+      rows.push(...((olderRows ?? []) as unknown as PostWithAuthorRow[]))
 
       return rows
     }
@@ -237,7 +241,7 @@ export function createSupabasePostsRepository(supabase: SupabaseClient): PostsRe
 
     const { data: olderRows, error: olderError } = await olderQuery
     throwIfError(olderError, "Failed to list older hot posts")
-    return ((olderRows ?? []) as unknown) as PostWithAuthorRow[]
+    return (olderRows ?? []) as unknown as PostWithAuthorRow[]
   }
 
   async function listPostsBySearch(

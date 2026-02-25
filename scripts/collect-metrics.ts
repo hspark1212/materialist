@@ -10,9 +10,9 @@
  *   GA4_PROPERTY_ID   — GA4 property ID (numeric)
  */
 
-import { BetaAnalyticsDataClient } from "@google-analytics/data";
-import * as fs from "node:fs";
-import * as path from "node:path";
+import { BetaAnalyticsDataClient } from "@google-analytics/data"
+import * as fs from "node:fs"
+import * as path from "node:path"
 
 const EVENTS = [
   "page_view",
@@ -25,43 +25,50 @@ const EVENTS = [
   "post_updated",
   "bot_mention",
   "bot_reply_received",
-] as const;
+  "activated",
+  "auth_gate_shown",
+  "auth_gate_click",
+  "composer_open",
+  "search_used",
+  "search_result_click",
+  "share_click",
+] as const
 
-type EventName = (typeof EVENTS)[number];
+type EventName = (typeof EVENTS)[number]
 
 interface DailyEntry {
-  date: string;
-  [event: string]: { count: number; users: number } | string;
+  date: string
+  [event: string]: { count: number; users: number } | string
 }
 
-const METRICS_PATH = path.resolve(process.cwd(), "metrics/daily.json");
+const METRICS_PATH = path.resolve(process.cwd(), "metrics/daily.json")
 
 function parseArgs(): string {
-  const idx = process.argv.indexOf("--date");
+  const idx = process.argv.indexOf("--date")
   if (idx !== -1 && process.argv[idx + 1]) {
-    const d = process.argv[idx + 1];
+    const d = process.argv[idx + 1]
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-      console.error(`Invalid date format: ${d}. Expected YYYY-MM-DD.`);
-      process.exit(1);
+      console.error(`Invalid date format: ${d}. Expected YYYY-MM-DD.`)
+      process.exit(1)
     }
-    return d;
+    return d
   }
   // Default: yesterday (GA4 data is available within ~24 hours)
-  const dt = new Date();
-  dt.setDate(dt.getDate() - 1);
-  return dt.toISOString().slice(0, 10);
+  const dt = new Date()
+  dt.setDate(dt.getDate() - 1)
+  return dt.toISOString().slice(0, 10)
 }
 
 function loadMetrics(): DailyEntry[] {
-  if (!fs.existsSync(METRICS_PATH)) return [];
-  const raw = fs.readFileSync(METRICS_PATH, "utf-8");
-  return JSON.parse(raw) as DailyEntry[];
+  if (!fs.existsSync(METRICS_PATH)) return []
+  const raw = fs.readFileSync(METRICS_PATH, "utf-8")
+  return JSON.parse(raw) as DailyEntry[]
 }
 
 function saveMetrics(entries: DailyEntry[]): void {
-  entries.sort((a, b) => a.date.localeCompare(b.date));
-  fs.mkdirSync(path.dirname(METRICS_PATH), { recursive: true });
-  fs.writeFileSync(METRICS_PATH, JSON.stringify(entries, null, 2) + "\n");
+  entries.sort((a, b) => a.date.localeCompare(b.date))
+  fs.mkdirSync(path.dirname(METRICS_PATH), { recursive: true })
+  fs.writeFileSync(METRICS_PATH, JSON.stringify(entries, null, 2) + "\n")
 }
 
 async function fetchEventMetrics(
@@ -81,66 +88,66 @@ async function fetchEventMetrics(
         stringFilter: { matchType: "EXACT", value: eventName },
       },
     },
-  });
+  })
 
-  const row = response.rows?.[0];
-  if (!row) return { count: 0, users: 0 };
+  const row = response.rows?.[0]
+  if (!row) return { count: 0, users: 0 }
 
   return {
     count: Number(row.metricValues?.[0]?.value ?? 0),
     users: Number(row.metricValues?.[1]?.value ?? 0),
-  };
+  }
 }
 
 async function main() {
-  const date = parseArgs();
-  console.log(`Collecting GA4 metrics for ${date}...`);
+  const date = parseArgs()
+  console.log(`Collecting GA4 metrics for ${date}...`)
 
-  const credentialsFile = process.env.GA4_CREDENTIALS_FILE;
+  const credentialsFile = process.env.GA4_CREDENTIALS_FILE
   const credentials = credentialsFile
     ? fs.readFileSync(path.resolve(credentialsFile), "utf-8")
-    : process.env.GA4_CREDENTIALS;
-  const propertyId = process.env.GA4_PROPERTY_ID;
+    : process.env.GA4_CREDENTIALS
+  const propertyId = process.env.GA4_PROPERTY_ID
 
   if (!credentials) {
-    console.error("Missing GA4_CREDENTIALS or GA4_CREDENTIALS_FILE env var");
-    process.exit(1);
+    console.error("Missing GA4_CREDENTIALS or GA4_CREDENTIALS_FILE env var")
+    process.exit(1)
   }
   if (!propertyId) {
-    console.error("Missing GA4_PROPERTY_ID env var");
-    process.exit(1);
+    console.error("Missing GA4_PROPERTY_ID env var")
+    process.exit(1)
   }
 
   const client = new BetaAnalyticsDataClient({
     credentials: JSON.parse(credentials),
-  });
+  })
 
-  const entry: DailyEntry = { date };
+  const entry: DailyEntry = { date }
 
   // Fetch all events in parallel
-  const results = await Promise.all(EVENTS.map((e) => fetchEventMetrics(client, propertyId, date, e)));
+  const results = await Promise.all(EVENTS.map((e) => fetchEventMetrics(client, propertyId, date, e)))
 
   for (let i = 0; i < EVENTS.length; i++) {
-    entry[EVENTS[i]] = results[i];
+    entry[EVENTS[i]] = results[i]
   }
 
   // Merge into existing data
-  const metrics = loadMetrics();
-  const existingIdx = metrics.findIndex((m) => m.date === date);
+  const metrics = loadMetrics()
+  const existingIdx = metrics.findIndex((m) => m.date === date)
   if (existingIdx !== -1) {
-    metrics[existingIdx] = entry;
-    console.log(`Updated existing entry for ${date}`);
+    metrics[existingIdx] = entry
+    console.log(`Updated existing entry for ${date}`)
   } else {
-    metrics.push(entry);
-    console.log(`Added new entry for ${date}`);
+    metrics.push(entry)
+    console.log(`Added new entry for ${date}`)
   }
 
-  saveMetrics(metrics);
-  console.log(`Saved to ${METRICS_PATH}`);
-  console.log(JSON.stringify(entry, null, 2));
+  saveMetrics(metrics)
+  console.log(`Saved to ${METRICS_PATH}`)
+  console.log(JSON.stringify(entry, null, 2))
 }
 
 main().catch((err) => {
-  console.error("Failed to collect metrics:", err);
-  process.exit(1);
-});
+  console.error("Failed to collect metrics:", err)
+  process.exit(1)
+})

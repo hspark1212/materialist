@@ -58,14 +58,13 @@ describe("normalizeTag", () => {
   })
 
   it("trims and collapses internal whitespace", () => {
-    expect(normalizeTag("  DFT   Calculations  ")).toBe("DFT Calculations")
+    expect(normalizeTag("  DFT   Calculations  ")).toBe("dft-calculations")
   })
 
-  it("truncates to 60 characters", () => {
+  it("returns undefined for overly long tags (>40 chars after normalization)", () => {
     const long = "t".repeat(100)
     const result = normalizeTag(long)
-    expect(result).toHaveLength(60)
-    expect(result).toBe("t".repeat(60))
+    expect(result).toBeUndefined()
   })
 })
 

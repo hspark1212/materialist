@@ -7,11 +7,34 @@ export function normalizeSearchQuery(value: string | null | undefined): string |
   return normalized.slice(0, 120)
 }
 
+// Canonical tag normalization
 export function normalizeTag(value: string | null | undefined): string | undefined {
   if (!value) return undefined
-  const normalized = value.trim().replace(/\s+/g, " ")
-  if (!normalized) return undefined
-  return normalized.slice(0, 60)
+
+  // 1) trim and collapse whitespace
+  let t = value.trim().replace(/\s+/g, " ")
+
+  // 2) strip leading '#'
+  if (t.startsWith("#")) {
+    t = t.slice(1)
+  }
+
+  // 3) lowercase
+  t = t.toLowerCase()
+
+  // 4) replace spaces with '-'
+  t = t.replace(/\s+/g, "-")
+
+  // 5) remove disallowed chars, allow [a-z0-9-_.+]
+  t = t.replace(/[^a-z0-9_\-\.\+]/g, "")
+
+  // 6) max length of 40
+  if (t.length > 40) return undefined
+
+  // 7) empty -> undefined
+  if (t.length === 0) return undefined
+
+  return t
 }
 
 const VALID_FORUM_FLAIRS: ForumFlair[] = ["discussion", "question", "career", "news"]
@@ -42,7 +65,6 @@ export function normalizeLocationFilter(value: string | null | undefined): strin
   if (!value) return undefined
   const normalized = value.trim().replace(/\s+/g, " ")
   if (!normalized) return undefined
-
   const sanitized = normalized.slice(0, 40)
   if (!/^[A-Za-z0-9 -]+$/.test(sanitized)) return undefined
   return sanitized
