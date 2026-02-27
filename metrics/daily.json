@@ -232,5 +232,48 @@
       "count": 13,
       "users": 3
     }
+  },
+  {
+    "date": "2026-02-26",
+    "page_view": {
+      "count": 156,
+      "users": 18
+    },
+    "session_start": {
+      "count": 31,
+      "users": 18
+    },
+    "first_visit": {
+      "count": 5,
+      "users": 5
+    },
+    "card_click": {
+      "count": 23,
+      "users": 8
+    },
+    "vote_cast": {
+      "count": 6,
+      "users": 3
+    },
+    "comment_created": {
+      "count": 1,
+      "users": 1
+    },
+    "post_created": {
+      "count": 1,
+      "users": 1
+    },
+    "post_updated": {
+      "count": 1,
+      "users": 1
+    },
+    "bot_mention": {
+      "count": 0,
+      "users": 0
+    },
+    "bot_reply_received": {
+      "count": 0,
+      "users": 0
+    }
   }
 ]
