@@ -47,6 +47,11 @@ function parseFeedSort(value: string | null, fallback: FeedSort): FeedSort {
   return fallback
 }
 
+function parseDiscoveryChip(value: string | null, fallback: DiscoveryChip): DiscoveryChip {
+  if (value === "active" || value === "today" || value === "trending") return value
+  return fallback
+}
+
 export function FeedPageClient({
   section,
   initialFeed,
@@ -57,12 +62,24 @@ export function FeedPageClient({
 }: FeedPageClientProps) {
   const hasActiveDiscussions = activeDiscussions && activeDiscussions.length > 0
   const hasDiscoveryPosts = discoveryPosts && discoveryPosts.length > 0
-  const [discoveryChip, setDiscoveryChip] = useState<DiscoveryChip | null>(
-    hasActiveDiscussions ? "active" : hasDiscoveryPosts ? "today" : "trending",
-  )
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const defaultChip: DiscoveryChip = hasActiveDiscussions ? "active" : hasDiscoveryPosts ? "today" : "trending"
+  const discoveryChip = parseDiscoveryChip(searchParams.get("chip"), defaultChip)
+  const setDiscoveryChip = useCallback(
+    (value: DiscoveryChip | null) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (value) {
+        params.set("chip", value)
+      } else {
+        params.delete("chip")
+      }
+      const qs = params.toString()
+      router.push(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false })
+    },
+    [pathname, router, searchParams],
+  )
   const sortBy = parseFeedSort(searchParams.get("sort"), initialFeed.sortBy)
   const setSortBy = useCallback(
     (value: FeedSort) => {
@@ -168,7 +185,7 @@ function DiscoverySection({
   discoveryLabel,
   activeDiscussions,
 }: {
-  chip: DiscoveryChip | null
+  chip: DiscoveryChip
   onChipChange: (chip: DiscoveryChip | null) => void
   discoveryPosts: Post[]
   discoveryLabel: RecentPostsLabel
@@ -232,7 +249,7 @@ function DiscoveryStrip({
   discoveryPosts,
   activeDiscussions,
 }: {
-  chip: DiscoveryChip | null
+  chip: DiscoveryChip
   discoveryPosts: Post[]
   activeDiscussions: Post[]
 }) {
