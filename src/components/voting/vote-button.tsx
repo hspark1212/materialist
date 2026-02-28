@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib"
 import { event } from "@/lib/analytics/gtag"
+import { trackActivation } from "@/lib/analytics/activation"
 
 type VoteButtonProps = {
   targetType: "post" | "comment"
@@ -113,8 +114,6 @@ export function VoteButton({
 
   const userVote = isAnonymous ? anonVote : verifiedVote
 
-  const canVote = status !== "loading" && status !== "anonymous"
-
   // Parent data can change without remounting (e.g. profile identity-mode switches).
   // Keep local state aligned with server-derived props so the active mode shows the correct vote.
   useEffect(() => {
@@ -186,11 +185,16 @@ export function VoteButton({
   }, [targetType, targetId, status])
 
   const handleVote = async (direction: -1 | 1) => {
-    if (!canVote) {
+    if (status === "loading") return
+    if (status === "anonymous") {
+      event("auth_gate_shown", { trigger: "vote" })
       toast.info("Sign in to vote.", {
         action: {
           label: "Sign in",
-          onClick: () => (window.location.href = "/login"),
+          onClick: () => {
+            event("auth_gate_click", { action: "sign_in" })
+            window.location.href = "/login"
+          },
         },
       })
       return
@@ -226,6 +230,7 @@ export function VoteButton({
       setVoteCount(newVoteCount)
       broadcastVoteSync({ targetType, targetId, isAnonymous, userVote: newUserVote, voteCount: newVoteCount })
       event("vote_cast", { target_type: targetType, target_id: targetId, direction, is_anonymous: isAnonymous })
+      trackActivation("vote")
     } catch (error) {
       console.error("[VoteButton] Vote failed:", error)
     } finally {

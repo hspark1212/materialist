@@ -1,11 +1,12 @@
 "use client"
 
-import { useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react"
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 
 import { toast } from "sonner"
 import type { ForumFlair, JobType, Post, Section, ShowcaseType } from "@/lib"
 import { event } from "@/lib/analytics/gtag"
+import { trackActivation } from "@/lib/analytics/activation"
 import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
 import { forumFlairs, jobTypeLabels, sections, showcaseTypeFilters, showcaseTypeLabels } from "@/lib/sections"
@@ -67,6 +68,10 @@ export function PostComposer({ initialPost }: PostComposerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Fire composer_open once on mount (new post only)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!isEditMode) event("composer_open", { composer: "post" }) }, [])
+
   const parsedTags = useMemo(() => {
     return tags
       .split(",")
@@ -94,10 +99,14 @@ export function PostComposer({ initialPost }: PostComposerProps) {
     e.preventDefault()
 
     if (status === "anonymous") {
+      event("auth_gate_shown", { trigger: "post" })
       toast.info("Sign in to create a post.", {
         action: {
           label: "Sign in",
-          onClick: () => (window.location.href = "/login"),
+          onClick: () => {
+            event("auth_gate_click", { action: "sign_in" })
+            window.location.href = "/login"
+          },
         },
       })
       return
@@ -146,6 +155,7 @@ export function PostComposer({ initialPost }: PostComposerProps) {
         router.push(`/post/${initialPost!.id}`)
       } else {
         event("post_created", { section, post_id: payload.post.id })
+        trackActivation("post")
         router.push(`/post/${payload.post.id}`)
       }
     } catch (err) {

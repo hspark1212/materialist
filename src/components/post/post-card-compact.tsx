@@ -72,7 +72,12 @@ export function PostCardCompact({ post }: PostCardCompactProps) {
           <Link
             href={`/post/${post.id}`}
             className="hover:text-primary line-clamp-1 block text-sm font-semibold after:absolute after:inset-0 after:content-['']"
-            onClick={() => event("card_click", { post_id: post.id, section: post.section, card_type: "compact" })}
+            onClick={() => {
+              event("card_click", { post_id: post.id, section: post.section, card_type: "compact" })
+              if (new URLSearchParams(window.location.search).has("q")) {
+                event("search_result_click", { post_id: post.id, section: post.section })
+              }
+            }}
           >
             <InlineLatex content={post.title} />
           </Link>

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { ChevronDown, LogIn, LogOut, Menu, Moon, Plus, Search, Settings, ShieldCheck, Sun, User, X } from "lucide-react"
 
 import { cn } from "@/lib"
+import { event } from "@/lib/analytics/gtag"
 import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
 import { sections } from "@/lib/sections"
@@ -58,10 +59,12 @@ export function Header() {
   const isLoading = effectiveStatus === "loading"
   const showSignedInMenu = effectiveStatus === "authenticated" || effectiveStatus === "verified"
 
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    submitSearch(String(formData.get("q") ?? ""))
+  const handleSearchSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const q = String(formData.get("q") ?? "")
+    submitSearch(q)
+    if (q.trim()) event("search_used", { query_length: q.trim().length })
   }
 
   return (
