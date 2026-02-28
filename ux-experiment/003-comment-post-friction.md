@@ -2,7 +2,8 @@
 
 **Date:** 2026-02-24
 **Type:** Code change
-**Status:** Planning
+**Status:** Deployed
+**Deployed:** ~2026-02-25
 **Pillar:** Comment rate + Post creation rate
 **Hypothesis:** Adding a comment empty state and section-aware composer placeholders will lift organic comment rate from 0.53% to 1.5%+ and generate measurable post_created events.
 

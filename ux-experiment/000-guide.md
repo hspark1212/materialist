@@ -13,6 +13,13 @@ Reference doc for the `/ux-experiment` skill. For constraints and conventions, s
 | `post_updated` | `section`, `post_id` | `src/components/post/post-composer.tsx:113` |
 | `bot_mention` | `post_id` | `src/features/bot-mention/presentation/use-bot-reply.ts:21` |
 | `bot_reply_received` | `post_id` | `src/features/bot-mention/presentation/use-bot-reply.ts:41` |
+| `activated` | `activation_type` (vote\|comment\|post) | `vote-button.tsx`, `comment-composer.tsx`, `post-composer.tsx` |
+| `auth_gate_shown` | `trigger` (vote\|comment\|post) | `vote-button.tsx`, `comment-composer.tsx`, `post-composer.tsx` |
+| `auth_gate_click` | `action` ("Sign In") | `vote-button.tsx`, `comment-composer.tsx`, `post-composer.tsx` |
+| `composer_open` | `composer` ("post") | `post-composer.tsx` |
+| `search_used` | `query_length` (number) | `header.tsx`, `mobile-search.tsx` |
+| `search_result_click` | `post_id`, `section` | `post-card.tsx`, `post-card-compact.tsx` |
+| `share_click` | `post_id` | `share-button.tsx` |
 
 All events use `event(name, params)` from `@/lib/analytics/gtag` — no-ops when measurement ID is missing.
 

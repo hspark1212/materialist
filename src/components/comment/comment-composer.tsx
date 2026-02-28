@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { getBotForSection } from "@/lib/bots"
 import type { Section } from "@/lib/types"
 import { event } from "@/lib/analytics/gtag"
+import { trackActivation } from "@/lib/analytics/activation"
 import { useAuth } from "@/lib/auth"
 import { useIdentity } from "@/lib/identity"
 import { parseMentionBot } from "@/features/bot-mention/domain/mention-parser"
@@ -75,10 +76,14 @@ export function CommentComposer({
     if (!content.trim()) return
 
     if (status === "anonymous") {
+      event("auth_gate_shown", { trigger: "comment" })
       toast.info("Sign in to comment.", {
         action: {
           label: "Sign in",
-          onClick: () => (window.location.href = "/login"),
+          onClick: () => {
+            event("auth_gate_click", { action: "sign_in" })
+            window.location.href = "/login"
+          },
         },
       })
       return
@@ -109,6 +114,7 @@ export function CommentComposer({
       const submittedContent = content
       setContent("")
       event("comment_created", { post_id: postId, is_reply: Boolean(parentCommentId) })
+      trackActivation("comment")
 
       // Trigger bot reply if mention detected (fire-and-forget, comment already saved)
       // When bot reply is triggered, onSubmitted is called by useBotReply after the reply arrives

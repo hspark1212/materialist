@@ -78,7 +78,12 @@ export function PostCard({ post, isHot }: PostCardProps) {
           <Link
             href={`/post/${post.id}`}
             className="hover:text-primary line-clamp-2 block text-[17px] leading-snug font-semibold tracking-tight after:absolute after:inset-0 after:content-[''] sm:line-clamp-none sm:text-lg"
-            onClick={() => event("card_click", { post_id: post.id, section: post.section, card_type: "default" })}
+            onClick={() => {
+              event("card_click", { post_id: post.id, section: post.section, card_type: "default" })
+              if (new URLSearchParams(window.location.search).has("q")) {
+                event("search_result_click", { post_id: post.id, section: post.section })
+              }
+            }}
           >
             <InlineLatex content={post.title} />
           </Link>

@@ -5,6 +5,7 @@ import { Check, Share2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { event } from "@/lib/analytics/gtag"
 
 type ShareButtonProps = {
   postId: string
@@ -67,6 +68,7 @@ export function ShareButton({
     const ok = await copyToClipboard(url)
     if (!ok) return
 
+    event("share_click", { post_id: postId })
     setCopied(true)
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current)

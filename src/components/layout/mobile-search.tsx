@@ -6,6 +6,7 @@ import { Clock, Search, TrendingUp, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { event } from "@/lib/analytics/gtag"
 import { useSearchFilter } from "@/features/posts/presentation/use-search-filter"
 
 const recentSearches = [
@@ -29,8 +30,9 @@ export function MobileSearch() {
   const inputRef = useRef<HTMLInputElement>(null)
   const { activeQuery, submitSearch } = useSearchFilter()
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (query.trim()) event("search_used", { query_length: query.trim().length })
     submitSearch(query)
     setOpen(false)
   }
@@ -88,6 +90,7 @@ export function MobileSearch() {
                         type="button"
                         className="text-foreground hover:bg-accent flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-md px-2 text-sm transition-colors"
                         onClick={() => {
+                          event("search_used", { query_length: term.length })
                           submitSearch(term)
                           setOpen(false)
                         }}
@@ -109,6 +112,7 @@ export function MobileSearch() {
                         type="button"
                         className="text-foreground hover:bg-accent flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-md px-2 text-sm transition-colors"
                         onClick={() => {
+                          event("search_used", { query_length: term.length })
                           submitSearch(term)
                           setOpen(false)
                         }}
