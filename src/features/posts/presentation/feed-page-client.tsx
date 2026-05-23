@@ -112,7 +112,7 @@ export function FeedPageClient({
     activeShowcaseType === initialFeed.showcaseType &&
     activeJobType === initialFeed.jobType &&
     activeLocation === initialFeed.location &&
-    authorType === (initialFeed.authorType ?? "human")
+    authorType === (initialFeed.authorType ?? "bot")
 
   const { posts, loading, loadingMore, error, hasMore, loadMore } = usePostsFeed({
     section,

@@ -31,7 +31,7 @@ export function FeedControls({ sortBy, setSortBy, authorType, setAuthorType }: F
         type="single"
         value={authorType}
         onValueChange={(value) => {
-          setAuthorType((value || "human") as AuthorType)
+          setAuthorType((value || "bot") as AuthorType)
         }}
         variant="outline"
         size="sm"
