@@ -118,18 +118,44 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-async function fetchWithRetry(
-  url: string,
-  retries = 4,
-  baseDelayMs = 30000
-): Promise<string> {
+const RETRYABLE_STATUS_CODES = new Set([408, 409, 425, 429, 500, 502, 503, 504])
+const MAX_RETRY_DELAY_MS = 180000
+
+function parseRetryAfterMs(res: Response): number | null {
+  const retryAfter = res.headers.get("retry-after")
+  if (!retryAfter) return null
+
+  const seconds = Number(retryAfter)
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000)
+
+  const timestamp = Date.parse(retryAfter)
+  if (Number.isNaN(timestamp)) return null
+
+  return Math.max(0, timestamp - Date.now())
+}
+
+function retryDelayMs(res: Response, attempt: number, baseDelayMs: number): number {
+  const retryAfterMs = parseRetryAfterMs(res)
+  const backoffMs = baseDelayMs * 2 ** attempt
+  const delayMs = Math.min(retryAfterMs ?? backoffMs, MAX_RETRY_DELAY_MS)
+  const jitterMs = Math.floor(Math.random() * 5000)
+
+  return delayMs + jitterMs
+}
+
+async function fetchWithRetry(url: string, retries = 5, baseDelayMs = 30000): Promise<string> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     const res = await fetch(url)
     if (res.ok) return res.text()
+
+    if (!RETRYABLE_STATUS_CODES.has(res.status)) {
+      throw new Error(`arXiv API failed with non-retryable status ${res.status}`)
+    }
+
     if (attempt < retries) {
-      const wait = baseDelayMs * (attempt + 1)
+      const wait = retryDelayMs(res, attempt, baseDelayMs)
       console.warn(
-        `  ⚠ arXiv returned ${res.status}, retrying in ${wait / 1000}s... (${attempt + 1}/${retries})`
+        `  ⚠ arXiv returned ${res.status}, retrying in ${Math.round(wait / 1000)}s... (${attempt + 1}/${retries})`,
       )
       await sleep(wait)
     } else {

@@ -72,11 +72,35 @@ jobs:
         with:
           script: |
             const date = process.env.INPUT_DATE || 'auto';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const title = `GA4 metrics collection failed: ${date}`;
+            const body = `The daily metrics collection pipeline failed.\n\n**Run:** ${runUrl}\n\nCheck the workflow logs for details.`;
+            const commentBody = `Another daily metrics collection run failed.\n\n**Date:** ${date}\n**Run:** ${runUrl}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: 'metrics-failure',
+              per_page: 20,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title)
+              || issues.find((issue) => !issue.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body: commentBody,
+              });
+              return;
+            }
             await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `GA4 metrics collection failed: ${date}`,
-              body: `The daily metrics collection pipeline failed.\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nCheck the workflow logs for details.`,
+              owner,
+              repo,
+              title,
+              body,
               labels: ['bot', 'metrics-failure'],
             });
         env:
