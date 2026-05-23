@@ -71,6 +71,17 @@ function saveMetrics(entries: DailyEntry[]): void {
   fs.writeFileSync(METRICS_PATH, JSON.stringify(entries, null, 2) + "\n")
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isRetryableGa4Error(error: unknown): boolean {
+  const err = error as { code?: unknown; details?: unknown; message?: unknown }
+  const text = `${err.details ?? ""} ${err.message ?? ""}`
+
+  return err.code === 8 || text.includes("RESOURCE_EXHAUSTED")
+}
+
 async function fetchEventMetrics(
   client: BetaAnalyticsDataClient,
   propertyId: string,
@@ -99,6 +110,30 @@ async function fetchEventMetrics(
   }
 }
 
+async function fetchEventMetricsWithRetry(
+  client: BetaAnalyticsDataClient,
+  propertyId: string,
+  date: string,
+  eventName: EventName,
+  retries = 3,
+): Promise<{ count: number; users: number }> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fetchEventMetrics(client, propertyId, date, eventName)
+    } catch (error) {
+      if (attempt >= retries || !isRetryableGa4Error(error)) throw error
+
+      const wait = 10000 * 2 ** attempt + Math.floor(Math.random() * 3000)
+      console.warn(
+        `GA4 quota hit for ${eventName}, retrying in ${Math.round(wait / 1000)}s... (${attempt + 1}/${retries})`,
+      )
+      await sleep(wait)
+    }
+  }
+
+  throw new Error(`Failed to collect GA4 metrics for ${eventName}`)
+}
+
 async function main() {
   const date = parseArgs()
   console.log(`Collecting GA4 metrics for ${date}...`)
@@ -124,11 +159,8 @@ async function main() {
 
   const entry: DailyEntry = { date }
 
-  // Fetch all events in parallel
-  const results = await Promise.all(EVENTS.map((e) => fetchEventMetrics(client, propertyId, date, e)))
-
-  for (let i = 0; i < EVENTS.length; i++) {
-    entry[EVENTS[i]] = results[i]
+  for (const eventName of EVENTS) {
+    entry[eventName] = await fetchEventMetricsWithRetry(client, propertyId, date, eventName)
   }
 
   // Merge into existing data

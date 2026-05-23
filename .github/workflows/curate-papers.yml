@@ -26,7 +26,7 @@ permissions:
 jobs:
   curate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -69,11 +69,35 @@ jobs:
         with:
           script: |
             const date = process.env.INPUT_DATE || new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const title = `Paper curation failed: ${date}`;
+            const body = `The daily paper curation pipeline failed.\n\n**Run:** ${runUrl}\n\nCheck the workflow logs for details.`;
+            const commentBody = `Another daily paper curation run failed.\n\n**Date:** ${date}\n**Run:** ${runUrl}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: 'curation-failure',
+              per_page: 20,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title)
+              || issues.find((issue) => !issue.pull_request);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body: commentBody,
+              });
+              return;
+            }
             await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `Paper curation failed: ${date}`,
-              body: `The daily paper curation pipeline failed.\n\n**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nCheck the workflow logs for details.`,
+              owner,
+              repo,
+              title,
+              body,
               labels: ['bot', 'curation-failure'],
             });
         env:
