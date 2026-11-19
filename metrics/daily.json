@@ -417,5 +417,76 @@
       "count": 0,
       "users": 0
     }
+  },
+  {
+    "date": "2026-11-18",
+    "page_view": {
+      "count": 24,
+      "users": 5
+    },
+    "session_start": {
+      "count": 6,
+      "users": 5
+    },
+    "first_visit": {
+      "count": 4,
+      "users": 4
+    },
+    "card_click": {
+      "count": 1,
+      "users": 1
+    },
+    "vote_cast": {
+      "count": 0,
+      "users": 0
+    },
+    "comment_created": {
+      "count": 0,
+      "users": 0
+    },
+    "post_created": {
+      "count": 1,
+      "users": 1
+    },
+    "post_updated": {
+      "count": 0,
+      "users": 0
+    },
+    "bot_mention": {
+      "count": 0,
+      "users": 0
+    },
+    "bot_reply_received": {
+      "count": 0,
+      "users": 0
+    },
+    "activated": {
+      "count": 1,
+      "users": 1
+    },
+    "auth_gate_shown": {
+      "count": 1,
+      "users": 1
+    },
+    "auth_gate_click": {
+      "count": 0,
+      "users": 0
+    },
+    "composer_open": {
+      "count": 5,
+      "users": 3
+    },
+    "search_used": {
+      "count": 0,
+      "users": 0
+    },
+    "search_result_click": {
+      "count": 0,
+      "users": 0
+    },
+    "share_click": {
+      "count": 1,
+      "users": 1
+    }
   }
 ]
